@@ -1,0 +1,24 @@
+# Dependencias
+node_modules/
+
+# Compilación
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# Registros
+*.log
+npm-debug.log*
+
+# Secretos y configuración local (nunca al repo)
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+*.swp
