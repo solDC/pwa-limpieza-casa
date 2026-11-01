@@ -81,9 +81,9 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 ├── index.html
 ├── vite.config.ts          Configuración de Vite, de la PWA y de las pruebas
 ├── .env.example            Variables de entorno necesarias, sin valores reales
-├── Dockerfile
-├── docker-compose.yml
-├── nginx.conf
+├── Dockerfile              Entorno de desarrollo (Node 22, como Vercel)
+├── docker-compose.yml      Arranca el entorno de desarrollo
+├── .nvmrc                  Versión de Node, para quien desarrolle sin Docker
 ├── CLAUDE.md               Contexto y reglas para la IA
 ├── CHANGELOG.md            Cambios y decisiones del proyecto
 └── package.json
@@ -95,35 +95,55 @@ Los nombres técnicos (carpetas, archivos, código) van en inglés; la documenta
 
 ### Requisitos
 
-- **Node.js 22.12 o posterior.** Compruébalo con `node --version`. Si no lo tienes, instálalo desde nodejs.org o con `brew install node`.
-- **Docker Desktop**, para la opción con Docker.
+- **Docker Desktop.** Es la forma recomendada: el entorno es el mismo para todos y usa la misma versión de Node que Vercel.
+- **Node.js 22**, solo si quieres desarrollar sin Docker. Compruébalo con `node --version`.
 
-### En desarrollo
+### En desarrollo, con Docker (recomendado)
+
+```
+docker compose up --build
+```
+
+Abre http://localhost:5173. Los cambios que hagas en el código se ven al momento, sin reiniciar nada. Para pararlo, `Ctrl+C`.
+
+Con el entorno arrancado, desde otra terminal:
+
+```
+docker compose exec app npm test
+```
+
+```
+docker compose exec app npm run build
+```
+
+Para añadir una dependencia, instálala dentro del contenedor, así se actualizan `package.json` y `package-lock.json`:
+
+```
+docker compose exec app npm install nombre-del-paquete
+```
+
+Si alguien ha cambiado las dependencias (por ejemplo, al bajar cambios del repo), reconstruye el entorno con `-V`, que descarta las dependencias antiguas del contenedor:
+
+```
+docker compose up --build -V
+```
+
+### En desarrollo, sin Docker
 
 ```
 npm install
 npm run dev
 ```
 
-Abre la dirección que aparece en la terminal, normalmente http://localhost:5173.
-
-Cuando la app use Supabase, antes habrá que copiar `.env.example` como `.env` y rellenar los valores del proyecto de Supabase.
-
-### Pruebas
+Abre http://localhost:5173.
 
 ```
 npm test
 ```
 
-### Con Docker
+### Variables de entorno
 
-```
-docker compose up --build
-```
-
-La app queda en http://localhost:8080. Durante la compilación, Docker también ejecuta las pruebas, y si alguna falla no se crea la imagen.
-
-> Pendiente: ahora Docker compila la app y la sirve con nginx. Se adaptará para que sea el entorno de desarrollo, con la misma versión de Node que Vercel.
+Cuando la app use Supabase, antes de arrancar habrá que copiar `.env.example` como `.env` y rellenar los valores del proyecto de Supabase. Sirve igual con Docker y sin él.
 
 ### Instalarla como app
 

@@ -1,6 +1,10 @@
 services:
-  web:
+  app:
     build: .
     ports:
-      - "8080:80"
-    restart: unless-stopped
+      - "5173:5173"
+    volumes:
+      # El código del proyecto, montado: lo que editas en tu ordenador se ve en el contenedor.
+      - .:/app
+      # node_modules se queda el del contenedor (Linux), no el de tu ordenador.
+      - /app/node_modules

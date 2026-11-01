@@ -52,14 +52,22 @@ src/
 
 ## Comandos
 
+El entorno de desarrollo es Docker (Node 22, la misma versión que Vercel):
+
 ```
-npm install          # dependencias
-npm run dev          # servidor de desarrollo
-npm test             # pruebas (Vitest)
-npm run build        # comprobación de tipos + compilación
+docker compose up --build              # arranca Vite en http://localhost:5173
+docker compose exec app npm test       # pruebas (Vitest)
+docker compose exec app npm run build  # comprobación de tipos + compilación
+docker compose exec app npm install X  # añadir una dependencia
+docker compose up --build -V           # tras cambiar dependencias
 ```
 
-Antes de dar un cambio por terminado: `npm test` y `npm run build` deben pasar.
+Sin Docker, los mismos scripts con `npm` directamente (`npm run dev`, `npm test`, `npm run build`).
+
+- La versión de Node se fija en tres sitios que deben coincidir: `Dockerfile` (`node:22-slim`), `package.json` (`engines`, que es lo que lee Vercel) y `.nvmrc`.
+- `node_modules` del contenedor es independiente del de tu ordenador. No lo mezcles.
+
+Antes de dar un cambio por terminado: las pruebas y la compilación deben pasar.
 
 ## Secretos y variables de entorno
 

@@ -9,6 +9,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ### Added
 - `CLAUDE.md` con el contexto del proyecto, la arquitectura y las reglas para la IA (convenciones, secretos, cómo mantener este changelog).
 - `CHANGELOG.md` para documentar los cambios y las decisiones importantes.
+- `.nvmrc` con la versión de Node, para quien desarrolle sin Docker.
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
@@ -16,9 +17,13 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - **La app necesitará conexión a internet.** Consecuencia directa del cambio anterior: con los datos en la nube, apuntar una tarea sin conexión obligaría a guardarla en una cola y sincronizarla después, y eso es bastante más complejo. Para el MVP la app seguirá siendo instalable, pero sin internet mostrará un aviso. El uso sin conexión pasa al backlog.
 - **Inicio de sesión con enlace mágico por email, sin contraseña** (Supabase Auth). Es lo más sencillo para el usuario y evita gestionar contraseñas.
 - **El modelo de datos incluye el hogar desde el principio** (`households` y `household_members`), aunque al inicio cada usuario tenga uno solo. Así, compartir la casa con otras personas (en el backlog) no obligará a rehacer la base de datos.
-- **Docker pasa a ser el entorno de desarrollo**, con la misma versión de Node que usará Vercel. Hasta ahora compilaba la app y la servía con nginx, que ya no es lo que habrá en producción. La adaptación del Dockerfile está pendiente.
+- **Docker pasa a ser el entorno de desarrollo.** Antes compilaba la app y la servía con nginx, pero en producción habrá Vercel, no nginx. Ahora `docker compose up` arranca Vite en http://localhost:5173 con el código montado, así que los cambios se ven al momento. La imagen usa Node 22 sobre Debian (`node:22-slim`), lo más parecido a donde compila Vercel.
+- **Versión de Node fijada en 22** (`engines: "22.x"` en `package.json` y `.nvmrc`). Con `>=22.12`, Vercel elegiría la versión más nueva disponible y el entorno de desarrollo y el de producción podrían ser distintos.
 - Nombres técnicos en inglés, siguiendo la convención del proyecto: `src/features/inicio`, `tareas` e `historial` pasan a `home`, `tasks` y `history`, y las variables CSS (`--color-fondo` → `--color-background`, etc.). La documentación y los textos de la app siguen en español.
 - `.gitignore`: `.env.example` ya no se ignora (la regla `.env.*` lo incluía) y se añaden `Thumbs.db` y los temporales de la CLI de Supabase.
+
+### Removed
+- `nginx.conf` y la etapa de nginx del Dockerfile: Vercel sirve la app en producción y ya no hace falta.
 
 ## [0.1.0] - 2026-11-01
 
