@@ -19,7 +19,6 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario.
 - **Uso sin conexión,** con sincronización al recuperar la conexión.
-- Voz, inteligencia artificial y recomendaciones.
 
 ## Cómo se modelan las tareas
 

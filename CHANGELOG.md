@@ -10,7 +10,6 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `CLAUDE.md` con el contexto del proyecto, la arquitectura y las reglas para la IA (convenciones, secretos, cómo mantener este changelog).
 - `CHANGELOG.md` para documentar los cambios y las decisiones importantes.
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
-- Sección «Contribuir» y «Backlog» en el README.
 
 ### Changed
 - **Arquitectura: de datos en el navegador a base de datos en la nube.** Los datos pasan de IndexedDB a **Supabase** (PostgreSQL), y la app se desplegará en **Vercel**. Motivo: queremos usuarios reales y que toda la actividad quede guardada en un servidor, no en un solo navegador. Así los datos no se pierden si se borra el navegador y se podrán usar desde varios dispositivos.
