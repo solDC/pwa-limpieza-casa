@@ -1,13 +1,17 @@
-# Etapa 1: instala dependencias, pasa las pruebas y compila la app
-FROM node:22-alpine AS build
+# Entorno de desarrollo.
+# Node 22 sobre Debian (glibc), lo más parecido a la imagen con la que compila Vercel.
+# El código no se copia: docker-compose.yml monta la carpeta del proyecto,
+# así que los cambios se ven al momento sin reconstruir la imagen.
+FROM node:22-slim
+
 WORKDIR /app
+
+# Las dependencias se instalan dentro de la imagen, para Linux.
+# Se reinstalan solo cuando cambian package.json o package-lock.json.
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY . .
-RUN npm test && npm run build
 
-# Etapa 2: sirve los archivos compilados con nginx
-FROM nginx:stable-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 5173
+
+# --host hace que Vite escuche fuera del contenedor (si no, solo responde dentro).
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]

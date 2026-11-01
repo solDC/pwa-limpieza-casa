@@ -5,7 +5,7 @@
   "type": "module",
   "description": "PWA para organizar las tareas de mantenimiento del hogar",
   "engines": {
-    "node": ">=22.12"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "vite",
