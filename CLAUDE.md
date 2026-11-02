@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
 
-**Estado:** MVP en desarrollo. Hay una pantalla provisional; la migración a Supabase está decidida pero aún no implementada.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico) y US-02 (hogar automático). La pantalla de Inicio es provisional.
 
 ## Arquitectura
 
@@ -48,6 +48,14 @@ tests/
 - Los días se guardan como **fecha local sin hora** (`date` en PostgreSQL, `'YYYY-MM-DD'` en TypeScript), nunca como `Date` con hora. «Hoy», «ayer» y «cada 30 días» son días, y así se evitan errores de zona horaria y cambio de hora.
 - Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 
+### Base de datos
+
+- **Todo cambio en la base de datos es una migración** en `supabase/migrations/` (`npx supabase migration new <nombre-en-ingles>`). Nunca se cambian tablas a mano en el panel de Supabase.
+- **Una migración ya fusionada en `main` no se edita:** se corrige con otra nueva.
+- Cada migración que crea tablas incluye su RLS, sus políticas y los permisos de cada rol (`anon`, `authenticated`) en el mismo archivo, con comentarios en español.
+- Las funciones `security definer` llevan `set search_path = ''` y nombres de tabla con esquema (`public.households`).
+- En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
+
 ## Convenciones
 
 - **Nombres técnicos en inglés:** carpetas, archivos, variables, funciones, tipos, tablas, columnas y variables CSS. Carpetas y archivos que no son componentes, en `kebab-case` (`task-form`, `api-client`). Componentes React en `PascalCase.tsx`.
@@ -64,7 +72,11 @@ El detalle está en `tests/README.md`. Lo esencial:
 - **Integración:** cada tabla nueva lleva una prueba de que un usuario **no** puede leer ni modificar los datos de otro hogar.
 - **Fallos:** primero la prueba que reproduce el fallo, luego el arreglo.
 - Las pruebas e2e se ejecutan contra la versión compilada (`npm run preview`, puerto 4173), no contra el servidor de desarrollo.
-- La CI (`.github/workflows/ci.yml`) lo ejecuta todo en cada pull request. Un pull request en rojo no se fusiona.
+- La CI (`.github/workflows/ci.yml`) arranca Supabase en local y lo ejecuta todo en cada pull request. Un pull request en rojo no se fusiona.
+
+### Prueba manual de aceptación
+
+Además de las automáticas, Sol prueba cada historia a mano en el despliegue de prueba de Vercel del pull request (sobre todo en el móvil) antes de fusionarlo. Por eso **cada pull request de una historia incluye una sección «Cómo probarlo a mano»**, con pasos concretos y numerados, y qué debería verse en cada uno. Si encuentra un fallo, primero la prueba automática que lo reproduce y luego el arreglo.
 
 ## Comandos
 
@@ -82,6 +94,16 @@ docker compose up --build -V           # tras cambiar dependencias
 ```
 
 Sin Docker, los mismos scripts con `npm` directamente (`npm run dev`, `npm test`, `npm run build`).
+
+Supabase en local (dentro del dev container, que trae Docker dentro):
+
+```
+npx supabase start          # arranca Supabase local (API 54321, Studio 54323, buzón de pruebas 54324)
+npm run env:local           # crea .env con la URL y la clave del Supabase local
+npm run test:integration    # pruebas de la base de datos (necesitan Supabase arrancado)
+npx supabase db reset       # aplica las migraciones desde cero
+npx supabase stop           # para Supabase
+```
 
 - La versión de Node se fija en tres sitios que deben coincidir: `Dockerfile` (`node:22-slim`), `package.json` (`engines`, que es lo que lee Vercel) y `.nvmrc`.
 - `node_modules` del contenedor es independiente del de tu ordenador. No lo mezcles.

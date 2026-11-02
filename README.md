@@ -2,7 +2,7 @@
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
-🚧 **MVP en desarrollo.** De momento solo está la base del proyecto. Se ha decidido pasar de guardar los datos en el navegador a una base de datos en Supabase con despliegue en Vercel; la migración aún no está hecha (ver `CHANGELOG.md`).
+🚧 **MVP en desarrollo.** Ya se puede entrar con un enlace mágico y cada usuario tiene su hogar (US-01 y US-02). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
@@ -73,6 +73,9 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 ├── .github/workflows/      Integración continua: pruebas en cada pull request
 ├── docs/                   Historias de usuario del MVP
 ├── public/                 Iconos y favicon de la PWA
+├── supabase/
+│   ├── config.toml         Configuración de Supabase en local
+│   └── migrations/         Cambios de la base de datos (tablas, reglas de seguridad), en orden
 ├── src/
 │   ├── domain/             Modelo de tareas, motor de frecuencias y progreso (TypeScript puro)
 │   ├── storage/            Acceso a Supabase
@@ -133,7 +136,36 @@ Si cambian las dependencias (por ejemplo, al bajar cambios del repo), ejecuta `n
 
 No arranques a la vez el dev container y `docker compose up`: los dos usan el puerto 5173.
 
+#### Supabase en local
+
+La app necesita Supabase. En desarrollo se usa una copia local, dentro del dev container, con las mismas tablas y reglas que la de la nube, y que no envía emails de verdad.
+
+1. Arranca Supabase. La primera vez descarga sus imágenes y tarda unos minutos:
+
+   ```
+   npx supabase start
+   ```
+
+2. Crea el `.env` con la dirección y la clave del Supabase local:
+
+   ```
+   npm run env:local
+   ```
+
+3. Arranca la app con `npm run dev` y entra con cualquier email.
+4. El enlace mágico no llega a tu correo: llega al **buzón de pruebas**, en http://localhost:54324. Ábrelo desde ahí.
+
+Las tablas se pueden ver en **Supabase Studio**, en http://localhost:54323.
+
+```
+npx supabase stop        # parar Supabase (los datos se conservan)
+npx supabase db reset    # borrar los datos y volver a aplicar las migraciones
+```
+
 ### En desarrollo, con Docker desde la terminal
+
+Con esta opción, Supabase local no puede ir dentro del contenedor: habría que arrancarlo en tu ordenador (`npx supabase start`, con Node instalado). Para trabajar con la base de datos, usa el dev container.
+
 
 ```
 docker compose up --build
@@ -189,7 +221,41 @@ npm run test:e2e
 
 ### Variables de entorno
 
-Cuando la app use Supabase, antes de arrancar habrá que copiar `.env.example` como `.env` y rellenar los valores del proyecto de Supabase. Sirve igual con Docker y sin él.
+La app necesita dos variables, `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ver `.env.example`):
+
+- **En desarrollo:** en el archivo `.env`, que nunca se sube a Git. Con Supabase local, lo crea `npm run env:local`.
+- **En Vercel:** en el panel del proyecto, **Settings → Environment Variables**.
+
+Sin ellas, la app muestra un aviso de que falta la configuración.
+
+## Puesta en producción
+
+Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos.
+
+### Una sola vez
+
+1. **Supabase → Authentication → URL Configuration:**
+   - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
+   - **Redirect URLs:** esa misma dirección con `/**` al final, y la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
+2. **Vercel → Settings → Environment Variables:** añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para **Production** y **Preview**. Los valores están en **Supabase → Project Settings → API**. Después, vuelve a desplegar.
+3. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
+
+   ```
+   npx supabase login
+   npx supabase link --project-ref <id-del-proyecto>
+   ```
+
+   El id del proyecto es la parte de la URL de Supabase: `https://<id-del-proyecto>.supabase.co`.
+
+### Cada vez que haya una migración nueva
+
+Cuando se fusione un pull request que añade archivos en `supabase/migrations/`, aplícalos a la base de datos de la nube:
+
+```
+npx supabase db push
+```
+
+Hazlo **antes** de que Vercel publique la versión nueva, o justo después: si la app nueva usa una tabla que aún no existe en la nube, fallará hasta que la apliques.
 
 ### Instalarla como app
 
