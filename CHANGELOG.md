@@ -17,6 +17,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- **Vitest actualizado de la versión 3 a la 5** para corregir dos vulnerabilidades críticas (en `tinypool`) y dos moderadas (en `@vitest/mocker`). Se hace ahora porque todavía no hay pruebas que puedan romperse con el cambio de versión. Quedan 10 vulnerabilidades bajas y moderadas en dependencias de compilación de `vite-plugin-pwa` (`workbox-build`): solo actúan al compilar, no llegan a la app publicada y no tienen arreglo hasta que el plugin publique una versión nueva.
 - **Arquitectura: de datos en el navegador a base de datos en la nube.** Los datos pasan de IndexedDB a **Supabase** (PostgreSQL), y la app se desplegará en **Vercel**. Motivo: queremos usuarios reales y que toda la actividad quede guardada en un servidor, no en un solo navegador. Así los datos no se pierden si se borra el navegador y se podrán usar desde varios dispositivos.
 - **La app necesitará conexión a internet.** Consecuencia directa del cambio anterior: con los datos en la nube, apuntar una tarea sin conexión obligaría a guardarla en una cola y sincronizarla después, y eso es bastante más complejo. Para el MVP la app seguirá siendo instalable, pero sin internet mostrará un aviso. El uso sin conexión pasa al backlog.
 - **Inicio de sesión con enlace mágico por email, sin contraseña** (Supabase Auth). Es lo más sencillo para el usuario y evita gestionar contraseñas.
