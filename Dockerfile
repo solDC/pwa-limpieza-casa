@@ -17,6 +17,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Navegador Chromium y sus librerías del sistema, para las pruebas de extremo a extremo
+# (Playwright). Se instala la versión que corresponde a @playwright/test en package-lock.json:
+# si se actualiza Playwright, hay que reconstruir la imagen.
+RUN npx playwright install --with-deps chromium
+
 EXPOSE 5173
 
 # --host hace que Vite escuche fuera del contenedor (si no, solo responde dentro).

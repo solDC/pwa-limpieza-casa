@@ -7,6 +7,11 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **Pruebas automáticas en tres niveles, en la carpeta `tests/`:** unitarias (`unit/`) y de integración con la base de datos (`integration/`) con Vitest, y de extremo a extremo (`e2e/`) con **Playwright**, que usan la app en un navegador real, en escritorio y en móvil. Sirven para comprobar cada historia de usuario y para detectar regresiones al añadir funcionalidades. Las reglas están en `tests/README.md` y en `CLAUDE.md`.
+- Primera prueba e2e (`app-shell.spec.ts`): la app compilada carga, el manifiesto de la PWA es correcto y el service worker queda activo.
+- **Integración continua** (`.github/workflows/ci.yml`): en cada pull request y en cada cambio en `main`, GitHub instala las dependencias, pasa las pruebas, compila y ejecuta las pruebas e2e. Un pull request en rojo avisa de que algo se ha roto antes de fusionarlo.
+- Chromium en la imagen de Docker (y por tanto en el dev container), para poder ejecutar las pruebas e2e en local con el mismo entorno.
+- Un issue de GitHub por historia de usuario (US-01 = #2 … US-25 = #26), con sus criterios de aceptación y una definición de hecho que exige pruebas.
 - **Dev container** (`.devcontainer/devcontainer.json`), requisito de la clase. Construye el mismo `Dockerfile` que `docker-compose.yml`, así que solo hay una imagen que mantener y `docker compose up` sigue funcionando igual. No reutiliza el servicio de Compose directamente porque las versiones recientes de Docker Compose rechazan el Dockerfile temporal que genera la extensión Dev Containers (error «additional privileges requested»).
 - Vite escucha en todas las interfaces (`server.host` en `vite.config.ts`). Sin esto, dentro del dev container solo respondía al «localhost» del propio contenedor y la app no cargaba en el navegador del Mac.
 - `git` en la imagen de desarrollo, necesario para el control de versiones desde VS Code y Claude Code dentro del contenedor.
@@ -17,6 +22,8 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- **Las pruebas van en `tests/` y no junto al código**, como pide la estructura de proyecto del curso. Las unitarias reflejan la ruta del código (`src/domain/x.ts` → `tests/unit/domain/x.test.ts`).
+- **Flujo de trabajo con ramas por historia** (*GitHub Flow*): cada historia se desarrolla en una rama `feature/…` creada desde `main` y entra con un pull request. No hay rama `development`: Vercel ya crea una dirección de prueba para cada rama, y una rama intermedia compartiría la base de datos de producción.
 - **Vitest actualizado de la versión 3 a la 5** para corregir dos vulnerabilidades críticas (en `tinypool`) y dos moderadas (en `@vitest/mocker`). Se hace ahora porque todavía no hay pruebas que puedan romperse con el cambio de versión. Quedan 10 vulnerabilidades bajas y moderadas en dependencias de compilación de `vite-plugin-pwa` (`workbox-build`): solo actúan al compilar, no llegan a la app publicada y no tienen arreglo hasta que el plugin publique una versión nueva.
 - **Arquitectura: de datos en el navegador a base de datos en la nube.** Los datos pasan de IndexedDB a **Supabase** (PostgreSQL), y la app se desplegará en **Vercel**. Motivo: queremos usuarios reales y que toda la actividad quede guardada en un servidor, no en un solo navegador. Así los datos no se pierden si se borra el navegador y se podrán usar desde varios dispositivos.
 - **La app necesitará conexión a internet.** Consecuencia directa del cambio anterior: con los datos en la nube, apuntar una tarea sin conexión obligaría a guardarla en una cola y sincronizarla después, y eso es bastante más complejo. Para el MVP la app seguirá siendo instalable, pero sin internet mostrará un aviso. El uso sin conexión pasa al backlog.
