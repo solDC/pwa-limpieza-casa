@@ -264,10 +264,10 @@ Cuando un pull request añade archivos en `supabase/migrations/`, hay que aplica
 2. Aplica las migraciones. La CLI las lista y pide confirmación (responde `Y`):
 
    ```
-   npx supabase db push --remote
+   npx supabase db push --linked
    ```
 
-Sin `--remote`, la CLI intenta aplicarlas al Supabase local (y falla si no está arrancado). Los comandos de Supabase siempre van con `npx` delante: la CLI está instalada en el proyecto, no en el sistema.
+`--linked` indica que se apliquen en el proyecto enlazado (la nube), no en el Supabase local. Los comandos de Supabase siempre van con `npx` delante: así se usa la versión de la CLI fijada en el proyecto (`package.json`), no otra que descargue `npx` y cuyas opciones pueden cambiar.
 
 Si responde «Remote database is up to date» sin listar nada, probablemente estás en otra rama (por ejemplo, `main`), donde esa migración aún no existe.
 
