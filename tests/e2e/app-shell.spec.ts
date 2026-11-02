@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test'
 
 test('la app carga y muestra su nombre', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveTitle('Limpieza casa')
-  await expect(page.getByRole('heading', { level: 1, name: 'Limpieza casa' })).toBeVisible()
+  await expect(page).toHaveTitle('Limpieza de casa')
+  await expect(page.getByRole('heading', { level: 1, name: 'Limpieza de casa' })).toBeVisible()
 })
 
 test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ page, request }) => {
@@ -17,7 +17,7 @@ test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ pa
   const response = await request.get(href!)
   expect(response.ok()).toBe(true)
   const manifest = await response.json()
-  expect(manifest).toMatchObject({ name: 'Limpieza casa', lang: 'es', display: 'standalone' })
+  expect(manifest).toMatchObject({ name: 'Limpieza de casa', lang: 'es', display: 'standalone' })
   expect(manifest.icons.some((icon: { purpose?: string }) => icon.purpose === 'maskable')).toBe(true)
 })
 

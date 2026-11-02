@@ -1,14 +1,16 @@
 import { useState, type FormEvent } from 'react'
-import { sendMagicLink, takeSignInErrorFromUrl } from '../../storage/auth'
+import { sendMagicLink, takeSignInErrorFromUrl, verifyEmailCode } from '../../storage/auth'
 
 type Step =
   | { name: 'form'; error: string | null }
   | { name: 'sending' }
-  | { name: 'sent'; email: string }
+  | { name: 'sent'; email: string; codeError: string | null; checkingCode: boolean }
 
 // US-01 · Entrar con enlace mágico.
+// US-26 · Entrar con el código del email, para la app instalada en el iPhone.
 export function SignInScreen() {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [step, setStep] = useState<Step>(() => ({ name: 'form', error: takeSignInErrorFromUrl() }))
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -17,24 +19,65 @@ export function SignInScreen() {
     setStep({ name: 'sending' })
     try {
       await sendMagicLink(cleanEmail)
-      setStep({ name: 'sent', email: cleanEmail })
+      setCode('')
+      setStep({ name: 'sent', email: cleanEmail, codeError: null, checkingCode: false })
     } catch (error) {
       setStep({ name: 'form', error: (error as Error).message })
     }
   }
 
+  async function handleCodeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (step.name !== 'sent') return
+    setStep({ ...step, codeError: null, checkingCode: true })
+    try {
+      // Si es correcto, la sesión cambia y la app pasa sola a la pantalla de Inicio.
+      await verifyEmailCode(step.email, code.trim())
+    } catch (error) {
+      setStep({ ...step, codeError: (error as Error).message, checkingCode: false })
+    }
+  }
+
   return (
     <main className="app">
-      <h1>Limpieza casa</h1>
+      <h1>Limpieza de casa</h1>
 
       {step.name === 'sent' ? (
         <section className="card" aria-live="polite">
           <h2>Revisa tu correo</h2>
           <p>
-            Te hemos enviado un enlace a <strong>{step.email}</strong>. Ábrelo en este dispositivo
-            para entrar.
+            Te hemos enviado un email a <strong>{step.email}</strong>. Pulsa el enlace para entrar.
           </p>
-          <p className="muted">Si no lo ves en unos minutos, mira en la carpeta de spam.</p>
+
+          <form className="stack" onSubmit={handleCodeSubmit}>
+            <p className="muted">
+              ¿Usas la app instalada en el iPhone? Escribe aquí el código que viene en el email.
+            </p>
+            <label htmlFor="code">Código del email</label>
+            <input
+              id="code"
+              type="text"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6,10}"
+              maxLength={10}
+              placeholder="123456"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))}
+              disabled={step.checkingCode}
+            />
+            <button type="submit" disabled={step.checkingCode}>
+              {step.checkingCode ? 'Comprobando…' : 'Entrar con el código'}
+            </button>
+            {step.codeError && (
+              <p className="error" role="alert">
+                {step.codeError}
+              </p>
+            )}
+          </form>
+
+          <p className="muted">Si no ves el email en unos minutos, mira en la carpeta de spam.</p>
           <button
             type="button"
             className="button-secondary"

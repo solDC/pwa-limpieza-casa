@@ -13,7 +13,7 @@ function AppWithSession() {
   if (state.status === 'loading') {
     return (
       <main className="app">
-        <h1>Limpieza casa</h1>
+        <h1>Limpieza de casa</h1>
         <p className="muted">Cargando…</p>
       </main>
     )
@@ -26,7 +26,7 @@ function AppWithSession() {
 function MissingConfiguration() {
   return (
     <main className="app">
-      <h1>Limpieza casa</h1>
+      <h1>Limpieza de casa</h1>
       <p className="error" role="alert">
         Falta configurar la conexión con la base de datos (VITE_SUPABASE_URL y
         VITE_SUPABASE_ANON_KEY).

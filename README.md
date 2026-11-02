@@ -1,4 +1,4 @@
-# PWA limpieza casa
+# Limpieza de casa
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
@@ -237,8 +237,13 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
 1. **Supabase → Authentication → URL Configuration:**
    - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
    - **Redirect URLs:** esa misma dirección con `/**` al final, y la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
-2. **Vercel → Settings → Environment Variables:** añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para **Production** y **Preview**. Los valores están en **Supabase → Project Settings → API**. Después, vuelve a desplegar.
-3. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
+2. **Vercel → Settings → Environment Variables:** añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para **Production** y **Preview**. Los valores están en el botón **Connect** del panel de Supabase (la clave puede ser la *publishable* o la *anon*; nunca la *secret* ni la *service_role*). Los nombres tienen que ser exactamente esos. Después, vuelve a desplegar.
+3. **Plantillas del email, en español y con el código (US-26).** En **Supabase → Authentication → Email Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
+   - **Subject:** `Tu acceso a Limpieza de casa`
+   - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
+
+   Si cambias ese archivo, vuelve a pegarlo en las dos plantillas: la nube no lo lee del repo.
+4. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
 
    ```
    npx supabase login

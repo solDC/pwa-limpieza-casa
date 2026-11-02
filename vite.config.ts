@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Limpieza casa',
+        name: 'Limpieza de casa',
         short_name: 'Limpieza',
         description: 'Organiza las tareas de mantenimiento del hogar',
         lang: 'es',

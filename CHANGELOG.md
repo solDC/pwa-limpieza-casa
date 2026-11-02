@@ -7,6 +7,8 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-26 · Entrar con código desde la app instalada** (#29). El email para entrar trae ahora, además del enlace, un código de 6 dígitos, y la pantalla «Revisa tu correo» deja escribirlo. Motivo: en el iPhone, la app instalada guarda su sesión aparte de Safari y el enlace del email se abre en Safari, así que con el enlace no se podía entrar en la app instalada. El enlace sigue funcionando igual; el código es una alternativa, no un paso más. Si el código es incorrecto o ha caducado, la app lo dice y deja intentarlo de nuevo.
+- Plantilla del email en español (`supabase/templates/sign-in.html`), con el enlace y el código, para el primer email de un usuario nuevo y para los siguientes. En local la usa `supabase/config.toml`; en la nube hay que pegarla en Authentication → Email Templates (ver README).
 - **US-26 · Entrar con código desde la app instalada** (#29), en `docs/user-stories.md` y como issue, con prioridad Must: en iPhone, la app instalada no recibe la sesión del enlace del email porque iOS lo abre en Safari.
 - **US-01 · Entrar con enlace mágico** (#2). Pantalla para escribir el email; Supabase envía un enlace y al abrirlo se entra en la app. La sesión se guarda en el navegador y se mantiene al cerrar y volver a abrir la app. Si el enlace ha caducado o ya se usó, la app lo dice y deja pedir otro. Los errores (demasiados intentos, sin conexión) se explican en español.
 - **US-02 · Hogar creado automáticamente** (#3). Primera migración de la base de datos (`supabase/migrations/…_households.sql`): tablas `households` y `household_members`, con RLS para que cada usuario solo vea su hogar. Al registrarse, una función de la base de datos crea el hogar («Mi casa») y la pertenencia del usuario como propietario. Los hogares no se pueden crear ni borrar desde la app, solo leer y cambiar el nombre. La migración también crea el hogar de los usuarios que ya existieran.
@@ -32,6 +34,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- **La app se llama «Limpieza de casa»** (antes «Limpieza casa»): título de la pestaña, pantallas y nombre de la app instalada. El nombre corto bajo el icono sigue siendo «Limpieza».
 - `src/ui/` pasa a llamarse `src/components/`, el nombre habitual en proyectos React con Vite, para los componentes que comparten varias pantallas. Los de una sola pantalla siguen en su carpeta de `features/`.
 - Los issues de las historias se enlazan en la tabla de `docs/user-stories.md`, en lugar de deducir el número («US-n es el #n+1»), que dejó de cumplirse porque los pull requests también usan números de GitHub.
 - Scripts de pruebas separados: `npm test` (unitarias, sin dependencias), `npm run test:integration` (base de datos, necesita Supabase local) y `npm run test:e2e`. `npm run test:all` ejecuta todo.

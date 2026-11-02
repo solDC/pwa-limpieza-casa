@@ -10,10 +10,18 @@ export function uniqueEmail(): string {
 }
 
 type MailpitSearch = { messages: { ID: string }[] }
-type MailpitMessage = { Text: string; HTML: string }
+type MailpitMessage = { Subject: string; Text: string; HTML: string }
 
-/** Espera a que llegue el enlace mágico a ese email y lo devuelve. */
-export async function waitForMagicLink(email: string, timeoutMs = 15_000): Promise<string> {
+export type SignInEmail = {
+  subject: string
+  /** Enlace para entrar (US-01). */
+  link: string
+  /** Código para escribir en la app (US-26). */
+  code: string
+}
+
+/** Espera a que llegue el email para entrar y devuelve su enlace y su código. */
+export async function waitForSignInEmail(email: string, timeoutMs = 15_000): Promise<SignInEmail> {
   const deadline = Date.now() + timeoutMs
   const query = encodeURIComponent(`to:"${email}"`)
 
@@ -28,13 +36,20 @@ export async function waitForMagicLink(email: string, timeoutMs = 15_000): Promi
         await fetch(`${mailpitUrl}/api/v1/message/${latest.ID}`)
       ).json()) as MailpitMessage
       const link = findVerifyLink(message.Text) ?? findVerifyLink(message.HTML)
-      if (link) return link
-      throw new Error(`El email a ${email} no contiene un enlace de acceso`)
+      const code = message.Text.match(/código:\s*(\d{6,10})/i)?.[1]
+      if (!link) throw new Error(`El email a ${email} no contiene un enlace de acceso`)
+      if (!code) throw new Error(`El email a ${email} no contiene un código de acceso`)
+      return { subject: message.Subject, link, code }
     }
 
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
   throw new Error(`No ha llegado ningún email a ${email} en ${timeoutMs / 1000} s`)
+}
+
+/** Espera a que llegue el email para entrar y devuelve su enlace. */
+export async function waitForMagicLink(email: string, timeoutMs = 15_000): Promise<string> {
+  return (await waitForSignInEmail(email, timeoutMs)).link
 }
 
 function findVerifyLink(content: string | undefined): string | null {
