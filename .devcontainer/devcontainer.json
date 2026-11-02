@@ -1,0 +1,35 @@
+{
+  // Entorno de desarrollo para VS Code (extensión Dev Containers).
+  // Construye la misma imagen que docker-compose.yml (el Dockerfile del proyecto, Node 22),
+  // pero sin pasar por Compose: las versiones recientes de Compose rechazan el Dockerfile
+  // temporal que genera la extensión ("additional privileges requested").
+  "name": "PWA limpieza casa",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+
+  // El código se monta en /app, igual que con docker-compose.yml.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+  "workspaceFolder": "/app",
+
+  // node_modules en un volumen propio: paquetes de Linux, separados de los de tu Mac.
+  "mounts": [
+    "source=pwa-limpieza-casa-node_modules,target=/app/node_modules,type=volume"
+  ],
+  // npm install (no npm ci): npm ci intenta borrar la carpeta del volumen y falla.
+  "postCreateCommand": "npm install",
+
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": { "label": "Vite", "onAutoForward": "openBrowser" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vitest.explorer"
+      ]
+    }
+  }
+}

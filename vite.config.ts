@@ -31,6 +31,13 @@ export default defineConfig({
       },
     }),
   ],
+  // Escucha en todas las interfaces: necesario para que la app se vea desde fuera
+  // del dev container (VS Code redirige el puerto 5173 a tu navegador).
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+  },
   test: {
     environment: 'node',
   },

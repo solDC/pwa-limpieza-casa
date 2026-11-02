@@ -4,7 +4,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 ## Qué es
 
-PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`.
+PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
 
 **Estado:** MVP en desarrollo. Hay una pantalla provisional; la migración a Supabase está decidida pero aún no implementada.
 
@@ -16,7 +16,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 - **Seguridad de los datos:** Row Level Security (RLS) en **todas** las tablas. Un usuario solo ve y modifica los datos de los hogares de los que es miembro. Una tabla sin RLS es un fallo de seguridad.
 - **Inicio de sesión:** enlace mágico por email, sin contraseña.
 - **Despliegue:** Vercel (compila con `npm run build` y publica `dist/`).
-- **Desarrollo:** Docker, con la misma versión de Node que Vercel. Supabase local con la CLI de Supabase.
+- **Desarrollo:** dev container (requisito de la clase), que construye el mismo `Dockerfile` que `docker-compose.yml`, con la misma versión de Node que Vercel. Supabase local con la CLI de Supabase.
 
 ### Carpetas
 
@@ -52,7 +52,9 @@ src/
 
 ## Comandos
 
-El entorno de desarrollo es Docker (Node 22, la misma versión que Vercel):
+El entorno de desarrollo es el **dev container** (`.devcontainer/`), que construye el mismo `Dockerfile` que `docker-compose.yml` (Node 22, la misma versión que Vercel). No usa Compose porque las versiones recientes rechazan el Dockerfile temporal que genera la extensión de VS Code. Dentro del dev container los comandos son los de `npm` directamente: `npm run dev`, `npm test`, `npm run build`, `npm install X`.
+
+Desde fuera del contenedor, con Docker:
 
 ```
 docker compose up --build              # arranca Vite en http://localhost:5173
@@ -66,6 +68,8 @@ Sin Docker, los mismos scripts con `npm` directamente (`npm run dev`, `npm test`
 
 - La versión de Node se fija en tres sitios que deben coincidir: `Dockerfile` (`node:22-slim`), `package.json` (`engines`, que es lo que lee Vercel) y `.nvmrc`.
 - `node_modules` del contenedor es independiente del de tu ordenador. No lo mezcles.
+- El dev container y `docker compose up` usan el puerto 5173: no los arranques a la vez.
+- Si cambias `docker-compose.yml` o el `Dockerfile`, comprueba que siguen funcionando las dos formas de arrancar.
 
 Antes de dar un cambio por terminado: las pruebas y la compilación deben pasar.
 

@@ -6,6 +6,8 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 ## Qué hace el MVP
 
+El detalle, con las historias de usuario y su prioridad, está en [`docs/user-stories.md`](docs/user-stories.md).
+
 - **Cuenta de usuario:** inicio de sesión con un enlace mágico que llega por email, sin contraseña.
 - **Inicio:** lo que toca hoy, lo retrasado y lo que está a medias, con su progreso.
 - **Tareas:** crear, editar y borrar, con partes opcionales y progreso parcial («Cristales: 2 de 4»).
@@ -55,7 +57,7 @@ Cada tarea puede tener **partes**, aunque no es obligatorio. Las partes pueden s
 | Usuarios | Supabase Auth | Inicio de sesión con enlace mágico, sin contraseñas que gestionar |
 | Pruebas | Vitest | Para el motor de frecuencias y el progreso |
 | Despliegue | Vercel | Publica la app con HTTPS, necesario para instalarla en el móvil |
-| Desarrollo | Docker | El mismo entorno (versión de Node) que en producción |
+| Desarrollo | Dev container + Docker | El mismo entorno (versión de Node) para todos y que en producción |
 
 La app no tiene servidor propio: el navegador habla directamente con Supabase, y las reglas de la base de datos garantizan que cada usuario solo ve sus datos.
 
@@ -65,6 +67,8 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 
 ```
 .
+├── .devcontainer/          Dev container para VS Code (usa el mismo Dockerfile)
+├── docs/                   Historias de usuario del MVP
 ├── public/                 Iconos y favicon de la PWA
 ├── src/
 │   ├── domain/             Modelo de tareas, motor de frecuencias y progreso (TypeScript puro)
@@ -96,9 +100,31 @@ Los nombres técnicos (carpetas, archivos, código) van en inglés; la documenta
 ### Requisitos
 
 - **Docker Desktop.** Es la forma recomendada: el entorno es el mismo para todos y usa la misma versión de Node que Vercel.
+- **VS Code con la extensión Dev Containers**, para trabajar dentro del contenedor desde el editor (opción recomendada).
 - **Node.js 22**, solo si quieres desarrollar sin Docker. Compruébalo con `node --version`.
 
-### En desarrollo, con Docker (recomendado)
+### En desarrollo, con dev container (recomendado)
+
+El proyecto trae un dev container (`.devcontainer/`) que construye la misma imagen que `docker-compose.yml` (el `Dockerfile` del proyecto): VS Code abre el editor dentro del contenedor, con Node 22 y las dependencias instaladas.
+
+1. Abre Docker Desktop.
+2. Abre la carpeta del proyecto en VS Code y pulsa **Reopen in Container** (o `Cmd + Shift + P` → **Dev Containers: Reopen in Container**).
+3. La primera vez tarda unos minutos.
+4. En la terminal de VS Code, arranca la app con `npm run dev`. VS Code abre http://localhost:5173 en tu navegador.
+
+La terminal de VS Code ya está dentro del contenedor, así que los comandos se escriben sin `docker compose exec app`:
+
+```
+npm test
+npm run build
+npm install nombre-del-paquete
+```
+
+Si cambian las dependencias (por ejemplo, al bajar cambios del repo), ejecuta `npm install` en la terminal de VS Code.
+
+No arranques a la vez el dev container y `docker compose up`: los dos usan el puerto 5173.
+
+### En desarrollo, con Docker desde la terminal
 
 ```
 docker compose up --build

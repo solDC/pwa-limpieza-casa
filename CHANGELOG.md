@@ -7,6 +7,10 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **Dev container** (`.devcontainer/devcontainer.json`), requisito de la clase. Construye el mismo `Dockerfile` que `docker-compose.yml`, así que solo hay una imagen que mantener y `docker compose up` sigue funcionando igual. No reutiliza el servicio de Compose directamente porque las versiones recientes de Docker Compose rechazan el Dockerfile temporal que genera la extensión Dev Containers (error «additional privileges requested»).
+- Vite escucha en todas las interfaces (`server.host` en `vite.config.ts`). Sin esto, dentro del dev container solo respondía al «localhost» del propio contenedor y la app no cargaba en el navegador del Mac.
+- `git` en la imagen de desarrollo, necesario para el control de versiones desde VS Code y Claude Code dentro del contenedor.
+- `docs/user-stories.md` con las historias de usuario del MVP y su prioridad (Must/Should), para acotar qué es imprescindible en la demo, y dos decisiones pendientes (datos de ejemplo e historial al borrar una tarea).
 - `CLAUDE.md` con el contexto del proyecto, la arquitectura y las reglas para la IA (convenciones, secretos, cómo mantener este changelog).
 - `CHANGELOG.md` para documentar los cambios y las decisiones importantes.
 - `.nvmrc` con la versión de Node, para quien desarrolle sin Docker.

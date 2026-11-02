@@ -4,6 +4,12 @@
 # así que los cambios se ven al momento sin reconstruir la imagen.
 FROM node:22-slim
 
+# git hace falta dentro del contenedor para usar el control de versiones
+# desde VS Code (dev container) y desde Claude Code.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Las dependencias se instalan dentro de la imagen, para Linux.
