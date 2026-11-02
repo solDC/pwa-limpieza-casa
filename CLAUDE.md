@@ -25,8 +25,9 @@ src/
 ├── domain/      Modelo de tareas, motor de frecuencias y progreso. TypeScript puro.
 ├── storage/     Acceso a Supabase. Única carpeta que importa @supabase/supabase-js.
 ├── demo/        Datos de ejemplo, separados de los datos reales.
-├── features/    Una carpeta por pantalla: home, tasks, history (y auth).
-└── ui/          Componentes visuales comunes.
+├── features/    Una carpeta por pantalla: home, tasks, history, auth. Cada una con sus
+│                componentes propios (SignInScreen.tsx…) y sus hooks (use-session.ts…).
+└── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
 
 tests/
 ├── unit/        Vitest. Lógica pura de src/domain/. Misma ruta que el código.
@@ -37,7 +38,8 @@ tests/
 ### Reglas de dependencias
 
 - `domain/` **no importa** React, Supabase, `storage/`, `features/` ni APIs del navegador. Recibe datos y devuelve datos. Así se prueba de forma aislada.
-- `features/` usa `domain/` para la lógica y `storage/` para leer y guardar. No llama a Supabase directamente.
+- `features/` usa `domain/` para la lógica, `storage/` para leer y guardar y `components/` para las piezas visuales comunes. No llama a Supabase directamente.
+- Un componente va en `components/` cuando lo usan **dos o más pantallas**; si solo lo usa una, se queda en su carpeta de `features/`.
 - `storage/` traduce entre las filas de la base de datos (`snake_case`) y los tipos de `domain/` (`camelCase`).
 
 ### Modelo de datos
@@ -66,7 +68,7 @@ tests/
 
 El detalle está en `tests/README.md`. Lo esencial:
 
-- **Una historia no está terminada sin pruebas automáticas** que cubran sus criterios de aceptación. Las historias están en `docs/user-stories.md` y cada una tiene su issue en GitHub (US-01 es el issue #2; US-n es el #n+1).
+- **Una historia no está terminada sin pruebas automáticas** que cubran sus criterios de aceptación. Las historias están en `docs/user-stories.md`, y su issue de GitHub está enlazado en la tabla de resumen de ese archivo.
 - **E2E:** un archivo por historia con su ID (`tests/e2e/us-01-sign-in.spec.ts`), una prueba por criterio de aceptación como mínimo, con el nombre en español.
 - **Unitarias:** toda la lógica de `src/domain/` lleva pruebas, en la misma ruta (`src/domain/frequency.ts` → `tests/unit/domain/frequency.test.ts`). Las fechas, con casos límite: fin de mes, años bisiestos, cambio de hora.
 - **Integración:** cada tabla nueva lleva una prueba de que un usuario **no** puede leer ni modificar los datos de otro hogar.

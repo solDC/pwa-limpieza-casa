@@ -7,6 +7,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-26 · Entrar con código desde la app instalada** (#29), en `docs/user-stories.md` y como issue, con prioridad Must: en iPhone, la app instalada no recibe la sesión del enlace del email porque iOS lo abre en Safari.
 - **US-01 · Entrar con enlace mágico** (#2). Pantalla para escribir el email; Supabase envía un enlace y al abrirlo se entra en la app. La sesión se guarda en el navegador y se mantiene al cerrar y volver a abrir la app. Si el enlace ha caducado o ya se usó, la app lo dice y deja pedir otro. Los errores (demasiados intentos, sin conexión) se explican en español.
 - **US-02 · Hogar creado automáticamente** (#3). Primera migración de la base de datos (`supabase/migrations/…_households.sql`): tablas `households` y `household_members`, con RLS para que cada usuario solo vea su hogar. Al registrarse, una función de la base de datos crea el hogar («Mi casa») y la pertenencia del usuario como propietario. Los hogares no se pueden crear ni borrar desde la app, solo leer y cambiar el nombre. La migración también crea el hogar de los usuarios que ya existieran.
 - Pantalla de Inicio provisional: muestra con qué email has entrado y tu hogar, hasta que llegue «Qué toca hoy» (US-16).
@@ -31,6 +32,8 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- `src/ui/` pasa a llamarse `src/components/`, el nombre habitual en proyectos React con Vite, para los componentes que comparten varias pantallas. Los de una sola pantalla siguen en su carpeta de `features/`.
+- Los issues de las historias se enlazan en la tabla de `docs/user-stories.md`, en lugar de deducir el número («US-n es el #n+1»), que dejó de cumplirse porque los pull requests también usan números de GitHub.
 - Scripts de pruebas separados: `npm test` (unitarias, sin dependencias), `npm run test:integration` (base de datos, necesita Supabase local) y `npm run test:e2e`. `npm run test:all` ejecuta todo.
 - **Las pruebas van en `tests/` y no junto al código**, como pide la estructura de proyecto del curso. Las unitarias reflejan la ruta del código (`src/domain/x.ts` → `tests/unit/domain/x.test.ts`).
 - **Flujo de trabajo con ramas por historia** (*GitHub Flow*): cada historia se desarrolla en una rama `feature/…` creada desde `main` y entra con un pull request. No hay rama `development`: Vercel ya crea una dirección de prueba para cada rama, y una rama intermedia compartiría la base de datos de producción.

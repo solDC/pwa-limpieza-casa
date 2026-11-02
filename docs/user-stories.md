@@ -2,6 +2,8 @@
 
 Formato: *As a [user type], I want [feature], so that [benefit].* Debajo de cada historia, los criterios de aceptación.
 
+Cada historia tiene su issue en GitHub, enlazado en la tabla de resumen. Al añadir una historia nueva, se crea su issue y se añade aquí el enlace.
+
 **Prioridad:**
 - **Must:** imprescindible para la demo.
 - **Should:** conviene tenerla, pero se puede recortar si falta tiempo.
@@ -35,6 +37,7 @@ Formato: *As a [user type], I want [feature], so that [benefit].* Debajo de cada
 | US-23 | Quitar el ejemplo | Should | [#24](https://github.com/solDC/pwa-limpieza-casa/issues/24) |
 | US-24 | Instalar la app | Should | [#25](https://github.com/solDC/pwa-limpieza-casa/issues/25) |
 | US-25 | Sin conexión | Must | [#26](https://github.com/solDC/pwa-limpieza-casa/issues/26) |
+| US-26 | Entrar con código desde la app instalada | Must | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
 
 ## Cuenta
 
@@ -56,6 +59,17 @@ so that I can start adding tasks right away.
 As a user,
 I want to sign out,
 so that nobody else can see my household on a shared device.
+
+### US-26 · Entrar con código desde la app instalada (Must)
+As a user with the app installed on my iPhone,
+I want to sign in by typing the code from the email,
+so that I can sign in inside the installed app, where the email link doesn't work.
+- El email trae el enlace y también un código de 6 dígitos.
+- En la pantalla «Revisa tu correo» puedo escribir el código y entrar sin salir de la app.
+- El enlace sigue funcionando igual que antes: no hace falta escribir el código.
+- Si el código es incorrecto o ha caducado, la app lo dice y deja intentarlo de nuevo o pedir otro email.
+
+*Por qué:* en iOS, una app instalada en la pantalla de inicio guarda su sesión aparte de Safari, y el enlace del email se abre en Safari. El código es una alternativa al enlace, no un paso más.
 
 ## Tareas
 

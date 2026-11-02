@@ -84,7 +84,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 │   │   ├── home/           Pantalla de Inicio
 │   │   ├── tasks/          Lista, detalle y edición de tareas
 │   │   └── history/        Registro de lo hecho
-│   ├── ui/                 Componentes visuales comunes
+│   ├── components/         Componentes visuales comunes a varias pantallas
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── styles.css
