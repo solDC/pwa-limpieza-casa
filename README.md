@@ -249,15 +249,29 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
 
 ### Cada vez que haya una migración nueva
 
-Cuando se fusione un pull request que añade archivos en `supabase/migrations/`, aplícalos a la base de datos de la nube:
+Cuando un pull request añade archivos en `supabase/migrations/`, hay que aplicarlos a la base de datos de la nube **desde la rama de ese pull request y antes de fusionarlo**, para que su despliegue de prueba ya funcione:
 
-```
-npx supabase db push --remote
-```
+1. Cámbiate a la rama del pull request (por ejemplo, `feature/us-01-sign-in`) e instala las dependencias por si han cambiado:
+
+   ```
+   git fetch
+   git switch feature/us-01-sign-in
+   npm install
+   ```
+
+   Si VS Code pide reconstruir el dev container, acepta: la rama ha cambiado su configuración.
+
+2. Aplica las migraciones. La CLI las lista y pide confirmación (responde `Y`):
+
+   ```
+   npx supabase db push --remote
+   ```
 
 Sin `--remote`, la CLI intenta aplicarlas al Supabase local (y falla si no está arrancado). Los comandos de Supabase siempre van con `npx` delante: la CLI está instalada en el proyecto, no en el sistema.
 
-Hazlo **antes** de que Vercel publique la versión nueva, o justo después: si la app nueva usa una tabla que aún no existe en la nube, fallará hasta que la apliques.
+Si responde «Remote database is up to date» sin listar nada, probablemente estás en otra rama (por ejemplo, `main`), donde esa migración aún no existe.
+
+Si la app nueva usa una tabla que aún no existe en la nube, fallará hasta que se aplique la migración.
 
 ### Instalarla como app
 
