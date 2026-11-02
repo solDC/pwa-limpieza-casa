@@ -252,8 +252,10 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
 Cuando se fusione un pull request que añade archivos en `supabase/migrations/`, aplícalos a la base de datos de la nube:
 
 ```
-npx supabase db push
+npx supabase db push --remote
 ```
+
+Sin `--remote`, la CLI intenta aplicarlas al Supabase local (y falla si no está arrancado). Los comandos de Supabase siempre van con `npx` delante: la CLI está instalada en el proyecto, no en el sistema.
 
 Hazlo **antes** de que Vercel publique la versión nueva, o justo después: si la app nueva usa una tabla que aún no existe en la nube, fallará hasta que la apliques.
 

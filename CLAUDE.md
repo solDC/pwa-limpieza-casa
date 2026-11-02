@@ -54,7 +54,7 @@ tests/
 - **Una migración ya fusionada en `main` no se edita:** se corrige con otra nueva.
 - Cada migración que crea tablas incluye su RLS, sus políticas y los permisos de cada rol (`anon`, `authenticated`) en el mismo archivo, con comentarios en español.
 - Las funciones `security definer` llevan `set search_path = ''` y nombres de tabla con esquema (`public.households`).
-- En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
+- En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push --remote` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
 
 ## Convenciones
 
