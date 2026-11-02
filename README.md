@@ -247,6 +247,8 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
 
    El id del proyecto es la parte de la URL de Supabase: `https://<id-del-proyecto>.supabase.co`.
 
+   La sesión de `npx supabase login` se guarda dentro del dev container: **si lo reconstruyes, hay que volver a hacer `npx supabase login`**. Si no, la CLI responde «Access token not provided». El enlace con el proyecto (`link`) sí se conserva.
+
 ### Cada vez que haya una migración nueva
 
 Cuando un pull request añade archivos en `supabase/migrations/`, hay que aplicarlos a la base de datos de la nube **desde la rama de ese pull request y antes de fusionarlo**, para que su despliegue de prueba ya funcione:
