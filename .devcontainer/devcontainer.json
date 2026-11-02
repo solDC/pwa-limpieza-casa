@@ -20,9 +20,20 @@
   // npm install (no npm ci): npm ci intenta borrar la carpeta del volumen y falla.
   "postCreateCommand": "npm install",
 
-  "forwardPorts": [5173],
+  // Docker dentro del dev container, para arrancar Supabase en local (npx supabase start).
+  // Así Supabase corre en el mismo sitio que la app y las pruebas, y sus puertos
+  // se ven igual desde el contenedor y desde el navegador de tu Mac.
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "forwardPorts": [5173, 4173, 54321, 54323, 54324],
   "portsAttributes": {
-    "5173": { "label": "Vite", "onAutoForward": "openBrowser" }
+    "5173": { "label": "Vite", "onAutoForward": "openBrowser" },
+    "4173": { "label": "Vite (versión compilada, pruebas e2e)", "onAutoForward": "silent" },
+    "54321": { "label": "Supabase API", "onAutoForward": "silent" },
+    "54323": { "label": "Supabase Studio", "onAutoForward": "silent" },
+    "54324": { "label": "Buzón de pruebas (Mailpit)", "onAutoForward": "silent" }
   },
 
   "customizations": {

@@ -12,7 +12,7 @@ jobs:
   test:
     name: Pruebas y compilación
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -24,8 +24,28 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Pruebas unitarias y de integración (Vitest)
+      - name: Pruebas unitarias (Vitest)
         run: npm test
+
+      # Supabase en local, con los mismos servicios que en desarrollo: base de datos con las
+      # migraciones de supabase/migrations, autenticación, API y el buzón de pruebas (Mailpit).
+      - name: Arrancar Supabase en local
+        run: npx supabase start -x studio,imgproxy,vector,logflare,edge-runtime,supavisor,realtime,storage-api,postgres-meta
+
+      # Las claves locales de Supabase son de demostración (iguales para todo el mundo) y solo
+      # sirven para este Supabase de pruebas. Se pasan a los pasos siguientes como variables.
+      - name: Configurar la app contra el Supabase local
+        run: |
+          npx supabase status -o env \
+            | grep -E '^(API_URL|ANON_KEY)=' \
+            | sed -E 's/^API_URL=/VITE_SUPABASE_URL=/; s/^ANON_KEY=/VITE_SUPABASE_ANON_KEY=/; s/="(.*)"$/=\1/' \
+            >> "$GITHUB_ENV"
+
+      - name: Comprobar que la configuración ha llegado
+        run: test -n "$VITE_SUPABASE_URL" && test -n "$VITE_SUPABASE_ANON_KEY"
+
+      - name: Pruebas de integración con la base de datos (Vitest)
+        run: npm run test:integration
 
       - name: Comprobar tipos y compilar
         run: npm run build
