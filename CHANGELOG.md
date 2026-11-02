@@ -44,6 +44,9 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - Nombres técnicos en inglés, siguiendo la convención del proyecto: `src/features/inicio`, `tareas` e `historial` pasan a `home`, `tasks` y `history`, y las variables CSS (`--color-fondo` → `--color-background`, etc.). La documentación y los textos de la app siguen en español.
 - `.gitignore`: `.env.example` ya no se ignora (la regla `.env.*` lo incluía) y se añaden `Thumbs.db` y los temporales de la CLI de Supabase.
 
+### Fixed
+- **El enlace mágico llevaba a producción en lugar de al despliegue de prueba.** La app pedía volver a su dirección sin barra final (`https://dominio`), que no encaja con las Redirect URLs de Supabase (`https://dominio/**`), y Supabase mandaba a la Site URL sin avisar. Ahora pide volver a `https://dominio/`. En local no se notaba porque Supabase siempre acepta `localhost`; una prueba e2e comprueba ahora la dirección de vuelta del enlace, y el Supabase local usa el mismo formato de Redirect URLs que producción.
+
 ### Removed
 - `nginx.conf` y la etapa de nginx del Dockerfile: Vercel sirve la app en producción y ya no hace falta.
 

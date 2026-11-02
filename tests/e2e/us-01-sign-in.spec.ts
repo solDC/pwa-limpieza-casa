@@ -37,6 +37,23 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
     await expect(reopened.getByLabel('Email')).toHaveCount(0)
   })
 
+  // Regresión: Supabase solo deja volver a direcciones de su lista (Redirect URLs), que
+  // tienen la forma «https://dominio/**». Una dirección sin barra final («https://dominio»)
+  // no encaja, y Supabase manda al usuario a la Site URL (producción) sin avisar.
+  // En local no se nota porque localhost siempre se acepta: por eso se comprueba el enlace.
+  test('el enlace vuelve a la misma dirección de la app, con la barra final', async ({
+    page,
+    baseURL,
+  }) => {
+    const email = uniqueEmail()
+    await page.goto('/')
+    await page.getByLabel('Email').fill(email)
+    await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+
+    const link = new URL(await waitForMagicLink(email))
+    expect(link.searchParams.get('redirect_to')).toBe(new URL('/', baseURL).href)
+  })
+
   test('sin sesión, la app pide el email', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()

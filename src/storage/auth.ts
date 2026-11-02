@@ -20,7 +20,9 @@ export async function sendMagicLink(email: string): Promise<void> {
     options: {
       shouldCreateUser: true,
       // Al abrir el enlace, vuelve a la misma dirección desde la que se pidió.
-      emailRedirectTo: window.location.origin,
+      // Con la barra final: las Redirect URLs de Supabase tienen la forma «https://dominio/**»
+      // y «https://dominio» (sin barra) no encaja; Supabase mandaría a la Site URL (producción).
+      emailRedirectTo: `${window.location.origin}/`,
     },
   })
   if (error) throw new Error(describeAuthError(error))
