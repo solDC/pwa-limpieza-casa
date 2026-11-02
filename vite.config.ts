@@ -38,7 +38,10 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  // Vitest: pruebas unitarias (tests/unit) y de integración (tests/integration).
+  // Las de extremo a extremo (tests/e2e) son de Playwright y no pasan por aquí.
   test: {
     environment: 'node',
+    include: ['tests/unit/**/*.test.{ts,tsx}', 'tests/integration/**/*.test.{ts,tsx}'],
   },
 })

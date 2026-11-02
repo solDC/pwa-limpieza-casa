@@ -8,33 +8,33 @@ Formato: *As a [user type], I want [feature], so that [benefit].* Debajo de cada
 
 ## Resumen
 
-| ID | Historia | Prioridad |
-|---|---|---|
-| US-01 | Entrar con enlace mágico | Must |
-| US-02 | Hogar creado automáticamente | Must |
-| US-03 | Cerrar sesión | Should |
-| US-04 | Crear una tarea | Must |
-| US-05 | Dividir una tarea en partes | Must |
-| US-06 | Editar una tarea | Must |
-| US-07 | Borrar una tarea | Should |
-| US-08 | Ver todas mis tareas | Must |
-| US-09 | Frecuencia por calendario | Must |
-| US-10 | Frecuencia por intervalo | Must |
-| US-11 | Tarea puntual | Should |
-| US-12 | Marcar una tarea entera | Must |
-| US-13 | Marcar una parte | Must |
-| US-14 | Elegir cuándo lo hice | Must |
-| US-15 | Deshacer | Must |
-| US-16 | Qué toca hoy | Must |
-| US-17 | Qué se ha retrasado | Must |
-| US-18 | Qué está a medias | Must |
-| US-19 | Pantalla vacía | Should |
-| US-20 | Ver lo que he hecho | Must |
-| US-21 | Historial de una tarea | Should |
-| US-22 | Cargar el ejemplo | Should |
-| US-23 | Quitar el ejemplo | Should |
-| US-24 | Instalar la app | Should |
-| US-25 | Sin conexión | Must |
+| ID | Historia | Prioridad | Issue |
+|---|---|---|---|
+| US-01 | Entrar con enlace mágico | Must | [#2](https://github.com/solDC/pwa-limpieza-casa/issues/2) |
+| US-02 | Hogar creado automáticamente | Must | [#3](https://github.com/solDC/pwa-limpieza-casa/issues/3) |
+| US-03 | Cerrar sesión | Should | [#4](https://github.com/solDC/pwa-limpieza-casa/issues/4) |
+| US-04 | Crear una tarea | Must | [#5](https://github.com/solDC/pwa-limpieza-casa/issues/5) |
+| US-05 | Dividir una tarea en partes | Must | [#6](https://github.com/solDC/pwa-limpieza-casa/issues/6) |
+| US-06 | Editar una tarea | Must | [#7](https://github.com/solDC/pwa-limpieza-casa/issues/7) |
+| US-07 | Borrar una tarea | Should | [#8](https://github.com/solDC/pwa-limpieza-casa/issues/8) |
+| US-08 | Ver todas mis tareas | Must | [#9](https://github.com/solDC/pwa-limpieza-casa/issues/9) |
+| US-09 | Frecuencia por calendario | Must | [#10](https://github.com/solDC/pwa-limpieza-casa/issues/10) |
+| US-10 | Frecuencia por intervalo | Must | [#11](https://github.com/solDC/pwa-limpieza-casa/issues/11) |
+| US-11 | Tarea puntual | Should | [#12](https://github.com/solDC/pwa-limpieza-casa/issues/12) |
+| US-12 | Marcar una tarea entera | Must | [#13](https://github.com/solDC/pwa-limpieza-casa/issues/13) |
+| US-13 | Marcar una parte | Must | [#14](https://github.com/solDC/pwa-limpieza-casa/issues/14) |
+| US-14 | Elegir cuándo lo hice | Must | [#15](https://github.com/solDC/pwa-limpieza-casa/issues/15) |
+| US-15 | Deshacer | Must | [#16](https://github.com/solDC/pwa-limpieza-casa/issues/16) |
+| US-16 | Qué toca hoy | Must | [#17](https://github.com/solDC/pwa-limpieza-casa/issues/17) |
+| US-17 | Qué se ha retrasado | Must | [#18](https://github.com/solDC/pwa-limpieza-casa/issues/18) |
+| US-18 | Qué está a medias | Must | [#19](https://github.com/solDC/pwa-limpieza-casa/issues/19) |
+| US-19 | Pantalla vacía | Should | [#20](https://github.com/solDC/pwa-limpieza-casa/issues/20) |
+| US-20 | Ver lo que he hecho | Must | [#21](https://github.com/solDC/pwa-limpieza-casa/issues/21) |
+| US-21 | Historial de una tarea | Should | [#22](https://github.com/solDC/pwa-limpieza-casa/issues/22) |
+| US-22 | Cargar el ejemplo | Should | [#23](https://github.com/solDC/pwa-limpieza-casa/issues/23) |
+| US-23 | Quitar el ejemplo | Should | [#24](https://github.com/solDC/pwa-limpieza-casa/issues/24) |
+| US-24 | Instalar la app | Should | [#25](https://github.com/solDC/pwa-limpieza-casa/issues/25) |
+| US-25 | Sin conexión | Must | [#26](https://github.com/solDC/pwa-limpieza-casa/issues/26) |
 
 ## Cuenta
 

@@ -55,7 +55,9 @@ Cada tarea puede tener **partes**, aunque no es obligatorio. Las partes pueden s
 | PWA | vite-plugin-pwa | Genera el manifiesto y el service worker para poder instalarla |
 | Datos | Supabase (PostgreSQL) | Base de datos en la nube, con reglas de seguridad por usuario (Row Level Security) |
 | Usuarios | Supabase Auth | Inicio de sesión con enlace mágico, sin contraseñas que gestionar |
-| Pruebas | Vitest | Para el motor de frecuencias y el progreso |
+| Pruebas | Vitest | Pruebas unitarias del motor de frecuencias y el progreso, y de la base de datos |
+| Pruebas en navegador | Playwright | Comprueban cada historia de usuario usando la app como una persona |
+| Integración continua | GitHub Actions | Pasa todas las pruebas en cada pull request, para detectar regresiones |
 | Despliegue | Vercel | Publica la app con HTTPS, necesario para instalarla en el móvil |
 | Desarrollo | Dev container + Docker | El mismo entorno (versión de Node) para todos y que en producción |
 
@@ -68,6 +70,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 ```
 .
 ├── .devcontainer/          Dev container para VS Code (usa el mismo Dockerfile)
+├── .github/workflows/      Integración continua: pruebas en cada pull request
 ├── docs/                   Historias de usuario del MVP
 ├── public/                 Iconos y favicon de la PWA
 ├── src/
@@ -82,8 +85,13 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── styles.css
+├── tests/                  Pruebas automáticas (ver tests/README.md)
+│   ├── unit/               Lógica pura (Vitest)
+│   ├── integration/        Base de datos y reglas de seguridad (Vitest)
+│   └── e2e/                La app en un navegador, una prueba por historia (Playwright)
 ├── index.html
-├── vite.config.ts          Configuración de Vite, de la PWA y de las pruebas
+├── vite.config.ts          Configuración de Vite, de la PWA y de Vitest
+├── playwright.config.ts    Configuración de las pruebas en navegador
 ├── .env.example            Variables de entorno necesarias, sin valores reales
 ├── Dockerfile              Entorno de desarrollo (Node 22, como Vercel)
 ├── docker-compose.yml      Arranca el entorno de desarrollo
@@ -116,6 +124,7 @@ La terminal de VS Code ya está dentro del contenedor, así que los comandos se 
 
 ```
 npm test
+npm run test:e2e
 npm run build
 npm install nombre-del-paquete
 ```
@@ -136,6 +145,10 @@ Con el entorno arrancado, desde otra terminal:
 
 ```
 docker compose exec app npm test
+```
+
+```
+docker compose exec app npm run test:e2e
 ```
 
 ```
@@ -167,6 +180,13 @@ Abre http://localhost:5173.
 npm test
 ```
 
+Para las pruebas en navegador, la primera vez hay que descargar Chromium (en Docker y en el dev container ya viene instalado):
+
+```
+npx playwright install chromium
+npm run test:e2e
+```
+
 ### Variables de entorno
 
 Cuando la app use Supabase, antes de arrancar habrá que copiar `.env.example` como `.env` y rellenar los valores del proyecto de Supabase. Sirve igual con Docker y sin él.
@@ -182,5 +202,7 @@ El service worker, que es lo que permite instalarla, solo funciona en `localhost
 - Lee `CLAUDE.md`: tiene la arquitectura, las convenciones y lo que no se debe hacer nunca.
 - Commits con [Conventional Commits](https://www.conventionalcommits.org/): tipo en inglés y descripción en español (`feat: marcar una parte como hecha`).
 - Cada cambio que afecte a alguien se apunta en `CHANGELOG.md`, en el mismo commit, explicando qué y por qué.
-- Antes de subir un cambio: `npm test` y `npm run build` deben pasar.
+- Cada historia de usuario tiene su issue en GitHub y se desarrolla en su propia rama (`feature/…`), con un pull request a `main`.
+- Una historia no está terminada sin pruebas automáticas que cubran sus criterios de aceptación (ver `tests/README.md`).
+- Antes de subir un cambio: `npm test`, `npm run build` y `npm run test:e2e` deben pasar. La CI de GitHub lo comprueba en cada pull request.
 - Nunca subas `.env` ni claves reales.

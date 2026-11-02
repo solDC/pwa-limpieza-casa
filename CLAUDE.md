@@ -27,6 +27,11 @@ src/
 ├── demo/        Datos de ejemplo, separados de los datos reales.
 ├── features/    Una carpeta por pantalla: home, tasks, history (y auth).
 └── ui/          Componentes visuales comunes.
+
+tests/
+├── unit/        Vitest. Lógica pura de src/domain/. Misma ruta que el código.
+├── integration/ Vitest. Base de datos: tablas y reglas RLS, contra Supabase local.
+└── e2e/         Playwright. La app en un navegador: criterios de aceptación de cada historia.
 ```
 
 ### Reglas de dependencias
@@ -47,8 +52,19 @@ src/
 
 - **Nombres técnicos en inglés:** carpetas, archivos, variables, funciones, tipos, tablas, columnas y variables CSS. Carpetas y archivos que no son componentes, en `kebab-case` (`task-form`, `api-client`). Componentes React en `PascalCase.tsx`.
 - **En español:** la documentación (README, CHANGELOG, este archivo), los comentarios y todos los textos que ve el usuario.
-- **Pruebas:** junto al código, con el mismo nombre y `.test.ts` (`domain/frequency.ts` → `domain/frequency.test.ts`). Toda la lógica de `domain/` lleva pruebas.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) con el tipo en inglés y la descripción en español: `feat: marcar una parte como hecha`, `fix: …`, `docs: …`, `refactor: …`, `chore: …`, `test: …`.
+
+## Pruebas
+
+El detalle está en `tests/README.md`. Lo esencial:
+
+- **Una historia no está terminada sin pruebas automáticas** que cubran sus criterios de aceptación. Las historias están en `docs/user-stories.md` y cada una tiene su issue en GitHub (US-01 es el issue #2; US-n es el #n+1).
+- **E2E:** un archivo por historia con su ID (`tests/e2e/us-01-sign-in.spec.ts`), una prueba por criterio de aceptación como mínimo, con el nombre en español.
+- **Unitarias:** toda la lógica de `src/domain/` lleva pruebas, en la misma ruta (`src/domain/frequency.ts` → `tests/unit/domain/frequency.test.ts`). Las fechas, con casos límite: fin de mes, años bisiestos, cambio de hora.
+- **Integración:** cada tabla nueva lleva una prueba de que un usuario **no** puede leer ni modificar los datos de otro hogar.
+- **Fallos:** primero la prueba que reproduce el fallo, luego el arreglo.
+- Las pruebas e2e se ejecutan contra la versión compilada (`npm run preview`, puerto 4173), no contra el servidor de desarrollo.
+- La CI (`.github/workflows/ci.yml`) lo ejecuta todo en cada pull request. Un pull request en rojo no se fusiona.
 
 ## Comandos
 
@@ -58,7 +74,8 @@ Desde fuera del contenedor, con Docker:
 
 ```
 docker compose up --build              # arranca Vite en http://localhost:5173
-docker compose exec app npm test       # pruebas (Vitest)
+docker compose exec app npm test       # pruebas unitarias y de integración (Vitest)
+docker compose exec app npm run test:e2e  # pruebas en navegador (Playwright)
 docker compose exec app npm run build  # comprobación de tipos + compilación
 docker compose exec app npm install X  # añadir una dependencia
 docker compose up --build -V           # tras cambiar dependencias
@@ -71,7 +88,9 @@ Sin Docker, los mismos scripts con `npm` directamente (`npm run dev`, `npm test`
 - El dev container y `docker compose up` usan el puerto 5173: no los arranques a la vez.
 - Si cambias `docker-compose.yml` o el `Dockerfile`, comprueba que siguen funcionando las dos formas de arrancar.
 
-Antes de dar un cambio por terminado: las pruebas y la compilación deben pasar.
+- Playwright está fijado a una versión exacta en `package.json` porque su navegador va dentro de la imagen de Docker: si se actualiza, hay que reconstruir la imagen (o el dev container).
+
+Antes de dar un cambio por terminado: `npm test`, `npm run build` y `npm run test:e2e` deben pasar.
 
 ## Secretos y variables de entorno
 

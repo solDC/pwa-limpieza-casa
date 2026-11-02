@@ -30,3 +30,8 @@ Thumbs.db
 # Supabase local (generado por la CLI)
 supabase/.temp/
 supabase/.branches/
+
+# Resultados de las pruebas de Playwright
+playwright-report/
+test-results/
+blob-report/
