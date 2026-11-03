@@ -27,17 +27,17 @@ function wrongCodeFor(code: string): string {
 }
 
 // Supabase solo deja enviar un email por segundo a cada dirección en local
-// (en la nube, uno por minuto). Las pruebas que piden dos emails esperan entre uno y otro.
+// (en la nube, uno por minuto). La prueba que pide dos emails espera entre uno y otro.
 async function waitBeforeNextEmail(page: Page) {
   await page.waitForTimeout(1_100)
 }
 
 // Simula que Supabase ha enviado el email, sin enviarlo: para las pruebas que no lo leen.
-async function requestEmailWithoutSending(page: Page) {
+async function requestEmailWithoutSending(page: Page, email = uniqueEmail()) {
   await page.route('**/auth/v1/otp*', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
   )
-  await requestEmail(page, uniqueEmail())
+  await requestEmail(page, email)
 }
 
 test.describe('US-26 · Entrar con código desde la app instalada', () => {
@@ -101,12 +101,11 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await enterCode(page, first.code)
     await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
 
-    // Otro dispositivo, sin sesión, intenta entrar con el mismo código.
+    // Otro dispositivo, sin sesión, intenta entrar con el mismo código. No pide un email
+    // de verdad: uno nuevo sustituiría al código y no se probaría que ya está usado.
     const otherDevice = await browser.newContext({ baseURL })
     const otherPage = await otherDevice.newPage()
-    await waitBeforeNextEmail(page)
-    await requestEmail(otherPage, email)
-    await waitForSignInEmail(email, { after: first })
+    await requestEmailWithoutSending(otherPage, email)
     await enterCode(otherPage, first.code)
 
     await expect(otherPage.getByRole('alert')).toHaveText(wrongCodeError)
@@ -188,11 +187,17 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await enterCode(page, '123456')
 
     await expect(page.getByRole('button', { name: 'Comprobando…' })).toBeDisabled()
+    await expect(page.getByLabel('Código del email')).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Usar otro email' })).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Enviarme otro email' })).toBeDisabled()
 
     answerVerify()
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
     await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
+    // Tras la respuesta, todo vuelve a estar disponible.
+    await expect(page.getByRole('button', { name: 'Entrar con el código' })).toBeEnabled()
+    await expect(page.getByLabel('Código del email')).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Usar otro email' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Enviarme otro email' })).toBeEnabled()
   })
 })
