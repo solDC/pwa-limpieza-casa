@@ -32,7 +32,6 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
-- **Skills de Claude Code en `.claude/skills/`**, enlazadas desde `CLAUDE.md`: `start-story` (implementar una historia de principio a fin), `db-migration` (migración con RLS y su prueba de aislamiento entre hogares), `domain-logic` (lógica pura de fechas y frecuencias con sus casos límite) y `open-pr` (comprobaciones y descripción del pull request con «Cómo probarlo a mano»). Recogen en un solo sitio los pasos que se repiten en cada historia, para que la IA no se salte ninguno (la RLS, el aviso de migración, el CHANGELOG) y no haya que recordárselo cada vez.
 - `src/ui/` pasa a llamarse `src/components/`, el nombre habitual en proyectos React con Vite, para los componentes que comparten varias pantallas. Los de una sola pantalla siguen en su carpeta de `features/`.
 - Los issues de las historias se enlazan en la tabla de `docs/user-stories.md`, en lugar de deducir el número («US-n es el #n+1»), que dejó de cumplirse porque los pull requests también usan números de GitHub.
 - Scripts de pruebas separados: `npm test` (unitarias, sin dependencias), `npm run test:integration` (base de datos, necesita Supabase local) y `npm run test:e2e`. `npm run test:all` ejecuta todo.

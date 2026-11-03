@@ -69,7 +69,6 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 
 ```
 .
-├── .claude/skills/         Guías paso a paso para Claude Code (historias, migraciones, PR)
 ├── .devcontainer/          Dev container para VS Code (usa el mismo Dockerfile)
 ├── .github/workflows/      Integración continua: pruebas en cada pull request
 ├── docs/                   Historias de usuario del MVP

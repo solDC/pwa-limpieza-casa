@@ -80,19 +80,6 @@ El detalle está en `tests/README.md`. Lo esencial:
 
 Además de las automáticas, Sol prueba cada historia a mano en el despliegue de prueba de Vercel del pull request (sobre todo en el móvil) antes de fusionarlo. Por eso **cada pull request de una historia incluye una sección «Cómo probarlo a mano»**, con pasos concretos y numerados, y qué debería verse en cada uno. Si encuentra un fallo, primero la prueba automática que lo reproduce y luego el arreglo.
 
-## Skills del proyecto
-
-En `.claude/skills/` hay guías paso a paso para las tareas que se repiten. **Cárgala con la herramienta Skill antes de empezar** cuando el trabajo encaje con su descripción; varias pueden encadenarse.
-
-| Skill | Cuándo usarla |
-|---|---|
-| `start-story` | Al implementar una historia de `docs/user-stories.md` («haz la US-04»). Lleva de la historia y su issue a la rama, las pruebas e2e por criterio, el código por capas y la documentación. Llama a las demás cuando hace falta. |
-| `db-migration` | Siempre que un cambio toque la base de datos: tabla, columna, política, función o trigger. Migración nueva con RLS, permisos y la prueba de integración de aislamiento entre hogares. |
-| `domain-logic` | Al escribir lógica en `src/domain/`: fechas `'YYYY-MM-DD'`, frecuencias, próxima fecha, retraso, rondas y progreso. Incluye los casos límite de fechas que deben probarse. |
-| `open-pr` | Al terminar un cambio, o cuando pidan revisar si está listo o abrir el pull request. Comprobaciones, revisión del diff y descripción con «Cómo probarlo a mano» y el aviso de migraciones. |
-
-Si cambia una regla de este archivo que repite una skill (por ejemplo, la estructura de carpetas o las convenciones de pruebas), actualiza también la skill.
-
 ## Comandos
 
 El entorno de desarrollo es el **dev container** (`.devcontainer/`), que construye el mismo `Dockerfile` que `docker-compose.yml` (Node 22, la misma versión que Vercel). No usa Compose porque las versiones recientes rechazan el Dockerfile temporal que genera la extensión de VS Code. Dentro del dev container los comandos son los de `npm` directamente: `npm run dev`, `npm test`, `npm run build`, `npm install X`.
