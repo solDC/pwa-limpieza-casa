@@ -69,6 +69,25 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
     await expect(page.getByLabel('Email')).toBeVisible()
     expect(page.url()).not.toContain('error')
   })
+
+  // Regresión: supabase-js marca los errores 5xx del servidor igual que un fallo de red,
+  // y la app pedía revisar la conexión cuando el problema era de Supabase.
+  test('si Supabase falla al enviar el enlace, la app no culpa a la conexión', async ({ page }) => {
+    await page.route('**/auth/v1/otp*', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 500, error_code: 'unexpected_failure', msg: 'Error' }),
+      }),
+    )
+    await page.goto('/')
+    await page.getByLabel('Email').fill(uniqueEmail())
+    await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+
+    await expect(page.getByRole('alert')).toHaveText(
+      'No se ha podido enviar el enlace. Inténtalo de nuevo.',
+    )
+  })
 })
 
 test.describe('US-02 · Hogar creado automáticamente', () => {
