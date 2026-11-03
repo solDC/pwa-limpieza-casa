@@ -9,7 +9,7 @@ Escribe las pruebas que necesita un cambio, en el nivel adecuado y con las conve
 
 ## 1. Decide qué niveles hacen falta
 
-Mira qué ha cambiado (`git diff main...HEAD --stat` y los archivos sin confirmar) y elige:
+Mira qué ha cambiado (`git diff origin/main...HEAD --stat` y los archivos sin confirmar) y elige:
 
 | Si cambia… | Nivel | Dónde |
 |---|---|---|

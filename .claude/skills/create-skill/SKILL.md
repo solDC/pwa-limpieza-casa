@@ -54,7 +54,7 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    - Nunca incluyas claves, tokens ni datos reales.
    Si es un **agente**, crea en su lugar `.claude/agents/<nombre>.md`: el mismo frontmatter (`name`, `description`) más `tools` con solo las herramientas que necesita (un revisor: `Read, Grep, Glob, Bash`, sin `Edit` ni `Write`). El cuerpo es su prompt de sistema: qué revisa, en qué orden y cómo informa (hallazgos por gravedad, con `archivo:línea` y la regla de `CLAUDE.md` que incumple).
 3. **Revisa** la skill o el agente contra el código: que las rutas, scripts de `package.json` y comandos existen de verdad.
-4. **CHANGELOG:** añade una entrada en `## [Unreleased]` → `### Added` explicando qué hace la skill y por qué es útil, en el mismo commit.
+4. **CHANGELOG:** añade una entrada en `## [Unreleased]` → `### Changed` (los commits son `chore:`; la más nueva arriba) explicando qué hace la skill y por qué es útil, en el mismo commit.
 5. **Commit** con Conventional Commits: `chore: skill <nombre> para …`.
 6. **Explica a Sol** cómo usarla (`/<nombre>` o pidiéndolo con palabras) y sugiere la siguiente candidata de la lista.
 
