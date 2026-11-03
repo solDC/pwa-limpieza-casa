@@ -45,6 +45,11 @@ h2 {
   color: var(--color-error);
 }
 
+/* Aviso de que algo ha ido bien (por ejemplo, «Te hemos enviado otro email»). */
+.notice {
+  color: var(--color-accent);
+}
+
 .card {
   display: flex;
   flex-direction: column;

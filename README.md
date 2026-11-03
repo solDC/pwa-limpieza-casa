@@ -243,6 +243,8 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
    Si cambias ese archivo, vuelve a pegarlo en las dos plantillas: la nube no lo lee del repo.
+
+   Comprueba también, en la configuración del proveedor **Email** (Authentication → Sign In / Providers → Email), que el código tiene **6 dígitos** (*Email OTP Length*) y caduca en **3600 segundos** (*Email OTP Expiration*), como en local (`supabase/config.toml`): el email dice que caduca en una hora. En la nube, Supabase deja además un tiempo mínimo entre dos emails a la misma dirección (60 segundos por defecto; en local, 1 segundo): si se pide otro antes, la app avisa de que se han pedido demasiados seguidos.
 4. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
 
    ```

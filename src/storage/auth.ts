@@ -1,4 +1,4 @@
-import { AuthApiError, type Session as SupabaseSession } from '@supabase/supabase-js'
+import { AuthApiError, AuthError, type Session as SupabaseSession } from '@supabase/supabase-js'
 import { getSupabase } from './supabase-client'
 
 // Inicio de sesión con enlace mágico (US-01).
@@ -61,6 +61,9 @@ export function takeSignInErrorFromUrl(): string | null {
 }
 
 function describeCodeError(error: Error): string {
+  if (isServerError(error)) {
+    return 'Algo ha fallado al comprobar el código. Inténtalo de nuevo en un momento.'
+  }
   if (isNetworkError(error)) {
     return 'No se ha podido comprobar el código. Comprueba tu conexión a internet.'
   }
@@ -70,7 +73,14 @@ function describeCodeError(error: Error): string {
   return 'El código no es correcto o ha caducado. Revísalo o pide otro email.'
 }
 
+// supabase-js marca igual los fallos de red y los errores del servidor (5xx): los dos son
+// «AuthRetryableFetchError». Los distingue el estado: 0 si no hubo respuesta, 5xx si la hubo.
+function isServerError(error: Error): boolean {
+  return error instanceof AuthError && (error.status ?? 0) >= 500
+}
+
 function isNetworkError(error: Error): boolean {
+  if (isServerError(error)) return false
   return error.name === 'AuthRetryableFetchError' || error.message === 'Failed to fetch'
 }
 
