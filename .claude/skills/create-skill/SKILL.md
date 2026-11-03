@@ -14,28 +14,32 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    - `README.md`, `tests/README.md`, `docs/user-stories.md` (historias pendientes y su issue).
    - `CHANGELOG.md` y `git log --oneline -30`: qué trabajo se repite.
    - `.github/workflows/ci.yml`, `supabase/migrations/`, `tests/`, `src/`.
-2. **Mira qué skills existen ya** en `.claude/skills/` para no duplicarlas. Si una existente casi cubre la necesidad, propón mejorarla en lugar de crear otra.
+2. **Mira qué skills existen ya** y qué agentes, en `.claude/skills/` y `.claude/agents/`, para no duplicarlos. Si una existente casi cubre la necesidad, propón mejorarla en lugar de crear otra.
 3. **Busca flujos repetibles.** Una buena skill cumple al menos una de estas condiciones:
    - Es un proceso de varios pasos que se repite (cada historia, cada migración, cada pull request).
    - Tiene reglas fáciles de olvidar que están en `CLAUDE.md` (RLS, CHANGELOG en el mismo commit, fechas sin hora, nombres en inglés y textos en español).
    - Necesita comandos concretos del proyecto (`npx supabase …`, `npm run test:e2e` contra `preview`).
    - No conviene si es una tarea puntual o si basta con una línea en `CLAUDE.md`.
-4. **Presenta de 3 a 6 candidatas** en una tabla, ordenadas por utilidad, con: nombre (`kebab-case`, en inglés), para qué sirve, cuándo se activaría y qué regla del proyecto protege. Usa como punto de partida este catálogo, ajustándolo a lo que encuentres:
+4. **Distingue skill de agente:**
+   - **Skill** (`.claude/skills/<nombre>/SKILL.md`): una receta de pasos que Claude sigue en la conversación actual, con todo su contexto. Sirve para **hacer** trabajo de forma repetible.
+   - **Agente** (`.claude/agents/<nombre>.md`): otro Claude que recibe un encargo, empieza con el contexto limpio, puede tener solo algunas herramientas y devuelve un resumen. Solo merece la pena para **una mirada independiente** (juzgar algo sin los supuestos de quien lo hizo) o para **separar mucho trabajo de lectura** de la conversación. Para buscar en el código ya existen los agentes de Claude Code (`Explore`, `general-purpose`).
+   - En la duda, es una skill.
 
-   | Skill | Para qué |
-   |---|---|
-   | `implement-story` | Llevar una historia `US-xx` de principio a fin: leer criterios e issue, rama `feature/…`, código por capas (`domain` → `storage` → `features`), pruebas, CHANGELOG y PR con «Cómo probarlo a mano». |
-   | `new-migration` | Crear una migración con `npx supabase migration new`, con RLS, políticas, permisos por rol y comentarios en español; prueba de integración de aislamiento entre hogares; aviso en el PR. |
-   | `code-reviewer` (agente) | Revisar los cambios de la rama frente a `main` con las reglas de `CLAUDE.md`: dependencias entre capas (`domain/` sin React, Supabase ni navegador; solo `storage/` importa Supabase), RLS y políticas en cada migración, fechas como `'YYYY-MM-DD'`, nombres en inglés y textos en español, pruebas que cubren cada criterio de aceptación, CHANGELOG al día. Solo informa; no cambia código. |
-   | `write-tests` | Una sola skill para las pruebas de los tres niveles, según lo que se haya cambiado: unitarias de `src/domain/` (casos límite de fechas), integración de cada tabla nueva (aislamiento entre hogares) y e2e por historia (una prueba por criterio, contra la versión compilada). |
-   | `open-pr` | Comprobar `npm test`, `npm run build`, `npm run test:e2e`; CHANGELOG al día; PR con «Cómo probarlo a mano» y aviso de migraciones. |
-   | `fix-bug` | Reproducir el fallo con una prueba que falla, arreglarlo y anotarlo en `Fixed`. |
+5. **Parte de este catálogo** (1 agente y 4 skills) y marca cuáles existen ya:
 
-   **Evita la fragmentación:** es mejor una skill que cubra un flujo completo que varias muy especializadas que se solapan. Antes de proponer una skill nueva, comprueba si cabe como un paso de otra (por ejemplo, las pruebas son un paso de `implement-story` y de `fix-bug`, que remiten a `write-tests`).
+   | Nombre | Tipo | Para qué |
+   |---|---|---|
+   | `write-tests` | Skill | Las pruebas de los tres niveles según lo que haya cambiado: unitarias de `src/domain/`, integración de cada tabla (aislamiento entre hogares) y e2e por historia. También para fallos: primero la prueba que lo reproduce. |
+   | `new-migration` | Skill | Cada cambio en la base de datos: migración con `npx supabase migration new`, RLS, políticas, permisos por rol y comentarios en español; usa `write-tests` para la prueba de integración. |
+   | `code-reviewer` | Agente | Revisa la rama frente a `main` con las reglas de `CLAUDE.md`: dependencias entre carpetas, RLS, fechas `'YYYY-MM-DD'`, nombres en inglés y textos en español, una prueba por criterio, CHANGELOG. Solo lee e informa. |
+   | `implement-story` | Skill | El flujo principal: de la historia `US-xx` al código por capas (`domain` → `storage` → `features`). Usa `new-migration` y `write-tests`, y pide revisión a `code-reviewer`. |
+   | `open-pr` | Skill | Pasa `npm test`, `npm run build` y `npm run test:e2e`, revisa el CHANGELOG, avisa de migraciones y abre el PR con «Cómo probarlo a mano». |
 
-   **Skill o agente.** Propón un **agente** (`.claude/agents/<nombre>.md`) cuando la tarea se beneficia de un contexto limpio y de una mirada independiente, como revisar código: así no revisa con los mismos supuestos con los que se escribió. Propón una **skill** cuando son pasos que Claude sigue en la conversación actual.
+   Flujo de cada historia: `implement-story` → (`new-migration`, `write-tests`) → `code-reviewer` → `open-pr`.
 
-5. **Pregunta cuál crear** (con AskUserQuestion si está disponible) y no escribas nada hasta tener la respuesta. Si Sol describe una idea propia, úsala.
+   Si Sol pide algo nuevo, comprueba primero si cabe como un paso de una de estas antes de crear otra: es mejor pocas piezas que cubran flujos completos que muchas que se solapan. Un segundo agente solo tendría sentido en casos como estos: probar la app en el navegador como un usuario sin ver el código, o revisar solo la seguridad cuando se pueda compartir el hogar.
+
+6. **Pregunta cuál crear** (con AskUserQuestion si está disponible) y no escribas nada hasta tener la respuesta. Si Sol describe una idea propia, úsala.
 
 ## Fase 2 · Crear
 
