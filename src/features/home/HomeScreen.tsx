@@ -24,7 +24,7 @@ export function HomeScreen({ session }: { session: Session }) {
 
   return (
     <main className="app">
-      <h1>Limpieza casa</h1>
+      <h1>Limpieza de casa</h1>
       <p>Has entrado como {session.email}.</p>
 
       {state.status === 'loading' && <p className="muted">Cargando tu hogar…</p>}

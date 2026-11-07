@@ -6,7 +6,9 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico) y US-02 (hogar automático). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
+
+**Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
 
 ## Arquitectura
 
@@ -14,7 +16,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 - **PWA:** vite-plugin-pwa. Es instalable, pero **necesita conexión**: no hay modo sin conexión en el MVP.
 - **Datos y usuarios:** Supabase (PostgreSQL + Auth). La app habla directamente con Supabase desde el navegador.
 - **Seguridad de los datos:** Row Level Security (RLS) en **todas** las tablas. Un usuario solo ve y modifica los datos de los hogares de los que es miembro. Una tabla sin RLS es un fallo de seguridad.
-- **Inicio de sesión:** enlace mágico por email, sin contraseña.
+- **Inicio de sesión:** por email, sin contraseña. El email trae un enlace y un código: el enlace sirve en el navegador; el código, en la app instalada del iPhone (iOS abre el enlace en Safari, que no comparte la sesión con la app). La plantilla del email está en `supabase/templates/sign-in.html` y en la nube hay que copiarla a mano (ver README).
 - **Despliegue:** Vercel (compila con `npm run build` y publica `dist/`).
 - **Desarrollo:** dev container (requisito de la clase), que construye el mismo `Dockerfile` que `docker-compose.yml`, con la misma versión de Node que Vercel. Supabase local con la CLI de Supabase.
 

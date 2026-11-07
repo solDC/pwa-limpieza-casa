@@ -19,7 +19,7 @@ Las de integración y casi todas las e2e necesitan **Supabase en local** arranca
 - **Unitarias:** reflejan la ruta del código que prueban. `src/domain/frequency.ts` → `tests/unit/domain/frequency.test.ts`.
 - **E2E:** un archivo por historia, con su ID: `tests/e2e/us-01-sign-in.spec.ts`. Cada criterio de aceptación es al menos una prueba (`test(...)`), y el nombre de la prueba dice qué comprueba, en español.
 - **Integración:** un archivo por tabla o grupo de tablas: `tests/integration/households.test.ts`. Se conectan a PostgreSQL directamente y usan `asUser()` (en `helpers/database.ts`) para hacerse pasar por un usuario y comprobar que las reglas de seguridad funcionan. Todo lo que hacen como usuario se deshace al terminar.
-- **E2E con inicio de sesión:** el enlace mágico se lee del buzón de pruebas de Supabase local con `waitForMagicLink()` (en `e2e/helpers/mailbox.ts`). Cada prueba usa un email único (`uniqueEmail()`), así no se mezclan los usuarios.
+- **E2E con inicio de sesión:** el email para entrar se lee del buzón de pruebas de Supabase local (en `e2e/helpers/mailbox.ts`): `waitForMagicLink()` devuelve el enlace y `waitForSignInEmail()`, el enlace y el código. Si la prueba pide un segundo email, `waitForSignInEmail(email, { after: primero })` espera al nuevo. Cada prueba usa un email único (`uniqueEmail()`), así no se mezclan los usuarios.
 - Una historia no está terminada hasta que sus criterios de aceptación tienen prueba.
 - Si se encuentra un fallo, primero se escribe la prueba que lo reproduce y luego se arregla.
 
