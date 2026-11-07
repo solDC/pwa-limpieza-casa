@@ -116,7 +116,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
 
     await waitBeforeNextEmail(page)
-    await page.getByRole('button', { name: 'Reenviar el email' }).click()
+    await page.getByRole('button', { name: 'Reenviar email' }).click()
 
     await expect(page.getByRole('status')).toHaveText(`Te hemos enviado otro email a ${email}.`)
     await expect(page.getByRole('alert')).toHaveCount(0)
@@ -130,7 +130,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
   test('desde «Revisa tu correo» puedo cambiar de email', async ({ page }) => {
     await requestEmailWithoutSending(page)
 
-    await page.getByRole('button', { name: 'Volver y cambiar el email' }).click()
+    await page.getByRole('button', { name: 'Volver', exact: true }).click()
 
     await expect(page.getByLabel('Email')).toBeVisible()
   })
@@ -182,8 +182,8 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
 
     await expect(page.getByRole('button', { name: 'Comprobando…' })).toBeDisabled()
     await expect(page.getByLabel('Código del email')).toBeDisabled()
-    await expect(page.getByRole('button', { name: 'Volver y cambiar el email' })).toBeDisabled()
-    await expect(page.getByRole('button', { name: 'Reenviar el email' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Volver', exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Reenviar email' })).toBeDisabled()
 
     answerVerify()
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
@@ -191,7 +191,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     // Tras la respuesta, todo vuelve a estar disponible.
     await expect(page.getByRole('button', { name: 'Entrar con el código' })).toBeEnabled()
     await expect(page.getByLabel('Código del email')).toBeEnabled()
-    await expect(page.getByRole('button', { name: 'Volver y cambiar el email' })).toBeEnabled()
-    await expect(page.getByRole('button', { name: 'Reenviar el email' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Volver', exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Reenviar email' })).toBeEnabled()
   })
 })

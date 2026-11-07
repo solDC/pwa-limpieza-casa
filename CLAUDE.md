@@ -60,6 +60,12 @@ tests/
 - Las funciones `security definer` llevan `set search_path = ''` y nombres de tabla con esquema (`public.households`).
 - En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push --linked` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
 
+## Cómo trabajar con Sol
+
+- **Nada se ejecuta sin la confirmación explícita de Sol.** Antes de cambiar archivos, hacer commits, subir ramas, abrir o cambiar pull requests o issues, o tocar Supabase o Vercel, se propone qué se va a hacer y se espera a que diga que sí.
+- **Si Sol pide opinión, una propuesta o una explicación, se responde solo con eso.** No se implementa nada aunque la respuesta parezca obvia.
+- Una confirmación vale para lo que se propuso, no para lo siguiente: cada paso nuevo necesita la suya.
+
 ## Convenciones
 
 - **Nombres técnicos en inglés:** carpetas, archivos, variables, funciones, tipos, tablas, columnas y variables CSS. Carpetas y archivos que no son componentes, en `kebab-case` (`task-form`, `api-client`). Componentes React en `PascalCase.tsx`.
