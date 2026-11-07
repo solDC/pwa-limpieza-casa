@@ -78,10 +78,15 @@ Cada historia sigue este orden, con las skills y el agente de `.claude/`. Los pu
 6. **Comprobar:** `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e`.
 7. **Agente `code-reviewer`**: revisa la rama. Se arreglan los bloqueantes y los importantes; las sugerencias se comentan con Sol.
 8. **Resumen para Sol** de lo hecho y de lo que encontró el revisor. ✋
-9. **`open-pr`**: commit, subir la rama y abrir el pull request con «Cómo probarlo a mano».
+9. **`open-pr`**: commit, subir la rama y abrir el pull request con «Cómo probarlo a mano». Usa **`release-check`** para la sección «⚠️ Antes de fusionar»: lo que Sol tiene que hacer en Supabase o Vercel.
 10. **Sol** lo prueba a mano y lo fusiona. Claude nunca fusiona.
 
 Para un cambio pequeño fuera de una historia, como un texto o un arreglo, el mismo principio: proponer, esperar el sí, hacer, comprobar y pedir confirmación antes del commit y el pull request.
+
+**Otras skills:**
+- **`sync-issues`**: cuando cambian las historias de `docs/user-stories.md`, para que los issues de GitHub digan lo mismo.
+- **`release-check`**: antes de fusionar, o cuando Sol pregunta qué hay que configurar fuera del código.
+- **`create-skill`**: para proponer, crear o mejorar skills y agentes. Se registran aquí, no en el CHANGELOG.
 
 ## Convenciones
 

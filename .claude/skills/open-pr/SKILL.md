@@ -57,15 +57,9 @@ description: Prepara y abre un pull request a main en este proyecto con las comp
    git diff --name-only origin/main...HEAD -- supabase/migrations/
    ```
 
-   Si hay alguna, la descripción lleva el aviso de aplicarla (paso 3).
+   Si hay alguna, la descripción lleva el aviso de aplicarla (paso 2).
 
-## 2. Subir la rama
-
-```bash
-git push -u origin <rama>
-```
-
-## 3. Descripción
+## 2. Descripción
 
 Título: el commit principal en Conventional Commits, en español (`feat: crear una tarea (US-04)`).
 
@@ -112,18 +106,40 @@ Reglas para «Cómo probarlo a mano»:
 
 Termina el cuerpo con las líneas de atribución que indique la sesión, si las hay.
 
-## 4. Crear el pull request
+## 3. Resumen y ok de Sol
+
+Antes de hacer el commit, subir la rama o abrir el pull request, enséñale a Sol:
+
+- La rama y lo que va a entrar en el commit (`git status --short`).
+- El resultado de las comprobaciones del paso 1, y si hay migración o variables nuevas.
+- La descripción del pull request del paso 2, tal como se publicará.
+
+**Espera a que diga que sí.** Si pide cambios, hazlos y vuelve a enseñárselo.
+
+## 4. Commit y subir la rama
+
+Con el ok de Sol:
+
+- Commit con Conventional Commits, tipo en inglés y descripción en español: `feat: <qué puede hacer el usuario> (US-xx)`, `fix: …`, `chore: …`. Incluye el código, las pruebas, el CHANGELOG y «Estado» de `CLAUDE.md` en el mismo commit.
+
+```bash
+git push -u origin <rama>
+```
+
+## 5. Crear el pull request
 
 Base `main`, con las herramientas de GitHub de la sesión (`create_pull_request`) o con `gh pr create`. Borrador si quedó algo sin comprobar.
 
-## 5. Después
+## 6. Después
 
 - Da a Sol el enlace del PR y un resumen de dos o tres líneas: qué incluye, si hay migración que aplicar y si queda algo pendiente.
 - Ofrece vigilar la CI y los comentarios del PR. Si la CI falla, primero reprodúcelo en local; nunca se salta ni se desactiva una prueba para ponerla en verde.
+- Si Sol pide cambios en el pull request, propónselos y espera su ok antes de subirlos.
 - Si Sol encuentra un fallo al probarlo a mano: primero la prueba que lo reproduce (`write-tests`), luego el arreglo, en la misma rama.
 
 ## Antes de terminar
 
+- [ ] Sol ha dado su ok al resumen y a la descripción antes del commit.
 - [ ] Rama al día con `main` y subida.
 - [ ] `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` pasan, o el PR es borrador y dice por qué.
 - [ ] `code-reviewer` sin bloqueantes ni importantes pendientes.
