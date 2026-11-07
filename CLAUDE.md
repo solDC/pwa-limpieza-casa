@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
 
 **Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
 

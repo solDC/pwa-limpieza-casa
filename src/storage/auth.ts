@@ -37,6 +37,24 @@ export async function verifyEmailCode(email: string, code: string): Promise<void
   if (error) throw new Error(describeCodeError(error))
 }
 
+/**
+ * Cierra la sesión en este dispositivo (US-03). Los demás dispositivos siguen dentro:
+ * la historia es para no dejar el hogar abierto en un dispositivo compartido.
+ * Sin conexión también se cierra: Supabase borra la sesión del dispositivo aunque no pueda
+ * avisar al servidor. Solo da error en casos raros (por ejemplo, si no puede renovar una
+ * sesión caducada), y entonces la sesión sigue abierta y se avisa.
+ */
+export async function signOut(): Promise<void> {
+  const { error } = await getSupabase().auth.signOut({ scope: 'local' })
+  if (error) {
+    throw new Error(
+      isNetworkError(error)
+        ? 'No se ha podido cerrar la sesión. Comprueba tu conexión a internet.'
+        : 'No se ha podido cerrar la sesión. Inténtalo de nuevo.',
+    )
+  }
+}
+
 /** Avisa cada vez que cambia la sesión, empezando por la actual. Devuelve cómo dejar de escuchar. */
 export function onSessionChange(listener: (session: Session | null) => void): () => void {
   const { data } = getSupabase().auth.onAuthStateChange((_event, session) => {

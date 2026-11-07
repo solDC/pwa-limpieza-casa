@@ -110,3 +110,20 @@ button:disabled {
   background: transparent;
   color: var(--color-accent);
 }
+
+/* Acción de «volver»: parece un enlace, para distinguirla de los botones principales. */
+.button-link {
+  align-self: flex-start;
+  padding-inline: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Acciones de la cuenta (cerrar sesión), separadas del contenido de la pantalla. */
+.account {
+  margin-top: 2rem;
+}

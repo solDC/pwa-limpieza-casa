@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { Page } from '@playwright/test'
 
 // Buzón de pruebas de Supabase local (Mailpit): ahí llegan los emails que envía
 // Supabase Auth en desarrollo, en lugar de salir a internet.
@@ -67,4 +68,13 @@ export async function waitForMagicLink(email: string, timeoutMs = 15_000): Promi
 function findVerifyLink(content: string | undefined): string | null {
   const match = content?.match(/https?:\/\/[^\s"'<>]+\/auth\/v1\/verify[^\s"'<>]*/)
   return match ? match[0].replaceAll('&amp;', '&') : null
+}
+
+/**
+ * Supabase no envía dos emails a la misma dirección con menos de `max_frequency` entre ellos
+ * (1 s en local, ver supabase/config.toml; 60 s en la nube). Las pruebas van mucho más rápido
+ * que una persona, así que esperan ese mínimo antes de pedir el segundo email.
+ */
+export async function waitBeforeNextEmail(page: Page): Promise<void> {
+  await page.waitForTimeout(1_100)
 }

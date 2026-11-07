@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
+import { uniqueEmail, waitBeforeNextEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-26 · Entrar con código desde la app instalada (#29)
 //
@@ -24,12 +24,6 @@ async function enterCode(page: Page, code: string) {
 
 function wrongCodeFor(code: string): string {
   return code === '000000' ? '111111' : '000000'
-}
-
-// Supabase solo deja enviar un email por segundo a cada dirección en local
-// (en la nube, uno por minuto). La prueba que pide dos emails espera entre uno y otro.
-async function waitBeforeNextEmail(page: Page) {
-  await page.waitForTimeout(1_100)
 }
 
 // Simula que Supabase ha enviado el email, sin enviarlo: para las pruebas que no lo leen.
@@ -122,7 +116,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
 
     await waitBeforeNextEmail(page)
-    await page.getByRole('button', { name: 'Enviarme otro email' }).click()
+    await page.getByRole('button', { name: 'Reenviar el email' }).click()
 
     await expect(page.getByRole('status')).toHaveText(`Te hemos enviado otro email a ${email}.`)
     await expect(page.getByRole('alert')).toHaveCount(0)
@@ -136,7 +130,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
   test('desde «Revisa tu correo» puedo cambiar de email', async ({ page }) => {
     await requestEmailWithoutSending(page)
 
-    await page.getByRole('button', { name: 'Usar otro email' }).click()
+    await page.getByRole('button', { name: 'Volver y cambiar el email' }).click()
 
     await expect(page.getByLabel('Email')).toBeVisible()
   })
@@ -188,8 +182,8 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
 
     await expect(page.getByRole('button', { name: 'Comprobando…' })).toBeDisabled()
     await expect(page.getByLabel('Código del email')).toBeDisabled()
-    await expect(page.getByRole('button', { name: 'Usar otro email' })).toBeDisabled()
-    await expect(page.getByRole('button', { name: 'Enviarme otro email' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Volver y cambiar el email' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Reenviar el email' })).toBeDisabled()
 
     answerVerify()
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
@@ -197,7 +191,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     // Tras la respuesta, todo vuelve a estar disponible.
     await expect(page.getByRole('button', { name: 'Entrar con el código' })).toBeEnabled()
     await expect(page.getByLabel('Código del email')).toBeEnabled()
-    await expect(page.getByRole('button', { name: 'Usar otro email' })).toBeEnabled()
-    await expect(page.getByRole('button', { name: 'Enviarme otro email' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Volver y cambiar el email' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Reenviar el email' })).toBeEnabled()
   })
 })

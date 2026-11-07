@@ -129,15 +129,15 @@ export function SignInScreen() {
               onClick={handleResend}
               disabled={step.busy !== null}
             >
-              {step.busy === 'resending' ? 'Enviando…' : 'Enviarme otro email'}
+              {step.busy === 'resending' ? 'Enviando…' : 'Reenviar el email'}
             </button>
             <button
               type="button"
-              className="button-secondary"
+              className="button-link"
               onClick={() => setStep({ name: 'form', error: null })}
               disabled={step.busy !== null}
             >
-              Usar otro email
+              <span aria-hidden="true">← </span>Volver y cambiar el email
             </button>
           </div>
         </section>
