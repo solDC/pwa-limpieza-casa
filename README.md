@@ -238,14 +238,19 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
    - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
    - **Redirect URLs:** esa misma dirección con `/**` al final, y la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
 2. **Vercel → Settings → Environment Variables:** añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para **Production** y **Preview**. Los valores están en el botón **Connect** del panel de Supabase (la clave puede ser la *publishable* o la *anon*; nunca la *secret* ni la *service_role*). Los nombres tienen que ser exactamente esos. Después, vuelve a desplegar.
-3. **Plantillas del email, en español y con el código (US-26).** En **Supabase → Authentication → Email Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
+3. **Servidor de correo propio (SMTP).** Supabase no deja editar las plantillas del email con su servidor gratuito, que además solo envía unos 2 emails por hora y solo a los miembros del proyecto. En **Supabase → Authentication → Emails → SMTP Settings**, activa **Enable custom SMTP**. Para la demo basta con Gmail:
+   - Crea una **contraseña de aplicación** en tu cuenta de Google (myaccount.google.com → Seguridad → Contraseñas de aplicaciones; hace falta la verificación en dos pasos).
+   - **Host:** `smtp.gmail.com` · **Port:** `587` · **Username** y **Sender email:** tu dirección de Gmail · **Password:** la contraseña de aplicación · **Sender name:** `Limpieza de casa`.
+
+   Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
+4. **Plantillas del email, en español y con el código (US-26).** En **Supabase → Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
    - **Subject:** `Tu acceso a Limpieza de casa`
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
    Si cambias ese archivo, vuelve a pegarlo en las dos plantillas: la nube no lo lee del repo.
 
    Comprueba también, en la configuración del proveedor **Email** (Authentication → Sign In / Providers → Email), que el código tiene **6 dígitos** (*Email OTP Length*) y caduca en **3600 segundos** (*Email OTP Expiration*), como en local (`supabase/config.toml`): el email dice que caduca en una hora. En la nube, Supabase deja además un tiempo mínimo entre dos emails a la misma dirección (60 segundos por defecto; en local, 1 segundo): si se pide otro antes, la app avisa de que se han pedido demasiados seguidos.
-4. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
+5. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
 
    ```
    npx supabase login
