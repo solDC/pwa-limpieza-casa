@@ -93,9 +93,32 @@ test.describe('US-29 · Qué toca', () => {
     await setToday(page, '2026-10-28')
     await expect(task(page, 'Baño')).toContainText('Retrasada 1 día (tocaba el mar 27 oct)')
 
+    // Una puntual creada hace casi dos años sigue sin fecha y sin retraso.
+    await setTaskCreatedOn(email, 'Cepillar suelo', '2025-01-01')
+    await page.reload()
     for (const name of ['Cepillar suelo', 'Limpiar juntas']) {
       await expect(task(page, name)).toContainText('Sin fecha')
       await expect(task(page, name)).not.toContainText('Retrasada')
     }
+  })
+
+  test('las que tocan más adelante salen al final, por fecha', async ({ page }) => {
+    const email = uniqueEmail()
+    await page.clock.setFixedTime(new Date('2026-10-28T12:00:00+01:00')) // un miércoles
+    await signIn(page, email)
+    await setTaskCreatedOn(email, 'Cristales y espejos', '2026-10-30')
+    await setTaskCreatedOn(email, 'Baño', '2026-12-10')
+    await page.reload()
+
+    await expect(task(page, 'Cristales y espejos')).toContainText('Toca: vie 30 oct')
+    await expect(task(page, 'Baño')).toContainText('Toca: jue 10 dic')
+    await expect(taskNames(page)).toHaveText([
+      'Superficies',
+      'Cepillar suelo',
+      'Limpiar juntas',
+      'Cristales y espejos', // 30 oct
+      'Aspirar cosas de Cati', // 5 dic
+      'Baño', // 10 dic
+    ])
   })
 })
