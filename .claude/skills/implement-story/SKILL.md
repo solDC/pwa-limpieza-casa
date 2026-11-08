@@ -101,14 +101,14 @@ Encarga al agente **`code-reviewer`** que revise la rama. Con su informe:
 
 ## 8. Resumen para Sol y esperar su ok
 
-Antes de cualquier commit, enséñale a Sol:
+Antes del pull request, enséñale a Sol:
 
 - Qué se ha hecho, criterio por criterio de aceptación, y con qué prueba se cubre cada uno.
 - El resultado de las pruebas y la compilación (paso 5), y las que no se pudieron ejecutar.
 - Qué encontró el `code-reviewer` y qué se arregló; las sugerencias que quedan para que decida.
 - Lo que queda fuera porque pertenece a otra historia.
 
-**No hagas commit, ni subas la rama, ni abras el pull request hasta que Sol diga que sí.** Con su ok, sigue con la skill `open-pr`, que hace el commit, sube la rama y abre el pull request. Esta skill termina aquí.
+**No abras el pull request hasta que Sol diga que sí.** Los commits de borrador en la rama de trabajo sí se pueden hacer y subir en cualquier momento (ver «Cómo trabajar con Sol» en `CLAUDE.md`). Con su ok, sigue con la skill `open-pr`, que deja la rama lista y abre el pull request. Esta skill termina aquí.
 
 ## Antes de terminar
 

@@ -108,9 +108,9 @@ Termina el cuerpo con las líneas de atribución que indique la sesión, si las 
 
 ## 3. Resumen y ok de Sol
 
-Antes de hacer el commit, subir la rama o abrir el pull request, enséñale a Sol:
+Antes de abrir el pull request, enséñale a Sol:
 
-- La rama y lo que va a entrar en el commit (`git status --short`).
+- La rama y lo que va a entrar (`git diff --stat origin/main...HEAD` y, si queda algo sin commit, `git status --short`).
 - El resultado de las comprobaciones del paso 1, y si hay migración o variables nuevas.
 - La descripción del pull request del paso 2, tal como se publicará.
 
@@ -118,7 +118,7 @@ Antes de hacer el commit, subir la rama o abrir el pull request, enséñale a So
 
 ## 4. Commit y subir la rama
 
-Con el ok de Sol:
+Los commits de borrador pueden estar ya hechos y subidos (ver «Cómo trabajar con Sol» en `CLAUDE.md`). Con el ok de Sol, deja la rama lista:
 
 - Commit con Conventional Commits, tipo en inglés y descripción en español: `feat: <qué puede hacer el usuario> (US-xx)`, `fix: …`, `chore: …`. Incluye el código, las pruebas, el CHANGELOG y «Estado» de `CLAUDE.md` en el mismo commit.
 
@@ -139,7 +139,7 @@ Base `main`, con las herramientas de GitHub de la sesión (`create_pull_request`
 
 ## Antes de terminar
 
-- [ ] Sol ha dado su ok al resumen y a la descripción antes del commit.
+- [ ] Sol ha dado su ok al resumen y a la descripción antes de abrir el pull request.
 - [ ] Rama al día con `main` y subida.
 - [ ] `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` pasan, o el PR es borrador y dice por qué.
 - [ ] `code-reviewer` sin bloqueantes ni importantes pendientes.
