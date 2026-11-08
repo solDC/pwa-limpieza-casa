@@ -15,11 +15,11 @@ Las reglas están en `CLAUDE.md`; aquí está el orden en que se aplican.
 
 ## 1. Elegir y entender la historia
 
-1. **Si no se ha dicho cuál**, propón la siguiente: la primera **Must have** de la tabla de `docs/user-stories.md` que no esté hecha (mira «Estado» en `CLAUDE.md` y el `CHANGELOG.md`) y cuyas dependencias sí lo estén (por ejemplo, US-12 necesita las tareas de US-04).
+1. **Si no se ha dicho cuál**, propón la siguiente: la primera **Must have** de la tabla de `docs/user-stories.md` que no esté hecha (mira «Estado» en `CLAUDE.md` y el `CHANGELOG.md`) y cuyas dependencias sí lo estén (por ejemplo, US-30 necesita las tareas de US-27).
 2. **Lee:**
    - La historia y sus criterios de aceptación en `docs/user-stories.md`, y su issue (enlazado en la tabla; con las herramientas de GitHub si están disponibles).
    - «Cómo se modelan las tareas» en `README.md` y «Modelo de datos» en `CLAUDE.md`.
-   - «Decisiones pendientes» en `docs/user-stories.md`, por si la historia depende de alguna.
+   - «Conceptos» en `docs/user-stories.md` (tareas, partes, vueltas, frecuencias) y las notas en cursiva bajo la historia, por si depende de otra.
    - El código que ya existe y que vas a tocar.
 3. **Dudas antes que suposiciones.** Si un criterio es ambiguo o depende de una decisión pendiente, pregunta a Sol antes de programar. No cambies los criterios por tu cuenta.
 4. **Plan breve** para Sol, y espera su visto bueno:

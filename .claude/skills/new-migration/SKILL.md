@@ -37,7 +37,7 @@ El nombre en inglés, `snake_case` y descriptivo (`tasks`, `add_task_notes`, `ad
 
 Ordénalo en secciones con comentarios **en español**, como en `households.sql`:
 
-1. **Cabecera:** historia (`-- US-04 · Crear una tarea`) y qué hace la migración y por qué.
+1. **Cabecera:** historia (`-- US-27 · Mis tareas por defecto`) y qué hace la migración y por qué.
 2. **Tablas:** `create table public.<tabla>`, con `comment on table` en español. Índice en `household_id` (lo usan todas las reglas) y en las columnas por las que se filtre u ordene.
 3. **RLS en la misma migración**, para cada tabla nueva:
 
