@@ -1,6 +1,6 @@
 # Historias de usuario del MVP
 
-Formato: *As a [user type], I want [feature], so that [benefit].* Debajo de cada historia, los criterios de aceptación.
+Formato: *Como [tipo de usuario], quiero [qué], para [para qué].* Debajo de cada historia, los criterios de aceptación.
 
 Cada historia tiene su issue en GitHub, enlazado en la tabla de resumen. Al añadir una historia nueva, se crea su issue y se añade aquí el enlace.
 
@@ -55,28 +55,28 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 ## Cuenta
 
 ### US-01 · Entrar con enlace mágico (Must have)
-As a new user,
-I want to sign in with a link sent to my email,
-so that I can use the app without creating or remembering a password.
+Como usuario nuevo,
+quiero entrar con un enlace que me llega por email,
+para usar la app sin crear ni recordar una contraseña.
 - Escribo mi email y recibo un enlace; al abrirlo entro en la app.
 - La sesión se mantiene al cerrar y volver a abrir la app.
 
 ### US-02 · Hogar creado automáticamente (Must have)
-As a new user,
-I want my household to be created automatically the first time I sign in,
-so that I can start adding tasks right away.
+Como usuario nuevo,
+quiero que mi hogar se cree solo la primera vez que entro,
+para empezar a usar la app enseguida.
 - Al primer inicio de sesión se crean el hogar y mi pertenencia a él.
 - Solo veo los datos de mi hogar, garantizado por RLS.
 
 ### US-03 · Cerrar sesión (Nice to have)
-As a user,
-I want to sign out,
-so that nobody else can see my household on a shared device.
+Como usuario,
+quiero cerrar sesión,
+para que nadie más vea mi hogar en un dispositivo compartido.
 
 ### US-26 · Entrar con código desde la app instalada (Must have)
-As a user with the app installed on my iPhone,
-I want to sign in by typing the code from the email,
-so that I can sign in inside the installed app, where the email link doesn't work.
+Como usuario con la app instalada en el iPhone,
+quiero entrar escribiendo el código del email,
+para entrar en la app instalada, donde el enlace del email no funciona.
 - El email trae el enlace y también un código de 6 dígitos.
 - En la pantalla «Revisa tu correo» puedo escribir el código y entrar sin salir de la app.
 - El enlace sigue funcionando igual que antes: no hace falta escribir el código.
@@ -87,9 +87,9 @@ so that I can sign in inside the installed app, where the email link doesn't wor
 ## Tareas
 
 ### US-27 · Mis tareas por defecto (Must have)
-As the person who looks after my home,
-I want my usual cleaning tasks to be there when I sign in,
-so that I can start using the app without setting anything up.
+Como persona que cuida de mi casa,
+quiero que mis tareas de limpieza habituales estén ahí al entrar,
+para empezar a usar la app sin configurar nada.
 - Al crearse mi hogar se crean estas tareas, con su frecuencia:
 
   | Tarea | Partes (peso) | Frecuencia |
@@ -104,26 +104,26 @@ so that I can start using the app without setting anything up.
 - Se crean una sola vez: si cancelo una, no vuelve a aparecer.
 
 ### US-28 · Frecuencias (Must have)
-As a user,
-I want each task to be due according to its own rhythm,
-so that the app tells me what to do when it's really time to do it.
+Como usuario,
+quiero que cada tarea toque según su propio ritmo,
+para que la app me diga qué hacer cuando de verdad toca.
 - Las cuatro frecuencias funcionan como dice la tabla de «Conceptos».
 - En «cada N días», la próxima fecha se cuenta desde el día en que se terminó la tarea, no desde la fecha prevista.
 - La primera vez, una tarea de «cada N días» toca desde el día en que se crea.
 
 ### US-29 · Qué toca (Must have)
-As a user,
-I want to see on the home screen what is due and what is late,
-so that I know what to do without searching.
+Como usuario,
+quiero ver en el Inicio qué toca y qué está retrasado,
+para saber qué hacer sin buscar.
 - En Inicio veo las tareas que tocan hoy (las de fin de semana, el sábado y el domingo) y las pendientes puntuales.
 - Las retrasadas muestran cuántos días de retraso llevan.
 - Las tareas con partes muestran su progreso en la vuelta actual («Cocina hecha · 50 %»).
 - Las que no tocan todavía se ven aparte, con la fecha en que tocarán.
 
 ### US-30 · Marcar como hecha (Must have)
-As a user,
-I want to mark a task, or one of its parts, as done,
-so that the app knows what I have already cleaned.
+Como usuario,
+quiero marcar como hecha una tarea, o una de sus partes,
+para que la app sepa qué he limpiado ya.
 - Puedo marcar una tarea entera; si tiene partes, también cada parte por separado.
 - Al marcar todas las partes, la vuelta queda completada.
 - Al completar una vuelta, la tarea deja de aparecer en «Qué toca» y se calcula cuándo vuelve a tocar.
@@ -131,34 +131,34 @@ so that the app knows what I have already cleaned.
 - Si falla el guardado (sin conexión o un error), la app lo dice y no la muestra como hecha.
 
 ### US-31 · Histórico de cada vuelta (Must have)
-As a user,
-I want to see the history of every round of every task,
-so that I know how well I'm keeping up with the cleaning.
+Como usuario,
+quiero ver el histórico de cada vuelta de cada tarea,
+para saber cómo voy con la limpieza.
 - Hay una pantalla «Histórico» con cada vuelta cerrada, de la más reciente a la más antigua: tarea, fechas y estado.
 - El estado es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos».
 - Las vueltas de fin de semana que acaban el domingo sin terminar quedan como parcial o no completada sin que yo haga nada.
 - El porcentaje parcial es la suma de los pesos de las partes hechas.
 
 ### US-32 · Cancelar una tarea (Nice to have)
-As a user,
-I want to cancel a task I no longer do,
-so that it stops appearing without losing its history.
+Como usuario,
+quiero cancelar una tarea que ya no hago,
+para que deje de aparecer sin perder su histórico.
 - La app pide confirmación antes de cancelar.
 - Una tarea cancelada deja de aparecer en «Qué toca».
 - Su histórico se conserva y se sigue viendo en «Histórico».
 
 ### US-33 · Añadir una tarea (Nice to have)
-As a user,
-I want to add a new task with its frequency and optional parts,
-so that the app covers new things I need to keep up with.
+Como usuario,
+quiero añadir una tarea nueva, con su frecuencia y, si quiero, sus partes,
+para que la app incluya otras cosas que tengo que mantener.
 - No se puede guardar una tarea sin nombre o sin frecuencia (una de las cuatro de «Conceptos»).
 - Las partes son opcionales.
 - Si tiene partes, todas cuentan lo mismo: los pesos se reparten a partes iguales (elegirlos es la US-34).
 
 ### US-34 · Elegir el peso de las partes (Nice to have)
-As a user,
-I want to choose how much each part of a task counts,
-so that the partial percentage reflects the real effort of each part.
+Como usuario,
+quiero elegir cuánto cuenta cada parte de una tarea,
+para que el porcentaje parcial refleje el esfuerzo real de cada parte.
 - Al crear una tarea con partes, puedo poner el peso de cada una en porcentaje; si no lo cambio, se reparten a partes iguales.
 - No se puede guardar la tarea si los pesos no suman 100 %.
 
@@ -192,43 +192,43 @@ Las historias US-04 a US-25 eran del MVP original, más amplio. Así quedan con 
 Para una versión futura.
 
 ### US-06 · Editar una tarea · [#7](https://github.com/solDC/pwa-limpieza-casa/issues/7)
-As a user,
-I want to edit a task's name, parts and frequency,
-so that it reflects how I actually look after my home.
+Como usuario,
+quiero cambiar el nombre, las partes y la frecuencia de una tarea,
+para que refleje cómo cuido de verdad mi casa.
 - Editar una tarea no borra el progreso de la vuelta actual ni el histórico.
 
 ### US-08 · Ver todas mis tareas · [#9](https://github.com/solDC/pwa-limpieza-casa/issues/9)
-As a user,
-I want to see all my tasks with their frequency and next due date,
-so that I have an overview of everything in my home.
+Como usuario,
+quiero ver todas mis tareas con su frecuencia y cuándo tocan,
+para tener una visión de conjunto de mi casa.
 
 ### US-14 · Elegir cuándo lo hice · [#15](https://github.com/solDC/pwa-limpieza-casa/issues/15)
-As a user,
-I want to say when I actually did it (today, yesterday or another date),
-so that the history and next dates are accurate even if I log it late.
+Como usuario,
+quiero decir cuándo la hice de verdad (hoy, ayer u otro día),
+para que el histórico y las próximas fechas sean correctos aunque lo apunte tarde.
 - No se admiten fechas futuras.
 - Se guarda la fecha en que se hizo y, aparte, la fecha en que se apuntó.
 
 ### US-15 · Deshacer · [#16](https://github.com/solDC/pwa-limpieza-casa/issues/16)
-As a user,
-I want to undo the last thing I marked,
-so that I can fix a mistake immediately.
+Como usuario,
+quiero deshacer lo último que he marcado,
+para corregir un error al momento.
 - Tras marcar aparece un aviso con el botón «Deshacer» durante unos segundos.
 
 ### US-19 · Pantalla vacía · [#20](https://github.com/solDC/pwa-limpieza-casa/issues/20)
-As a new user,
-I want a helpful empty state when I have no tasks,
-so that I know how to start (create a task or load the demo).
+Como usuario nuevo,
+quiero una pantalla que me oriente cuando no tengo tareas,
+para saber cómo empezar.
 
 ### US-21 · Historial de una tarea · [#22](https://github.com/solDC/pwa-limpieza-casa/issues/22)
-As a user,
-I want to see the history of a single task,
-so that I can see how often I really do it.
+Como usuario,
+quiero ver el histórico de una sola tarea,
+para ver cada cuánto la hago de verdad.
 
 ### US-35 · Rediseño de la interfaz · [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44)
-As a user,
-I want the app to have a visual design I like,
-so that I enjoy using it every day.
+Como usuario,
+quiero que la app tenga un diseño que me guste,
+para disfrutar usándola cada día.
 - Una paleta de colores nueva, elegida por Sol, sustituye al verde actual.
 - Todas las pantallas (Entrar, Revisa tu correo, Inicio y las nuevas) usan el diseño nuevo.
 - El icono de la app (una casa con un trapito) usa el diseño nuevo y sustituye al check, en el iPhone, en Android y en la pestaña del navegador.
@@ -237,9 +237,9 @@ so that I enjoy using it every day.
 *Para concretar antes de implementarla: colores, tipografía y estilo. Es un trabajo de diseño que puede acabar en varias historias. El icono de la pantalla de inicio no puede estar animado.*
 
 ### US-36 · Tener varias casas y cambiar entre ellas · [#50](https://github.com/solDC/pwa-limpieza-casa/issues/50)
-As a user,
-I want to have more than one home and switch between them,
-so that I can keep track of the cleaning of each one.
+Como usuario,
+quiero tener más de una casa y cambiar entre ellas,
+para llevar la limpieza de cada una.
 - Puedo crear otra casa, con un nombre; se crea con las tareas por defecto de la US-27.
 - Puedo cambiar de casa desde el Inicio, y la app recuerda la última que usé.
 - Cada casa tiene sus propias tareas y su histórico.
@@ -247,9 +247,9 @@ so that I can keep track of the cleaning of each one.
 *Para usar otras tareas en una casa nueva: cancelar las que no sirvan (US-32) y añadir las nuevas (US-33).*
 
 ### US-37 · Archivar una casa · [#51](https://github.com/solDC/pwa-limpieza-casa/issues/51)
-As a user,
-I want to archive a home I no longer use, and recover it if I need it again,
-so that it stops appearing without losing its history.
+Como usuario,
+quiero archivar una casa que ya no uso, y recuperarla si la vuelvo a necesitar,
+para que deje de aparecer sin perder su histórico.
 - La app pide confirmación antes de archivar.
 - Una casa archivada deja de aparecer al cambiar de casa, pero conserva sus tareas y su histórico.
 - Puedo ver mis casas archivadas y recuperar cualquiera.

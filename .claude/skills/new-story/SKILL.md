@@ -1,6 +1,6 @@
 ---
 name: new-story
-description: Convierte una idea o necesidad de Sol en una historia de usuario de este proyecto (formato As a… I want… so that…, criterios de aceptación comprobables, prioridad y número), comprobando antes que encaja con las historias y los conceptos de docs/user-stories.md. Úsala cuando Sol describa algo que quiere en la app («quiero que…», «estaría bien poder…»), pida «crea una historia», «añade una HU» o «apunta esto en el backlog», o cuando haga falta revisar si una historia está bien escrita.
+description: Convierte una idea o necesidad de Sol en una historia de usuario de este proyecto (formato «Como…, quiero…, para…», criterios de aceptación comprobables, prioridad y número), comprobando antes que encaja con las historias y los conceptos de docs/user-stories.md. Úsala cuando Sol describa algo que quiere en la app («quiero que…», «estaría bien poder…»), pida «crea una historia», «añade una HU» o «apunta esto en el backlog», o cuando haga falta revisar si una historia está bien escrita.
 ---
 
 # new-story
@@ -34,15 +34,15 @@ Con el formato de `docs/user-stories.md`:
 
 ```markdown
 ### US-xx · Título corto en español (Must have)
-As a <tipo de usuario>,
-I want <qué quiere hacer>,
-so that <para qué le sirve>.
+Como <tipo de usuario>,
+quiero <qué quiere hacer>,
+para <para qué le sirve>.
 - Criterio de aceptación 1.
 - Criterio de aceptación 2.
 ```
 
 - **Número:** el siguiente libre, mirando la tabla de resumen **y** el backlog (no reutilices números de historias cerradas).
-- **Historia** en inglés (*As a… I want… so that…*), como las demás; **título y criterios en español**.
+- **Todo en español:** la historia (*Como…, quiero…, para…*), el título y los criterios.
 - **Criterios comprobables:** cada uno describe algo que se ve o se puede hacer en la app, y se puede convertir en una prueba e2e («Al marcar todas las partes, la vuelta queda completada»). Nada de «que sea rápido» o «que sea bonito» sin concretar.
 - Pocos criterios (de 2 a 5). Si salen muchos, probablemente son dos historias: propón dividirla.
 - **No hay criterios opcionales.** Si una parte de la idea es un extra deseable, va en **una historia aparte** con prioridad **Nice to have**, que depende de la principal.

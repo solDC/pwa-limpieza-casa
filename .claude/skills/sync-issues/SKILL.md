@@ -11,7 +11,7 @@ description: Sincroniza los issues de GitHub con las historias de docs/user-stor
 
 ## 1. Leer las dos fuentes
 
-1. `docs/user-stories.md` en `main` actualizado (o en la rama que diga Sol): la tabla de resumen (ID, título, prioridad, issue) y, para cada historia, su texto *As a… I want… so that…* y sus criterios de aceptación. Lee también las secciones de historias fuera del MVP o del backlog, si las hay.
+1. `docs/user-stories.md` en `main` actualizado (o en la rama que diga Sol): la tabla de resumen (ID, título, prioridad, issue) y, para cada historia, su texto *Como…, quiero…, para…* y sus criterios de aceptación. Lee también las secciones de historias fuera del MVP o del backlog, si las hay.
 2. Los issues del repositorio `solDC/pwa-limpieza-casa`, abiertos y cerrados, con las herramientas de GitHub de la sesión o con `gh issue list --state all --limit 200`. Los de historias tienen la etiqueta `user-story` y el título `US-xx · Título`.
 
 ## 2. Comparar y preparar la lista de cambios
@@ -41,9 +41,9 @@ Con el ok de Sol:
   ```markdown
   **Prioridad:** Must have · **Área:** <sección de docs/user-stories.md>
 
-  > As a …,
-  > I want …,
-  > so that ….
+  > Como …,
+  > quiero …,
+  > para ….
 
   ## Criterios de aceptación
 
