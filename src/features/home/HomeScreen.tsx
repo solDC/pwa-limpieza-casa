@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Session } from '../../storage/auth'
+import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
 
 type HouseholdState =
@@ -7,10 +7,25 @@ type HouseholdState =
   | { status: 'loaded'; household: Household | null }
   | { status: 'error'; message: string }
 
-// Pantalla provisional de Inicio: confirma que has entrado (US-01) y muestra tu hogar (US-02).
+// Pantalla provisional de Inicio: confirma que has entrado (US-01), muestra tu hogar (US-02)
+// y deja cerrar la sesión (US-03).
 // Se sustituirá por «Qué toca hoy» (US-16) y las demás.
 export function HomeScreen({ session }: { session: Session }) {
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
+  const [signingOut, setSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    setSignOutError(null)
+    try {
+      // Si va bien, la sesión cambia y la app pasa sola a la pantalla de entrar.
+      await signOut()
+    } catch (error) {
+      setSignOutError((error as Error).message)
+      setSigningOut(false)
+    }
+  }
 
   useEffect(() => {
     let active = true
@@ -39,6 +54,22 @@ export function HomeScreen({ session }: { session: Session }) {
           <p className="muted">Aquí irán las tareas de tu hogar.</p>
         </section>
       )}
+
+      <div className="stack account">
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={handleSignOut}
+          disabled={signingOut}
+        >
+          {signingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+        </button>
+        {signOutError && (
+          <p className="error" role="alert">
+            {signOutError}
+          </p>
+        )}
+      </div>
     </main>
   )
 }

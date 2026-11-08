@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
 
 **Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
 
@@ -59,6 +59,29 @@ tests/
 - Cada migración que crea tablas incluye su RLS, sus políticas y los permisos de cada rol (`anon`, `authenticated`) en el mismo archivo, con comentarios en español.
 - Las funciones `security definer` llevan `set search_path = ''` y nombres de tabla con esquema (`public.households`).
 - En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push --linked` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
+
+## Cómo trabajar con Sol
+
+- **Nada se ejecuta sin la confirmación explícita de Sol.** Antes de cambiar archivos, hacer commits, subir ramas, abrir o cambiar pull requests o issues, o tocar Supabase o Vercel, se propone qué se va a hacer y se espera a que diga que sí.
+- **Si Sol pide opinión, una propuesta o una explicación, se responde solo con eso.** No se implementa nada aunque la respuesta parezca obvia.
+- Una confirmación vale para lo que se propuso, no para lo siguiente: cada paso nuevo necesita la suya.
+
+## Flujo de trabajo de una historia
+
+Cada historia sigue este orden, con las skills y el agente de `.claude/`. Los puntos marcados con ✋ **esperan la confirmación de Sol** antes de seguir.
+
+1. **`implement-story`**: leer la historia y sus criterios, y presentar un **plan breve**: qué cambia en la base de datos, en `domain/`, en `storage/` y en las pantallas, qué prueba cubre cada criterio y qué queda fuera. ✋
+2. **Rama** `feature/us-xx-…` desde `main`.
+3. **`new-migration`**, si cambia la base de datos: la migración, su RLS y su prueba de integración.
+4. **`write-tests`**: las pruebas de cada criterio, **antes** del código, y comprobar que fallan.
+5. **El código**, por capas: `domain/`, luego `storage/`, luego `features/`.
+6. **Comprobar:** `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e`.
+7. **Agente `code-reviewer`**: revisa la rama. Se arreglan los bloqueantes y los importantes; las sugerencias se comentan con Sol.
+8. **Resumen para Sol** de lo hecho y de lo que encontró el revisor. ✋
+9. **`open-pr`**: commit, subir la rama y abrir el pull request con «Cómo probarlo a mano».
+10. **Sol** lo prueba a mano y lo fusiona. Claude nunca fusiona.
+
+Para un cambio pequeño fuera de una historia, como un texto o un arreglo, el mismo principio: proponer, esperar el sí, hacer, comprobar y pedir confirmación antes del commit y el pull request.
 
 ## Convenciones
 
@@ -132,7 +155,8 @@ Mantén `CHANGELOG.md` al día **en el mismo commit** que el cambio:
 
 - Añade la entrada en `## [Unreleased]`, en la sección que corresponda al tipo de commit: `feat:` → Added, `fix:` → Fixed, `refactor:`/`chore:` → Changed, lo que se elimina → Removed.
 - Explica **qué** cambió y **por qué**, pensando en quien lo lea dentro de unos meses. No copies el mensaje del commit.
-- Las decisiones de arquitectura o de producto también van al changelog, aunque no cambien código.
+- El CHANGELOG cuenta los **cambios en la app**: lo que puede hacer el usuario, cómo se guardan los datos, cómo se despliega. Las decisiones de arquitectura o de producto también van, aunque no cambien código.
+- **No van** los cambios en la forma de trabajar: reglas de este archivo, skills, agentes, flujo de ramas o de pull requests, issues.
 - No hace falta entrada para cambios que no afectan a nadie (erratas, formato).
 
 ## Nunca
