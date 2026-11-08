@@ -81,11 +81,40 @@ export function canMarkDone(
 }
 
 /**
+ * Cómo está una vuelta hoy (US-29): retrasada (con cuántos días), toca hoy, pendiente sin
+ * fecha (las puntuales, que nunca van con retraso) o toca más adelante.
+ */
+export type Due =
+  | { status: 'overdue'; days: number }
+  | { status: 'today' }
+  | { status: 'pending' }
+  | { status: 'upcoming' }
+
+/**
+ * Las de fin de semana tocan el sábado y el domingo; de lunes a viernes van con retraso,
+ * contando desde el lunes (el lunes, 1 día). Las de cada N días, desde el día siguiente al
+ * que tocaban.
+ */
+export function dueStatus(frequency: Frequency, round: Round, today: LocalDate): Due {
+  if (round.startsOn === null) return { status: 'pending' }
+  if (round.startsOn > today) return { status: 'upcoming' }
+  // El último día que toca sin retraso: el domingo en las de fin de semana.
+  const lastDay = isWeekend(frequency) ? addDays(round.startsOn, 1) : round.startsOn
+  const days = daysBetween(lastDay, today)
+  return days > 0 ? { status: 'overdue', days } : { status: 'today' }
+}
+
+/**
  * Cuándo toca, en texto: «Toca: finde del 14 nov», «Toca: hoy», «Toca: mañana»,
- * «Toca: mié 18 nov», «Toca: desde el lun 9 nov» o «Sin fecha».
+ * «Toca: mié 18 nov», «Retrasada 3 días (tocaba el lun 9 nov)» o «Sin fecha».
  */
 export function describeDue(frequency: Frequency, round: Round, today: LocalDate): string {
   if (round.startsOn === null) return 'Sin fecha'
+  const due = dueStatus(frequency, round, today)
+  if (due.status === 'overdue') {
+    const days = due.days === 1 ? '1 día' : `${due.days} días`
+    return `Retrasada ${days} (tocaba el ${describeDate(frequency, round.startsOn, today)})`
+  }
   return `Toca: ${describeDate(frequency, round.startsOn, today)}`
 }
 
@@ -94,6 +123,5 @@ function describeDate(frequency: Frequency, startsOn: LocalDate, today: LocalDat
   const days = daysBetween(today, startsOn)
   if (days === 0) return 'hoy'
   if (days === 1) return 'mañana'
-  if (days < 0) return `desde el ${formatShortDate(startsOn)}`
   return formatShortDate(startsOn)
 }

@@ -7,6 +7,11 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-29 · Qué toca** (#38). «Tus tareas» sale ordenada por urgencia: primero las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales y al final las que tocan más adelante, por fecha. Así se ve qué hacer sin buscar. No hay sección aparte para las de más adelante: es una sola lista.
+  - Las retrasadas lo dicen: «Retrasada 3 días (tocaba el lun 9 nov)», o «Retrasada 1 día». En las de cada N días, el retraso cuenta desde el día siguiente al que tocaban (antes decían «Toca: desde el lun 9 nov»).
+  - Las de fin de semana tocan el sábado y el domingo; si no se han hecho, de lunes a viernes van con retraso, contando desde el lunes (el lunes, 1 día), y el sábado empieza la vuelta nueva. Las puntuales nunca van con retraso.
+  - El progreso de las tareas con partes, que estaba en esta historia, pasa a la US-39, que es cuando se pueden marcar.
+  - Si la lista se recarga (tras «Ya estaba marcada como hecha.») y mientras tanto se marca otra tarea, la recarga ya no la vuelve a mostrar sin hacer.
 - **US-30 · Marcar una tarea como hecha** (#39). Cada tarea de «Tus tareas» tiene un botón «Marcar como hecha». Al pulsarlo, la tarea muestra cuándo vuelve a tocar: las de fin de semana, el finde siguiente; las de cada N días, N días después de hoy; y las puntuales desaparecen. Marca la tarea entera, también las que tienen partes (marcar una parte es la US-39).
   - El día en que se hizo lo apunta **la base de datos** (hoy en Madrid), no el móvil, para que un reloj mal puesto no lo cambie. Elegir otro día es la US-46.
   - Solo se muestra como hecha cuando se ha guardado. Si falla, la app lo dice en esa tarea y la deja como estaba, con un mensaje según el motivo:

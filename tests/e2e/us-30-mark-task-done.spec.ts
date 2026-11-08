@@ -163,6 +163,46 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await expect(task(other, 'Cristales y espejos')).toBeVisible()
   })
 
+  // Regresión: una recarga que salió antes de marcar otra tarea, y llega después,
+  // volvía a mostrar esa otra tarea sin hacer.
+  test('si una recarga llega tarde, no deshace lo que se ha marcado mientras tanto', async ({
+    page,
+    context,
+  }) => {
+    await signIn(page, uniqueEmail())
+    const other = await context.newPage()
+    await other.goto('/')
+    await expect(task(other, 'Baño')).toContainText('Toca: hoy')
+
+    await markDone(page, 'Baño').click()
+    await expect(markDone(page, 'Baño')).toHaveCount(0)
+
+    // En el segundo dispositivo, la recarga de la lista se lee ya, pero llega cuando se suelte.
+    let release = () => {}
+    const released = new Promise<void>((resolve) => (release = resolve))
+    await other.route('**/rest/v1/tasks?*', async (route) => {
+      const response = await route.fetch()
+      await released
+      await route.fulfill({ response })
+    })
+    await markDone(other, 'Baño').click()
+    await expect(task(other, 'Baño').getByRole('alert')).toHaveText('Ya estaba marcada como hecha.')
+
+    // Mientras tanto, marca otra tarea.
+    await markDone(other, 'Cristales y espejos').click()
+    const cristales = `Toca: ${formatShortDate(addDays(today(), 30))}`
+    await expect(task(other, 'Cristales y espejos')).toContainText(cristales)
+
+    // Primero tiene que verse Baño al día: así se sabe que la recarga ya ha llegado.
+    const reloaded = other.waitForResponse((response) => response.url().includes('/rest/v1/tasks?'))
+    release()
+    await reloaded
+
+    await expect(task(other, 'Baño')).toContainText(`Toca: ${formatShortDate(addDays(today(), 3))}`)
+    await expect(task(other, 'Cristales y espejos')).toContainText(cristales)
+    await expect(markDone(other, 'Cristales y espejos')).toHaveCount(0)
+  })
+
   // La vuelta la calcula el móvil con su reloj; el día lo pone la base de datos.
   test('si la fecha del dispositivo no es la de hoy, la app lo dice', async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // un sábado pasado

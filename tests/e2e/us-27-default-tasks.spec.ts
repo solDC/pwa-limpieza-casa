@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn } from './helpers/app'
+import { signIn, task } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-27 · Mis tareas por defecto (#36)
@@ -31,11 +31,11 @@ test.describe('US-27 · Mis tareas por defecto', () => {
   test('al entrar por primera vez ya tengo mis 6 tareas, con su frecuencia', async ({ page }) => {
     await signIn(page, uniqueEmail())
 
+    // Por su nombre, no por su posición: el orden depende del día (US-29).
     const items = taskList(page)
     await expect(items).toHaveCount(6)
-    for (const [index, task] of defaultTasks.entries()) {
-      await expect(items.nth(index).getByRole('heading', { level: 3 })).toHaveText(task.name)
-      await expect(items.nth(index)).toContainText(task.frequency)
+    for (const { name, frequency } of defaultTasks) {
+      await expect(task(page, name)).toContainText(frequency)
     }
   })
 
