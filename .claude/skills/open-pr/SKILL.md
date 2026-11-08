@@ -11,7 +11,7 @@ description: Prepara y abre un pull request a main en este proyecto con las comp
 
 ## 1. Comprobaciones antes de abrirlo
 
-1. **Rama:** no estás en `main`. La rama se llama `feature/…` o `fix/…`, o es la que la sesión tiene asignada.
+1. **Rama:** no estás en `main`. La rama se llama `feature/us-xx-…` (una historia), `fix/…` (un arreglo), `docs/…` o `chore/…`. La rama que asigna el entorno a la sesión (por ejemplo, `claude/…` en las sesiones en la nube) no se usa para pull requests.
 2. **Al día con `main`:**
 
    ```bash

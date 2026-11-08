@@ -30,7 +30,7 @@ Las reglas están en `CLAUDE.md`; aquí está el orden en que se aplican.
 
 ## 2. Rama
 
-Desde `main` actualizado, salvo que la sesión ya tenga asignada otra rama:
+Cada historia va **siempre** en su rama `feature/us-xx-<nombre-en-ingles>`, creada desde `main` actualizado. Aunque el entorno asigne otra rama a la sesión (por ejemplo, `claude/…` en las sesiones en la nube), no se usa para la historia:
 
 ```bash
 git fetch origin main
