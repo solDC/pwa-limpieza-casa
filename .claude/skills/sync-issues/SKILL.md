@@ -27,6 +27,8 @@ Para cada historia, una de estas acciones:
 | Historia hecha (está en «Estado» de `CLAUDE.md` y su pull request está fusionado) | No tocar: se cerró con `Closes #…` |
 | Etiqueta de prioridad antigua (`must`, `should`) | **Cambiarla** por `must have` o `nice to have` |
 | Issue de historia que ya no aparece en el documento | **Preguntar** a Sol qué hacer |
+| Historia que no cumple INVEST (ver la skill `new-story`) | **Avisar** a Sol y proponer cómo arreglarla con `new-story`, antes de crear o actualizar su issue |
+| Épica («Épica:» en el título) | Etiquetas `user-story`, `epic` y `backlog` |
 
 ## 3. Enseñar la lista a Sol y esperar su ok
 

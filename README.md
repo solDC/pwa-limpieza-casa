@@ -14,15 +14,16 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 - **Mis tareas por defecto:** Superficies (cocina, salón y dormitorio), Baño, Aspirar cosas de Cati, Cristales y espejos, Cepillar suelo y Limpiar juntas.
 - **Qué toca:** lo que toca hoy y lo retrasado, con su progreso.
 - **Marcar como hecha** una tarea entera o una parte.
-- **Histórico** de cada vuelta: completada, parcial (con su %) o no completada.
-- **Cancelar** una tarea sin perder su histórico, y **añadir** tareas nuevas *(Nice to have)*.
+- **Cambiar cuándo toca:** poner fecha a una puntual, cambiar la próxima vez de una de cada N días o mover una de fin de semana a otro finde.
+- **Cancelar** una tarea, y **añadir** tareas nuevas *(Nice to have)*.
 - **Instalable** como una PWA. Necesita conexión a internet.
 
 ## Backlog (fuera del MVP)
 
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario. Está descrito en la sección «Visión» de [`docs/user-stories.md`](docs/user-stories.md).
 - **Uso sin conexión,** con sincronización al recuperar la conexión.
-- Las historias aplazadas (editar, deshacer, elegir cuándo lo hice, rediseño, varias casas…) están en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).
+- **Histórico** de cada vuelta (completada, parcial, no completada o cancelada).
+- Las historias aplazadas (histórico, rediseño, varias casas…) están en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Cómo se modelan las tareas
 

@@ -28,6 +28,21 @@ Antes de escribirla, revisa y cuenta a Sol lo que encuentres:
 - **Limitaciones técnicas** que conviene saber antes (por ejemplo: los iconos de la pantalla de inicio no pueden estar animados; el enlace del email se abre en Safari y no en la app instalada del iPhone). Si las hay, propón una alternativa.
 - **Dependencias:** qué historias tienen que estar hechas antes (marcar como hecha necesita que existan las tareas).
 
+### INVEST
+
+Toda historia tiene que cumplir **INVEST**. Compruébalo antes de enseñarla y di a Sol qué letra no cumple y cómo arreglarlo:
+
+| Letra | Significa | En este proyecto |
+|---|---|---|
+| **I** | Independiente | Se puede hacer sin esperar a otra. Si depende de otra, la dependencia se escribe en una nota en cursiva («*Depende de la US-30.*») y ningún criterio necesita algo que aún no existe |
+| **N** | Negociable | Dice qué necesita Sol, no cómo programarlo |
+| **V** | Valiosa | Sol ve el cambio en la app. Si ya está cubierta por otra historia hecha, no hace falta |
+| **E** | Estimable | No depende de decisiones pendientes: si las hay, se preguntan antes o se apuntan en una nota y la historia va al backlog hasta resolverlas |
+| **S** | Pequeña (*small*) | Cabe en una rama y un pull request. Si junta varias cosas con lógica distinta (por ejemplo, cada tipo de frecuencia), se divide |
+| **T** | Testable | Cada criterio se puede comprobar con una prueba. Nada de «unos segundos» o «que se vea bien» sin concretar |
+
+Una **épica** es una idea demasiado grande para una historia (por ejemplo, el rediseño de la interfaz). Se escribe con «Épica:» en el título, lleva la etiqueta `epic` en GitHub y se divide en historias INVEST antes de implementarla.
+
 ## 3. Escribir el borrador
 
 Con el formato de `docs/user-stories.md`:
@@ -65,12 +80,13 @@ Después, propón seguir con **`sync-issues`** para crear su issue y poner el en
 
 ## Revisar historias existentes
 
-Si Sol pide revisar historias ya escritas, aplica los pasos 2 y 3 como lista de comprobación y **propón** los cambios (criterios ambiguos, que no se pueden probar, duplicados, conceptos que no encajan). No reescribas nada sin su ok.
+Si Sol pide revisar historias ya escritas, aplica los pasos 2 y 3, con INVEST, como lista de comprobación y **propón** los cambios (criterios ambiguos, que no se pueden probar, duplicados, conceptos que no encajan). No reescribas nada sin su ok.
 
 ## Antes de terminar
 
 - [ ] Sol ha respondido a las preguntas y ha dado su ok al borrador.
 - [ ] La historia no duplica otra y encaja con «Conceptos».
+- [ ] Cumple INVEST (o es una épica, marcada como tal).
 - [ ] Cada criterio se puede comprobar con una prueba, y ninguno es opcional.
 - [ ] Número, prioridad y sección correctos; tabla de resumen al día.
 - [ ] Propuesto el paso siguiente: `sync-issues`.
