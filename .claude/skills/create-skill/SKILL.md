@@ -25,7 +25,7 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    - **Agente** (`.claude/agents/<nombre>.md`): otro Claude que recibe un encargo, empieza con el contexto limpio, puede tener solo algunas herramientas y devuelve un resumen. Solo merece la pena para **una mirada independiente** (juzgar algo sin los supuestos de quien lo hizo) o para **separar mucho trabajo de lectura** de la conversación. Para buscar en el código ya existen los agentes de Claude Code (`Explore`, `general-purpose`).
    - En la duda, es una skill.
 
-5. **Parte de este catálogo** (1 agente y 6 skills) y marca cuáles existen ya:
+5. **Parte de este catálogo** (1 agente y 7 skills) y marca cuáles existen ya:
 
    | Nombre | Tipo | Para qué |
    |---|---|---|
@@ -34,6 +34,7 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    | `code-reviewer` | Agente | Revisa la rama frente a `main` con las reglas de `CLAUDE.md`: dependencias entre carpetas, RLS, fechas `'YYYY-MM-DD'`, nombres en inglés y textos en español, una prueba por criterio, documentación al día y CHANGELOG solo con cambios de la app. Solo lee e informa. |
    | `implement-story` | Skill | El flujo principal: de la historia `US-xx` al código por capas (`domain` → `storage` → `features`). Usa `new-migration` y `write-tests`, y pide revisión a `code-reviewer`. |
    | `open-pr` | Skill | Pasa `npm test`, `npm run build` y `npm run test:e2e`, revisa el CHANGELOG, avisa de migraciones, enseña el resumen a Sol y, con su ok, hace el commit y abre el PR con «Cómo probarlo a mano». |
+   | `new-story` | Skill | Convierte una idea de Sol en una historia de `docs/user-stories.md`: pregunta lo que falte, comprueba que no duplica otra y que encaja con «Conceptos», escribe criterios comprobables y espera su ok. |
    | `sync-issues` | Skill | Mantiene los issues de GitHub iguales que `docs/user-stories.md`: crear, actualizar, cerrar como *not planned* o pasar al backlog, con el ok de Sol, y enlazarlos en la tabla. |
    | `release-check` | Skill | Lista para Sol lo que hay que hacer fuera del código antes de fusionar (migraciones en la nube, plantillas del email, variables de Vercel, Redirect URLs, reinstalar la PWA). No ejecuta nada en la nube. |
 
