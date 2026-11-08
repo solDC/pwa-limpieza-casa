@@ -146,3 +146,8 @@ button:disabled {
 .task-list .card {
   gap: 0.25rem;
 }
+
+/* «Toca: …» de cada tarea (US-28). */
+.due {
+  font-weight: 600;
+}

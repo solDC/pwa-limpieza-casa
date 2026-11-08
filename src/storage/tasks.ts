@@ -44,10 +44,19 @@ function toFrequency(row: TaskRow): Frequency {
     case 'weekend_weekly':
       return { kind: 'weekendWeekly' }
     case 'weekend_biweekly':
-      return { kind: 'weekendBiweekly', startOn: row.biweekly_start_on ?? '' }
+      return { kind: 'weekendBiweekly', startOn: required(row.biweekly_start_on, row) }
     case 'interval':
-      return { kind: 'interval', days: row.interval_days ?? 1 }
+      return { kind: 'interval', days: required(row.interval_days, row) }
     case 'one_off':
       return { kind: 'oneOff' }
   }
+}
+
+// Programación defensiva: las reglas (check) de la tabla tasks impiden que falte este dato,
+// así que no debería pasar nunca. Si pasara, mejor avisar que inventarse una frecuencia.
+function required<T>(value: T | null, row: TaskRow): T {
+  if (value === null) {
+    throw new Error(`La tarea «${row.name}» tiene una frecuencia incompleta.`)
+  }
+  return value
 }
