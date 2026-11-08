@@ -37,11 +37,13 @@ test.describe('US-28 · Frecuencias', () => {
     await expect(task(page, 'Cristales y espejos')).toContainText('Toca: hoy')
   })
 
-  test('las puntuales tocan desde hoy', async ({ page }) => {
+  test('las puntuales van sin fecha', async ({ page }) => {
     await signIn(page, uniqueEmail())
 
-    await expect(task(page, 'Cepillar suelo')).toContainText('Toca: hoy')
-    await expect(task(page, 'Limpiar juntas')).toContainText('Toca: hoy')
+    for (const name of ['Cepillar suelo', 'Limpiar juntas']) {
+      await expect(task(page, name)).toContainText('Sin fecha')
+      await expect(task(page, name)).not.toContainText('Toca:')
+    }
   })
 
   // Se fija la hora del navegador en un día concreto para comprobar el finde exacto.

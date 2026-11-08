@@ -55,7 +55,7 @@ function TaskItem({ task, today }: { task: Task; today: LocalDate }) {
     <li className="card">
       <h3>{task.name}</h3>
       <p className="muted">{describeFrequency(task.frequency)}</p>
-      {round && <p className="due">Toca: {describeDue(task.frequency, round, today)}</p>}
+      {round && <p className="due">{describeDue(task.frequency, round, today)}</p>}
       {task.parts.length > 0 && (
         <p>{task.parts.map((part) => `${part.name} ${part.weight} %`).join(' · ')}</p>
       )}

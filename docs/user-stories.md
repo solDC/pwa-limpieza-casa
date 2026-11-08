@@ -47,7 +47,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
   | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: se muestra como tarea de finde, pero se puede hacer entre semana |
   | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
   | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
-  | **Puntual** | Cepillar suelo, Limpiar juntas | Desde que se crea | Nunca: pendiente hasta que se hace, y después desaparece |
+  | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha: pendiente hasta que se hace, y después desaparece | Nunca: sin fecha no tiene retraso |
 
 - Los días son **fechas locales sin hora**. Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 

@@ -126,8 +126,9 @@ describe('cada N días desde la última vez', () => {
 describe('puntual', () => {
   const oneOff: Frequency = { kind: 'oneOff' }
 
-  it('toca desde que se crea hasta que se hace', () => {
-    expect(round(oneOff, null, '2026-11-20')).toEqual({ startsOn: '2026-11-08', dueBy: null })
+  it('va sin fecha: está pendiente hasta que se hace y nunca tiene retraso', () => {
+    expect(round(oneOff, null, '2026-11-08')).toEqual({ startsOn: null, dueBy: null })
+    expect(round(oneOff, null, '2027-05-20')).toEqual({ startsOn: null, dueBy: null })
   })
 
   it('una vez hecha, ya no vuelve a tocar', () => {
@@ -141,24 +142,30 @@ describe('describeDue: el texto de «Toca:»', () => {
 
   it('las de fin de semana dicen de qué finde son', () => {
     expect(describeDue(weekly, { startsOn: '2026-11-14', dueBy: '2026-11-20' }, '2026-11-18')).toBe(
-      'finde del 14 nov',
+      'Toca: finde del 14 nov',
     )
   })
 
   it('hoy y mañana', () => {
-    expect(describeDue(bathroom, { startsOn: '2026-11-08', dueBy: null }, '2026-11-08')).toBe('hoy')
-    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-08')).toBe('mañana')
+    expect(describeDue(bathroom, { startsOn: '2026-11-08', dueBy: null }, '2026-11-08')).toBe('Toca: hoy')
+    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-08')).toBe('Toca: mañana')
   })
 
   it('otro día futuro, con el día de la semana', () => {
     expect(describeDue(bathroom, { startsOn: '2026-11-18', dueBy: null }, '2026-11-08')).toBe(
-      'mié 18 nov',
+      'Toca: mié 18 nov',
+    )
+  })
+
+  it('sin fecha', () => {
+    expect(describeDue({ kind: 'oneOff' }, { startsOn: null, dueBy: null }, '2026-11-08')).toBe(
+      'Sin fecha',
     )
   })
 
   it('si ya debería estar hecha, desde qué día', () => {
     expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-12')).toBe(
-      'desde el lun 9 nov',
+      'Toca: desde el lun 9 nov',
     )
   })
 })

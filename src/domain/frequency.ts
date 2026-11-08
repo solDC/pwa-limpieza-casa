@@ -4,9 +4,12 @@
 import { addDays, daysBetween, dayOfWeek, formatDayMonth, formatShortDate } from './dates'
 import type { Frequency, LocalDate, Task } from './task'
 
-/** Una vuelta: desde cuándo toca y hasta qué día hay plazo (`null`: sin plazo). */
+/**
+ * Una vuelta: desde cuándo toca (`null`: sin fecha, como una puntual) y hasta qué día
+ * hay plazo (`null`: sin plazo).
+ */
 export type Round = {
-  startsOn: LocalDate
+  startsOn: LocalDate | null
   dueBy: LocalDate | null
 }
 
@@ -43,7 +46,8 @@ export function currentRound(
         dueBy: null,
       }
     case 'oneOff':
-      return lastCompletedOn ? null : { startsOn: task.createdOn, dueBy: null }
+      // Va sin fecha: pendiente hasta que se hace, sin retraso. Poder ponerle una es la US-38.
+      return lastCompletedOn ? null : { startsOn: null, dueBy: null }
   }
 }
 
@@ -56,14 +60,22 @@ function weekendRound(saturday: LocalDate, every: number, lastCompletedOn: Local
   return { startsOn, dueBy: addDays(startsOn, WEEKEND_ROUND_DAYS - 1) }
 }
 
-/** El texto de «Toca: …»: «finde del 14 nov», «hoy», «mañana», «mié 18 nov» o «desde el lun 9 nov». */
+/**
+ * Cuándo toca, en texto: «Toca: finde del 14 nov», «Toca: hoy», «Toca: mañana»,
+ * «Toca: mié 18 nov», «Toca: desde el lun 9 nov» o «Sin fecha».
+ */
 export function describeDue(frequency: Frequency, round: Round, today: LocalDate): string {
+  if (round.startsOn === null) return 'Sin fecha'
+  return `Toca: ${describeDate(frequency, round.startsOn, today)}`
+}
+
+function describeDate(frequency: Frequency, startsOn: LocalDate, today: LocalDate): string {
   if (frequency.kind === 'weekendWeekly' || frequency.kind === 'weekendBiweekly') {
-    return `finde del ${formatDayMonth(round.startsOn)}`
+    return `finde del ${formatDayMonth(startsOn)}`
   }
-  const days = daysBetween(today, round.startsOn)
+  const days = daysBetween(today, startsOn)
   if (days === 0) return 'hoy'
   if (days === 1) return 'mañana'
-  if (days < 0) return `desde el ${formatShortDate(round.startsOn)}`
-  return formatShortDate(round.startsOn)
+  if (days < 0) return `desde el ${formatShortDate(startsOn)}`
+  return formatShortDate(startsOn)
 }
