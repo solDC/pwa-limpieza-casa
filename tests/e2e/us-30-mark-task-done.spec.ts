@@ -23,7 +23,9 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
   }) => {
     await signIn(page, uniqueEmail())
     const saturday = addDays(today(), -((dayOfWeek(today()) + 1) % 7))
-    await expect(task(page, 'Superficies')).toContainText(`Toca: finde del ${formatDayMonth(saturday)}`)
+    // Usa el reloj de verdad: el sábado y el domingo dice «Toca: finde del…» y de lunes a
+    // viernes, «Retrasada… (tocaba el finde del…)» (US-29).
+    await expect(task(page, 'Superficies')).toContainText(`finde del ${formatDayMonth(saturday)}`)
 
     await markDone(page, 'Superficies').click()
 
@@ -180,13 +182,18 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     // En el segundo dispositivo, la recarga de la lista se lee ya, pero llega cuando se suelte.
     let release = () => {}
     const released = new Promise<void>((resolve) => (release = resolve))
+    let fetched = () => {}
+    const listRead = new Promise<void>((resolve) => (fetched = resolve))
     await other.route('**/rest/v1/tasks?*', async (route) => {
       const response = await route.fetch()
+      fetched()
       await released
       await route.fulfill({ response })
     })
     await markDone(other, 'Baño').click()
     await expect(task(other, 'Baño').getByRole('alert')).toHaveText('Ya estaba marcada como hecha.')
+    // La lista retenida tiene que ser de antes de marcar Cristales.
+    await listRead
 
     // Mientras tanto, marca otra tarea.
     await markDone(other, 'Cristales y espejos').click()
