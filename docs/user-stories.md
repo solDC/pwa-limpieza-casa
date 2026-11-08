@@ -31,6 +31,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
+| US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | — |
 
 ## Conceptos
 
@@ -194,6 +195,16 @@ para adelantarla o retrasarla.
 - Puedo mover la vuelta a otro finde, a partir del actual.
 - En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
 - En las semanales solo se mueve esa vuelta; las siguientes siguen siendo cada finde.
+
+*Depende de la US-30.*
+
+### US-46 · Marcar como hecha en un día anterior (Nice to have)
+Como usuario,
+quiero elegir el día en que hice una tarea al marcarla,
+para que la app cuente bien aunque me acuerde de marcarla tarde.
+- Al marcar una tarea, puedo dejar «hoy» o elegir un día anterior.
+- No puedo elegir un día futuro, ni anterior al inicio de la vuelta en curso (en las de fin de semana, su sábado; en las de cada N días, el día en que se hizo la anterior).
+- La próxima vez que toca se cuenta desde el día elegido.
 
 *Depende de la US-30.*
 

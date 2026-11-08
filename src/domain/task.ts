@@ -23,11 +23,14 @@ export type TaskPart = {
 
 export type Task = {
   id: string
+  householdId: string
   name: string
   frequency: Frequency
   parts: TaskPart[]
   createdOn: LocalDate
   cancelledOn: LocalDate | null
+  /** Día en que se terminó la última vuelta (`null` si nunca). */
+  lastCompletedOn: LocalDate | null
 }
 
 /** Texto de la frecuencia para la interfaz. */
