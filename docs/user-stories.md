@@ -10,7 +10,7 @@ Cada historia tiene su issue en GitHub, enlazado en la tabla de resumen. Al aña
 
 ## El MVP acotado
 
-Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se mantienen la base de datos y el inicio de sesión porque ya estaban hechos. Lo esencial: ver qué toca, marcarlo como hecho y guardar un histórico de cada vuelta (completada, parcial o no completada).
+Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se mantienen la base de datos y el inicio de sesión porque ya estaban hechos. Lo esencial: ver qué toca y marcarlo como hecho, entero o por partes, y poder cambiar cuándo toca. El histórico de cada vuelta queda en el backlog.
 
 ## Resumen
 
@@ -23,12 +23,14 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
 | US-29 | Qué toca | Must have | Pendiente | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
-| US-30 | Marcar como hecha | Must have | Pendiente | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
-| US-31 | Histórico de cada vuelta | Must have | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
+| US-30 | Marcar una tarea como hecha | Must have | Pendiente | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
+| US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-33 | Añadir una tarea | Nice to have | Pendiente | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
 | US-34 | Elegir el peso de las partes | Nice to have | Pendiente | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
-| US-38 | Cambiar la fecha de una tarea | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
+| US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
+| US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
+| US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 
 ## Conceptos
 
@@ -40,6 +42,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
   | **Completada** | Se han hecho la tarea entera o todas sus partes |
   | **Parcial (X %)** | Se acaba el plazo con algunas partes hechas; X es la suma de sus pesos |
   | **No completada** | Se acaba el plazo sin hacer nada |
+  | **Cancelada** | Se cancela la tarea con la vuelta en curso (US-40) |
 
 - **Frecuencias:**
 
@@ -120,24 +123,24 @@ para saber qué hacer sin buscar.
 - Las tareas con partes muestran su progreso en la vuelta actual («Cocina hecha · 50 %»).
 - Las que no tocan todavía se ven aparte, con la fecha en que tocarán.
 
-### US-30 · Marcar como hecha (Must have)
+### US-30 · Marcar una tarea como hecha (Must have)
 Como usuario,
-quiero marcar como hecha una tarea, o una de sus partes,
+quiero marcar como hecha una tarea entera,
 para que la app sepa qué he limpiado ya.
-- Puedo marcar una tarea entera; si tiene partes, también cada parte por separado.
-- Al marcar todas las partes, la vuelta queda completada.
+- Puedo marcar como hecha una tarea entera; su vuelta queda completada.
 - Al completar una vuelta, la tarea deja de aparecer en «Qué toca» y se calcula cuándo vuelve a tocar.
 - Se apunta como día de hecho el día en que la marco.
 - Si falla el guardado (sin conexión o un error), la app lo dice y no la muestra como hecha.
 
-### US-31 · Histórico de cada vuelta (Must have)
+### US-39 · Marcar una parte como hecha (Must have)
 Como usuario,
-quiero ver el histórico de cada vuelta de cada tarea,
-para saber cómo voy con la limpieza.
-- Hay una pantalla «Histórico» con cada vuelta cerrada, de la más reciente a la más antigua: tarea, fechas y estado.
-- El estado es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos».
-- Las vueltas de fin de semana que llegan al sábado siguiente sin terminar (el plazo acaba el viernes) quedan como parcial o no completada sin que yo haga nada.
-- El porcentaje parcial es la suma de los pesos de las partes hechas.
+quiero marcar como hecha una sola parte de una tarea,
+para avanzar poco a poco y que la app sepa cuánto llevo.
+- Puedo marcar cada parte por separado, y veo el progreso de la vuelta (la suma de los pesos de las partes hechas, por ejemplo 50 %).
+- Al marcar todas las partes, la vuelta queda completada.
+- Si falla el guardado, la app lo dice y no muestra la parte como hecha.
+
+*Depende de la US-30.*
 
 ### US-32 · Cancelar una tarea (Nice to have)
 Como usuario,
@@ -145,7 +148,8 @@ quiero cancelar una tarea que ya no hago,
 para que deje de aparecer sin perder su histórico.
 - La app pide confirmación antes de cancelar.
 - Una tarea cancelada deja de aparecer en «Qué toca».
-- Su histórico se conserva y se sigue viendo en «Histórico».
+
+*Que su histórico siga viéndose es la US-40 (backlog).*
 
 ### US-33 · Añadir una tarea (Nice to have)
 Como usuario,
@@ -164,17 +168,34 @@ para que el porcentaje parcial refleje el esfuerzo real de cada parte.
 
 *Depende de la US-33 (añadir una tarea).*
 
-### US-38 · Cambiar la fecha de una tarea (Must have)
+### US-38 · Poner fecha a una tarea puntual (Must have)
 Como usuario,
-quiero poner o cambiar cuándo toca una tarea,
-para que la app se adapte a mis planes.
-- En una tarea puntual puedo ponerle una fecha, cambiarla o quitarla; sin fecha se ve como «Sin fecha» y nunca tiene retraso.
-- Una puntual con fecha que llega a esa fecha sin hacerse aparece como retrasada.
-- En una tarea de cada N días puedo cambiar cuándo toca la próxima vez; las siguientes se cuentan desde el día en que se termine, como siempre.
-- En una tarea de fin de semana puedo mover su vuelta a otro finde, adelantándola o retrasándola. En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
+quiero ponerle una fecha a una tarea puntual, cambiarla o quitarla,
+para planificarla si quiero.
+- Puedo ponerle una fecha, cambiarla o quitarla; sin fecha se ve como «Sin fecha» y nunca tiene retraso.
+- Si llega esa fecha sin hacerse, aparece como retrasada.
 - Solo se puede elegir hoy o una fecha futura.
 
-*Depende de la US-30: para cambiar una fecha hace falta poder guardar cambios en las tareas.*
+*Depende de la US-30.*
+
+### US-41 · Cambiar cuándo toca la próxima vez (Must have)
+Como usuario,
+quiero cambiar cuándo toca la próxima vez una tarea de cada N días,
+para adaptarla a mis planes.
+- Puedo cambiar el día en que toca la próxima vez; solo hoy o una fecha futura.
+- Después, las siguientes se cuentan desde el día en que se termine, como siempre.
+
+*Depende de la US-30.*
+
+### US-42 · Mover una tarea de fin de semana a otro finde (Must have)
+Como usuario,
+quiero mover una tarea de fin de semana a otro finde,
+para adelantarla o retrasarla.
+- Puedo mover la vuelta a otro finde, a partir del actual.
+- En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
+- En las semanales solo se mueve esa vuelta; las siguientes siguen siendo cada finde.
+
+*Depende de la US-30.*
 
 ## Historias anteriores
 
@@ -184,48 +205,14 @@ Las historias US-04 a US-25 eran del MVP original, más amplio. Así quedan con 
 |---|---|
 | **Absorbidas** por las nuevas | US-05 Partes, US-09 a US-11 Frecuencias → US-28 · US-12 y US-13 Marcar → US-30 · US-16 a US-18 Qué toca → US-29 · US-25 Aviso si falla el guardado → US-30 |
 | **Sustituidas** | US-04 Crear → US-33 · US-07 Borrar → US-32 (cancelar, para conservar el histórico) · US-20 Historial → US-31 · US-22 y US-23 Datos de ejemplo → US-27 (mis tareas por defecto) |
-| **Al backlog** | US-06, US-08, US-14, US-15, US-19, US-21 y US-35 (abajo) |
+| **Descartadas** al revisarlas con INVEST | US-06 Editar una tarea (absorbida por la US-33 y las US-38, US-41 y US-42) · US-08 Ver todas mis tareas (cumplida con «Tus tareas», US-27 y US-28) · US-14 Elegir cuándo lo hice · US-15 Deshacer · US-19 Pantalla vacía (con las tareas por defecto no hay hogar vacío) · US-21 Historial de una tarea |
 | **Ya cumplida** | US-24 Instalar la app: la PWA ya se puede instalar |
 
 ## Backlog
 
 Para una versión futura.
 
-### US-06 · Editar una tarea · [#7](https://github.com/solDC/pwa-limpieza-casa/issues/7)
-Como usuario,
-quiero cambiar el nombre, las partes y la frecuencia de una tarea,
-para que refleje cómo cuido de verdad mi casa.
-- Editar una tarea no borra el progreso de la vuelta actual ni el histórico.
-
-### US-08 · Ver todas mis tareas · [#9](https://github.com/solDC/pwa-limpieza-casa/issues/9)
-Como usuario,
-quiero ver todas mis tareas con su frecuencia y cuándo tocan,
-para tener una visión de conjunto de mi casa.
-
-### US-14 · Elegir cuándo lo hice · [#15](https://github.com/solDC/pwa-limpieza-casa/issues/15)
-Como usuario,
-quiero decir cuándo la hice de verdad (hoy, ayer u otro día),
-para que el histórico y las próximas fechas sean correctos aunque lo apunte tarde.
-- No se admiten fechas futuras.
-- Se guarda la fecha en que se hizo y, aparte, la fecha en que se apuntó.
-
-### US-15 · Deshacer · [#16](https://github.com/solDC/pwa-limpieza-casa/issues/16)
-Como usuario,
-quiero deshacer lo último que he marcado,
-para corregir un error al momento.
-- Tras marcar aparece un aviso con el botón «Deshacer» durante unos segundos.
-
-### US-19 · Pantalla vacía · [#20](https://github.com/solDC/pwa-limpieza-casa/issues/20)
-Como usuario nuevo,
-quiero una pantalla que me oriente cuando no tengo tareas,
-para saber cómo empezar.
-
-### US-21 · Historial de una tarea · [#22](https://github.com/solDC/pwa-limpieza-casa/issues/22)
-Como usuario,
-quiero ver el histórico de una sola tarea,
-para ver cada cuánto la hago de verdad.
-
-### US-35 · Rediseño de la interfaz · [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44)
+### US-35 · Épica: Rediseño de la interfaz · [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44)
 Como usuario,
 quiero que la app tenga un diseño que me guste,
 para disfrutar usándola cada día.
@@ -256,6 +243,27 @@ para que deje de aparecer sin perder su histórico.
 - No puedo archivar mi única casa activa.
 
 *Depende de la US-36. Cuando se pueda compartir una casa (ver «Visión»), solo quien la creó podrá archivarla; las demás personas solo podrán salir de ella.*
+
+### US-31 · Histórico de cada vuelta · [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40)
+Como usuario,
+quiero ver el histórico de cada vuelta de cada tarea,
+para saber cómo voy con la limpieza.
+- Hay una pantalla «Histórico» con cada vuelta cerrada, de la más reciente a la más antigua: tarea, fechas y estado.
+- El estado es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos».
+- Las vueltas de fin de semana que llegan al sábado siguiente sin terminar (el plazo acaba el viernes) quedan como parcial o no completada sin que yo haga nada.
+- El porcentaje parcial es la suma de los pesos de las partes hechas.
+
+*Pendiente de decidir antes de implementarla: qué pasa con una vuelta de fin de semana que empezó antes de crearse la tarea (no debería salir como «no completada»).*
+
+### US-40 · Ver en el histórico las tareas canceladas · [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58)
+Como usuario,
+quiero que al cancelar una tarea su vuelta en curso y todas las anteriores sigan en el histórico,
+para no perder lo que hice.
+- Al cancelar una tarea, su vuelta en curso se cierra con el estado **Cancelada** y aparece en el histórico.
+- Las vueltas anteriores de esa tarea siguen en el histórico, con su estado.
+- En el histórico se ve que esa tarea está cancelada.
+
+*Depende de la US-31 y de la US-32.*
 
 ## Visión
 
