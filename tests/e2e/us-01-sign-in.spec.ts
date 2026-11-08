@@ -6,6 +6,8 @@ import { uniqueEmail, waitForMagicLink } from './helpers/mailbox'
 //
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
 
+// No usa el signIn() común de helpers/app.ts: aquí se prueba el propio inicio de sesión,
+// así que comprueba cada paso y deja a cada prueba comprobar que ha entrado.
 async function signIn(page: Page, email: string) {
   await page.goto('/')
   await page.getByLabel('Email').fill(email)
