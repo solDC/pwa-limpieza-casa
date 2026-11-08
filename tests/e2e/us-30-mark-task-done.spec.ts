@@ -144,6 +144,36 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await expect(markDone(other, 'Baño')).toHaveCount(0)
   })
 
+  // Regresión: si fallaba la recarga tras «Ya estaba marcada como hecha», la lista
+  // entera desaparecía y solo quedaba el error.
+  test('si ya se había marcado y no se puede recargar la lista, la lista se queda', async ({
+    page,
+    context,
+  }) => {
+    await signIn(page, uniqueEmail())
+    const other = await context.newPage()
+    await other.goto('/')
+    await expect(task(other, 'Baño')).toContainText('Toca: hoy')
+
+    await markDone(page, 'Baño').click()
+    await expect(markDone(page, 'Baño')).toHaveCount(0)
+
+    // La recarga de la lista (tasks, no task_rounds) falla en el segundo dispositivo.
+    // Con un error 500: sin conexión, supabase-js reintenta las lecturas durante 7 segundos.
+    await other.route('**/rest/v1/tasks?*', (route) =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"error"}' }),
+    )
+    const reloaded = other.waitForResponse((response) => response.url().includes('/rest/v1/tasks?'))
+    await markDone(other, 'Baño').click()
+    await reloaded
+
+    await expect(task(other, 'Baño').getByRole('alert')).toHaveText(
+      'Ya estaba marcada como hecha.',
+    )
+    await expect(other.getByText('No se han podido cargar tus tareas.')).toHaveCount(0)
+    await expect(task(other, 'Cristales y espejos')).toBeVisible()
+  })
+
   // La vuelta la calcula el móvil con su reloj; el día lo pone la base de datos.
   test('si la fecha del dispositivo no es la de hoy, la app lo dice', async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // un sábado pasado

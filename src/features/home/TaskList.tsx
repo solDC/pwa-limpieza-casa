@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { canMarkDone, currentRound, describeDue } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
@@ -17,19 +17,28 @@ type TasksState =
 export function TaskList() {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
 
-  const load = useCallback((isActive: () => boolean = () => true) => {
-    listTasks()
-      .then((tasks) => isActive() && setState({ status: 'loaded', tasks }))
-      .catch((error: Error) => isActive() && setState({ status: 'error', message: error.message }))
-  }, [])
+  // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
+  const mounted = useRef(true)
 
   useEffect(() => {
-    let active = true
-    load(() => active)
+    mounted.current = true
+    listTasks()
+      .then((tasks) => mounted.current && setState({ status: 'loaded', tasks }))
+      .catch(
+        (error: Error) => mounted.current && setState({ status: 'error', message: error.message }),
+      )
     return () => {
-      active = false
+      mounted.current = false
     }
-  }, [load])
+  }, [])
+
+  // Vuelve a cargar una lista que ya se ve. Si falla, la lista se queda como estaba
+  // (con el aviso de la tarjeta) en lugar de cambiarse entera por el error.
+  function reload() {
+    listTasks()
+      .then((tasks) => mounted.current && setState({ status: 'loaded', tasks }))
+      .catch(() => {})
+  }
 
   const today = useToday()
 
@@ -64,7 +73,7 @@ export function TaskList() {
               task={task}
               today={today}
               onCompleted={handleCompleted}
-              onStale={load}
+              onStale={reload}
             />
           ))}
         </ul>

@@ -11,7 +11,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
   - El día en que se hizo lo apunta **la base de datos** (hoy en Madrid), no el móvil, para que un reloj mal puesto no lo cambie. Elegir otro día es la US-46.
   - Solo se muestra como hecha cuando se ha guardado. Si falla, la app lo dice en esa tarea y la deja como estaba, con un mensaje según el motivo:
     - Sin conexión o un error de Supabase: «No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.»
-    - Ya se había marcado desde otro dispositivo: «Ya estaba marcada como hecha.», y la lista se pone al día.
+    - Ya se había marcado desde otro dispositivo: «Ya estaba marcada como hecha.», y la lista se pone al día. Si no se puede poner al día (sin conexión), la lista se queda como estaba, con el aviso, en lugar de cambiarse entera por un error.
     - La fecha del dispositivo no es la de hoy: lo dice, para que se revise la fecha y la hora.
   - Las de fin de semana solo se pueden marcar durante su vuelta, del sábado al viernes. Si ya se hicieron, o en la semana que no toca a las de cada 15 días, no hay botón hasta el sábado. Así no se puede marcar por error la vuelta siguiente, que aún no ha empezado. Las de cada N días se pueden marcar antes de que toquen, porque la siguiente se cuenta desde el día en que se hacen, pero no dos veces el mismo día.
   - El orden de la lista no cambia: separar lo que toca de lo que no, y ordenar por fecha, es la US-29.

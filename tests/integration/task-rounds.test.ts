@@ -92,6 +92,22 @@ describe('US-30 · marcar una tarea como hecha', () => {
     ).rejects.toThrow(/task_rounds_completed_on_check/)
   })
 
+  it('en las de fin de semana, se apunta la vuelta en la que está hoy', async () => {
+    const { household, task } = await taskOf(ana, 'Superficies')
+    // La vuelta de hoy en Madrid: desde el último sábado hasta el viernes siguiente.
+    const { rows } = await db.query(
+      `select to_char(d - ((extract(dow from d)::int + 1) % 7), 'YYYY-MM-DD') as starts_on,
+              to_char(d - ((extract(dow from d)::int + 1) % 7) + 6, 'YYYY-MM-DD') as due_by,
+              to_char(d, 'YYYY-MM-DD') as today
+       from (select (now() at time zone 'Europe/Madrid')::date as d) as madrid`,
+    )
+    const [{ starts_on: startsOn, due_by: dueBy, today }] = rows
+    const inserted = await asUser(db, ana, (query) =>
+      query(insertRound, [household, task, startsOn, dueBy]),
+    )
+    expect(inserted.rows[0].completed_on).toBe(today)
+  })
+
   it('una puntual solo se hace una vez', async () => {
     const { household, task } = await taskOf(ana, 'Cepillar suelo')
     await expect(

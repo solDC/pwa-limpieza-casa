@@ -308,6 +308,16 @@ para volver a hacerla sin crearla de nuevo.
 
 *Depende de la US-32.*
 
+### US-47 · Avisos de error visibles · [#67](https://github.com/solDC/pwa-limpieza-casa/issues/67)
+Como usuario de la app en el móvil,
+quiero que los errores al guardar salgan en un aviso que se vea bien,
+para darme cuenta de que algo no se ha guardado.
+- Si no se puede guardar una tarea, aparece un aviso flotante con el nombre de la tarea y el motivo, visible aunque haya bajado en la lista.
+- El aviso se queda en pantalla hasta que lo cierro con «Cerrar».
+- Si la tarea ya estaba hecha en otro dispositivo y desaparece de la lista (una puntual), el aviso se ve igual.
+
+*Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
+
 ## Visión
 
 Ideas para más adelante, todavía sin historia.
