@@ -112,10 +112,13 @@ La terminal de VS Code ya está dentro del contenedor, así que los comandos se 
 
 ```
 npm test
+npm run test:integration
 npm run test:e2e
 npm run build
 npm install nombre-del-paquete
 ```
+
+`npm run test:integration` y casi todas las pruebas de `npm run test:e2e` necesitan Supabase local arrancado (ver «Supabase en local», abajo).
 
 Si cambian las dependencias (por ejemplo, al bajar cambios del repo), ejecuta `npm install` en la terminal de VS Code.
 
@@ -196,6 +199,8 @@ Abre http://localhost:5173.
 ```
 npm test
 ```
+
+Las pruebas de la base de datos (`npm run test:integration`) necesitan Supabase local, que necesita Docker: sin Docker no se pueden ejecutar.
 
 Para las pruebas en navegador, la primera vez hay que descargar Chromium (en Docker y en el dev container ya viene instalado):
 
@@ -285,5 +290,5 @@ El service worker, que es lo que permite instalarla, solo funciona en `localhost
 - Cada cambio que afecte a alguien se apunta en `CHANGELOG.md`, en el mismo commit, explicando qué y por qué.
 - Cada historia de usuario tiene su issue en GitHub y se desarrolla en su propia rama (`feature/…`), con un pull request a `main`.
 - Una historia no está terminada sin pruebas automáticas que cubran sus criterios de aceptación (ver `tests/README.md`).
-- Antes de subir un cambio: `npm test`, `npm run build` y `npm run test:e2e` deben pasar. La CI de GitHub lo comprueba en cada pull request.
+- Antes de subir un cambio: `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` deben pasar. La CI de GitHub lo comprueba en cada pull request.
 - Nunca subas `.env` ni claves reales.

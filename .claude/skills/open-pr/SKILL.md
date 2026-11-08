@@ -61,7 +61,7 @@ description: Prepara y abre un pull request a main en este proyecto con las comp
 
 ## 2. Descripción
 
-Título: el commit principal en Conventional Commits, en español (`feat: crear una tarea (US-04)`).
+Título: el commit principal en Conventional Commits, en español (`feat: marcar una tarea como hecha (US-30)`).
 
 Cuerpo en español, con estas secciones (el modelo es el PR #28 de US-01 y US-02). Omite las que no apliquen:
 

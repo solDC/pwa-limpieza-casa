@@ -128,7 +128,7 @@ Desde fuera del contenedor, con Docker:
 
 ```
 docker compose up --build              # arranca Vite en http://localhost:5173
-docker compose exec app npm test       # pruebas unitarias y de integración (Vitest)
+docker compose exec app npm test       # pruebas unitarias (Vitest)
 docker compose exec app npm run test:e2e  # pruebas en navegador (Playwright)
 docker compose exec app npm run build  # comprobación de tipos + compilación
 docker compose exec app npm install X  # añadir una dependencia
@@ -154,7 +154,7 @@ npx supabase stop           # para Supabase
 
 - Playwright está fijado a una versión exacta en `package.json` porque su navegador va dentro de la imagen de Docker: si se actualiza, hay que reconstruir la imagen (o el dev container).
 
-Antes de dar un cambio por terminado: `npm test`, `npm run build` y `npm run test:e2e` deben pasar.
+Antes de dar un cambio por terminado: `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` deben pasar.
 
 ## Secretos y variables de entorno
 

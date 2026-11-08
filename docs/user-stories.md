@@ -182,7 +182,7 @@ Para una versión futura.
 As a user,
 I want to edit a task's name, parts and frequency,
 so that it reflects how I actually look after my home.
-- Editar una tarea no borra el progreso de la ronda actual ni el historial.
+- Editar una tarea no borra el progreso de la vuelta actual ni el histórico.
 
 ### US-08 · Ver todas mis tareas · [#9](https://github.com/solDC/pwa-limpieza-casa/issues/9)
 As a user,
