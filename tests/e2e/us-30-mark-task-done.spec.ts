@@ -165,7 +165,11 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     )
     const reloaded = other.waitForResponse((response) => response.url().includes('/rest/v1/tasks?'))
     await markDone(other, 'Baño').click()
-    await reloaded
+    await (await reloaded).finished()
+    // Con la respuesta ya recibida, la app aún tiene que leerla y pintar la pantalla. Lo que
+    // se comprueba es que algo NO pasa (que la lista no se cambie por el error), así que no hay
+    // nada que esperar: se le da medio segundo, que le sobra, antes de comprobarlo.
+    await other.waitForTimeout(500)
 
     await expect(task(other, 'Baño').getByRole('alert')).toHaveText(
       'Ya estaba marcada como hecha.',
