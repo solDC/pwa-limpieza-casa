@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth, formatShortDate, localDateIn } from '../../src/domain/dates'
-import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
+import { signIn, task } from './helpers/app'
+import { uniqueEmail } from './helpers/mailbox'
 
 // US-30 · Marcar una tarea como hecha (#39)
 //
@@ -9,22 +10,6 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 // El día en que se hace lo apunta la base de datos (hoy en Madrid), así que estas pruebas
 // usan el reloj de verdad, sin fijarlo, y calculan las fechas esperadas a partir de hoy.
 // Que la app no pueda elegir ese día se prueba en tests/integration/task-rounds.test.ts.
-
-async function signIn(page: Page, email: string) {
-  await page.goto('/')
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
-  await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
-  await page.goto((await waitForSignInEmail(email)).link)
-  await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
-}
-
-function task(page: Page, name: string) {
-  return page
-    .getByRole('list', { name: 'Tus tareas' })
-    .getByRole('listitem')
-    .filter({ has: page.getByRole('heading', { level: 3, name, exact: true }) })
-}
 
 function markDone(page: Page, name: string) {
   return task(page, name).getByRole('button', { name: 'Marcar como hecha' })

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ErrorMessage } from '../../components/ErrorMessage'
 import { canMarkDone, currentRound, describeDue } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
@@ -61,9 +62,7 @@ export function TaskList() {
 
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
       {state.status === 'error' && (
-        <p className="error" role="alert">
-          {state.message}
-        </p>
+        <ErrorMessage>{state.message}</ErrorMessage>
       )}
       {state.status === 'loaded' && (
         <ul className="task-list" aria-label="Tus tareas">
@@ -96,7 +95,7 @@ function TaskItem({
 }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const round = currentRound(task, task.lastCompletedOn, today)
+  const round = currentRound(task, today)
   // Una puntual ya hecha no vuelve a tocar: desaparece.
   if (!round) return null
 
@@ -129,9 +128,7 @@ function TaskItem({
         </button>
       )}
       {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
+        <ErrorMessage>{error}</ErrorMessage>
       )}
     </li>
   )

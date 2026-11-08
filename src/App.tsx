@@ -1,3 +1,5 @@
+import { ErrorMessage } from './components/ErrorMessage'
+import { Screen } from './components/Screen'
 import { SignInScreen } from './features/auth/SignInScreen'
 import { useSession } from './features/auth/use-session'
 import { HomeScreen } from './features/home/HomeScreen'
@@ -12,10 +14,9 @@ function AppWithSession() {
 
   if (state.status === 'loading') {
     return (
-      <main className="app">
-        <h1>Limpieza de casa</h1>
+      <Screen>
         <p className="muted">Cargando…</p>
-      </main>
+      </Screen>
     )
   }
   if (state.status === 'signed-out') return <SignInScreen />
@@ -25,12 +26,11 @@ function AppWithSession() {
 // Solo se ve si falta configurar Supabase (en local: .env; en Vercel: variables de entorno).
 function MissingConfiguration() {
   return (
-    <main className="app">
-      <h1>Limpieza de casa</h1>
-      <p className="error" role="alert">
+    <Screen>
+      <ErrorMessage>
         Falta configurar la conexión con la base de datos (VITE_SUPABASE_URL y
         VITE_SUPABASE_ANON_KEY).
-      </p>
-    </main>
+      </ErrorMessage>
+    </Screen>
   )
 }

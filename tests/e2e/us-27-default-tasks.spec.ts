@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
+import { signIn } from './helpers/app'
+import { uniqueEmail } from './helpers/mailbox'
 
 // US-27 · Mis tareas por defecto (#36)
 //
@@ -19,15 +20,6 @@ const defaultTasks = [
   { name: 'Cepillar suelo', frequency: 'Puntual' },
   { name: 'Limpiar juntas', frequency: 'Puntual' },
 ]
-
-async function signIn(page: Page, email: string) {
-  await page.goto('/')
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
-  await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
-  await page.goto((await waitForSignInEmail(email)).link)
-  await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
-}
 
 function taskList(page: Page) {
   return page.getByRole('list', { name: 'Tus tareas' }).getByRole('listitem').filter({

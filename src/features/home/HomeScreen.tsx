@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { ErrorMessage } from '../../components/ErrorMessage'
+import { Screen } from '../../components/Screen'
 import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
 import { TaskList } from './TaskList'
@@ -39,15 +41,12 @@ export function HomeScreen({ session }: { session: Session }) {
   }, [])
 
   return (
-    <main className="app">
-      <h1>Limpieza de casa</h1>
+    <Screen>
       <p>Has entrado como {session.email}.</p>
 
       {state.status === 'loading' && <p className="muted">Cargando tu hogar…</p>}
       {state.status === 'error' && (
-        <p className="error" role="alert">
-          {state.message}
-        </p>
+        <ErrorMessage>{state.message}</ErrorMessage>
       )}
       {state.status === 'loaded' && state.household && (
         <section className="card">
@@ -67,11 +66,9 @@ export function HomeScreen({ session }: { session: Session }) {
           {signingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
         </button>
         {signOutError && (
-          <p className="error" role="alert">
-            {signOutError}
-          </p>
+          <ErrorMessage>{signOutError}</ErrorMessage>
         )}
       </div>
-    </main>
+    </Screen>
   )
 }

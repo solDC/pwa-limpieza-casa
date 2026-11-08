@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react'
+import { ErrorMessage } from '../../components/ErrorMessage'
+import { Screen } from '../../components/Screen'
 import { sendMagicLink, takeSignInErrorFromUrl, verifyEmailCode } from '../../storage/auth'
 
 type Step =
@@ -73,9 +75,7 @@ export function SignInScreen() {
   }
 
   return (
-    <main className="app">
-      <h1>Limpieza de casa</h1>
-
+    <Screen>
       {step.name === 'sent' ? (
         <section className="card" aria-live="polite">
           <h2>Revisa tu correo</h2>
@@ -108,9 +108,7 @@ export function SignInScreen() {
               {step.busy === 'checking' ? 'Comprobando…' : 'Entrar con el código'}
             </button>
             {step.error && (
-              <p className="error" role="alert">
-                {step.error}
-              </p>
+              <ErrorMessage>{step.error}</ErrorMessage>
             )}
             {step.notice && (
               <p className="notice" role="status">
@@ -164,12 +162,10 @@ export function SignInScreen() {
           </button>
 
           {step.name === 'form' && step.error && (
-            <p className="error" role="alert">
-              {step.error}
-            </p>
+            <ErrorMessage>{step.error}</ErrorMessage>
           )}
         </form>
       )}
-    </main>
+    </Screen>
   )
 }
