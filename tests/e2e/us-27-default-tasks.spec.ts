@@ -4,6 +4,12 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 // US-27 · Mis tareas por defecto (#36)
 //
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
+//
+// Dos criterios se prueban en tests/integration/tasks.test.ts y no aquí, porque no se
+// pueden provocar desde el navegador:
+// - «Mi hogar, que ya existe, también las recibe»: ocurre al aplicar la migración.
+// - «Si cancelo una, no vuelve a aparecer»: cancelar llega con la US-32. Aquí se comprueba
+//   la parte visible, que al volver a abrir la app no hay duplicados.
 
 const defaultTasks = [
   { name: 'Superficies', frequency: 'Semanal, en fin de semana' },

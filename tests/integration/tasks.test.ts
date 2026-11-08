@@ -129,6 +129,25 @@ describe('US-27 · los hogares que ya existían también las reciben, una sola v
     )
     expect(rows[0]).toEqual({ total: 6, active: 5 })
   })
+
+  // Si el relleno solo mirara las tareas activas, un hogar con todas canceladas
+  // recibiría otra vez las 6. Las canceladas cuentan como «ya tiene tareas».
+  it('aunque cancele todas, no vuelven a crearse', async () => {
+    const household = await householdOf(ana)
+    await db.query(
+      `update public.tasks set cancelled_on = created_on where household_id = $1`,
+      [household],
+    )
+
+    await backfill()
+
+    const { rows } = await db.query(
+      `select count(*)::int as total, count(*) filter (where cancelled_on is null)::int as active
+       from public.tasks where household_id = $1`,
+      [household],
+    )
+    expect(rows[0]).toEqual({ total: 6, active: 0 })
+  })
 })
 
 describe('US-27 · solo veo las tareas de mi hogar (RLS)', () => {
