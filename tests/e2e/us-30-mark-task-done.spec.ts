@@ -98,4 +98,63 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await page.reload()
     await expect(task(page, 'Baño')).toContainText('Toca: hoy')
   })
+
+  test('si Supabase da un error al guardar, la app lo dice y la tarea no se muestra como hecha', async ({
+    page,
+  }) => {
+    await signIn(page, uniqueEmail())
+    await expect(task(page, 'Baño')).toContainText('Toca: hoy')
+
+    await page.route('**/rest/v1/task_rounds*', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'XX000', message: 'Error interno', details: null, hint: null }),
+      }),
+    )
+    await markDone(page, 'Baño').click()
+
+    await expect(task(page, 'Baño').getByRole('alert')).toHaveText(
+      'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.',
+    )
+    await expect(task(page, 'Baño')).toContainText('Toca: hoy')
+    await expect(markDone(page, 'Baño')).toBeEnabled()
+  })
+
+  // Dos dispositivos (aquí, dos pestañas) con la lista abierta: en el segundo, la tarea
+  // todavía no sale como hecha.
+  test('si ya se había marcado en otro dispositivo, la app lo dice y la muestra al día', async ({
+    page,
+    context,
+  }) => {
+    await signIn(page, uniqueEmail())
+    const other = await context.newPage()
+    await other.goto('/')
+    await expect(task(other, 'Baño')).toContainText('Toca: hoy')
+
+    await markDone(page, 'Baño').click()
+    const next = `Toca: ${formatShortDate(addDays(today(), 3))}`
+    await expect(task(page, 'Baño')).toContainText(next)
+
+    await markDone(other, 'Baño').click()
+    await expect(task(other, 'Baño').getByRole('alert')).toHaveText(
+      'Ya estaba marcada como hecha.',
+    )
+    await expect(task(other, 'Baño')).toContainText(next)
+    await expect(markDone(other, 'Baño')).toHaveCount(0)
+  })
+
+  // La vuelta la calcula el móvil con su reloj; el día lo pone la base de datos.
+  test('si la fecha del dispositivo no es la de hoy, la app lo dice', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // un sábado pasado
+    await signIn(page, uniqueEmail())
+    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+
+    await markDone(page, 'Superficies').click()
+
+    await expect(task(page, 'Superficies').getByRole('alert')).toHaveText(
+      'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
+    )
+    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+  })
 })

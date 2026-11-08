@@ -35,9 +35,18 @@ export async function listTasks(): Promise<Task[]> {
   return (data as TaskRow[]).map(toTask)
 }
 
+/** La tarea ya estaba marcada como hecha (por ejemplo, desde otro dispositivo). */
+export class AlreadyDoneError extends Error {
+  constructor() {
+    super('Ya estaba marcada como hecha.')
+    this.name = 'AlreadyDoneError'
+  }
+}
+
 /**
  * Marca como hecha la vuelta de una tarea (US-30). La base de datos apunta el día:
  * hoy en Madrid. Devuelve ese día.
+ * Si ya estaba hecha, lanza `AlreadyDoneError`, para que la pantalla se ponga al día.
  */
 export async function completeTask(task: Task, round: Round): Promise<LocalDate> {
   const { data, error } = await getSupabase()
@@ -50,6 +59,15 @@ export async function completeTask(task: Task, round: Round): Promise<LocalDate>
     })
     .select('completed_on')
     .single()
+  // Códigos de error de PostgreSQL de las reglas de task_rounds.
+  // 23505: ya hay una vuelta igual, o una del mismo día.
+  if (error?.code === '23505') throw new AlreadyDoneError()
+  // 23514: la vuelta no incluye el día de hoy, porque la fecha del dispositivo va mal.
+  if (error?.code === '23514') {
+    throw new Error(
+      'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
+    )
+  }
   if (error) throw new Error('No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.')
   return (data as { completed_on: string }).completed_on
 }

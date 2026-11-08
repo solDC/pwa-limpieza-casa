@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { canMarkDone, currentRound, describeDue } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
-import { completeTask, listTasks } from '../../storage/tasks'
+import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
 import { useToday } from './use-today'
 
 type TasksState =
@@ -17,15 +17,19 @@ type TasksState =
 export function TaskList() {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
 
+  const load = useCallback((isActive: () => boolean = () => true) => {
+    listTasks()
+      .then((tasks) => isActive() && setState({ status: 'loaded', tasks }))
+      .catch((error: Error) => isActive() && setState({ status: 'error', message: error.message }))
+  }, [])
+
   useEffect(() => {
     let active = true
-    listTasks()
-      .then((tasks) => active && setState({ status: 'loaded', tasks }))
-      .catch((error: Error) => active && setState({ status: 'error', message: error.message }))
+    load(() => active)
     return () => {
       active = false
     }
-  }, [])
+  }, [load])
 
   const today = useToday()
 
@@ -55,7 +59,13 @@ export function TaskList() {
       {state.status === 'loaded' && (
         <ul className="task-list" aria-label="Tus tareas">
           {state.tasks.map((task) => (
-            <TaskItem key={task.id} task={task} today={today} onCompleted={handleCompleted} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              today={today}
+              onCompleted={handleCompleted}
+              onStale={load}
+            />
           ))}
         </ul>
       )}
@@ -67,10 +77,13 @@ function TaskItem({
   task,
   today,
   onCompleted,
+  onStale,
 }: {
   task: Task
   today: LocalDate
   onCompleted: (taskId: string, completedOn: LocalDate) => void
+  /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
+  onStale: () => void
 }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -87,6 +100,7 @@ function TaskItem({
       onCompleted(task.id, await completeTask(task, round))
     } catch (saveError) {
       setError((saveError as Error).message)
+      if (saveError instanceof AlreadyDoneError) onStale()
     } finally {
       setSaving(false)
     }
