@@ -47,7 +47,7 @@ tests/
 
 Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `docs/user-stories.md`.
 
-- `households`: el hogar. `household_members`: qué usuarios pertenecen a cada hogar. Hoy cada usuario tiene un único hogar, pero **todo cuelga del hogar, no del usuario**, para poder compartirlo en el futuro (está en el backlog).
+- `households`: el hogar. `household_members`: qué usuarios pertenecen a cada hogar. Hoy cada usuario tiene un único hogar, pero **todo cuelga del hogar, no del usuario**, para poder compartirlo en el futuro (ver «Visión» en `docs/user-stories.md`).
 - `tasks`: las tareas del hogar, con su tipo de frecuencia (`weekend_weekly`, `weekend_biweekly`, `interval`, `one_off`), los días del intervalo y la fecha de inicio de las de cada 15 días. Las **canceladas** se marcan con su fecha (`cancelled_on`), **no se borran**, para conservar el histórico.
 - `task_parts`: las partes, cada una con su **peso** en %; los de una tarea suman 100.
 - `task_rounds`: las **vueltas**. Cada una tiene cuándo empieza, cuándo se acaba el plazo (vacío en las de «cada N días» y las puntuales) y cuándo se completó. Las partes hechas en cada vuelta se guardan con el día en que se hicieron.
