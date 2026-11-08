@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run tests/unit --passWithNoTests",
+    "test": "vitest run tests/unit",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:all": "npm test && npm run test:integration && npm run test:e2e",

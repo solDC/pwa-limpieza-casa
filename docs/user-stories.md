@@ -20,7 +20,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-02 | Hogar creado automáticamente | Must have | Hecha | [#3](https://github.com/solDC/pwa-limpieza-casa/issues/3) |
 | US-03 | Cerrar sesión | Nice to have | Hecha | [#4](https://github.com/solDC/pwa-limpieza-casa/issues/4) |
 | US-26 | Entrar con código desde la app instalada | Must have | Hecha | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
-| US-27 | Mis tareas por defecto | Must have | Pendiente | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
+| US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Pendiente | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
 | US-29 | Qué toca | Must have | Pendiente | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
 | US-30 | Marcar como hecha | Must have | Pendiente | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |

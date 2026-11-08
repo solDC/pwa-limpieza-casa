@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada) y US-27 (mis tareas por defecto). La pantalla de Inicio es provisional.
 
 **Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
 
@@ -53,7 +53,8 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - `task_rounds`: las **vueltas**. Cada una tiene cuándo empieza, cuándo se acaba el plazo (vacío en las de «cada N días» y las puntuales) y cuándo se completó. Las partes hechas en cada vuelta se guardan con el día en que se hicieron.
 - **El estado de una vuelta** (completada, parcial con su %, no completada) **se calcula en `src/domain/`**, no se guarda: así el cierre del domingo no necesita ningún proceso automático.
 - Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo.
-- *Es una propuesta: los nombres y columnas exactos se concretan en la migración de la US-27/US-28, con `new-migration`.*
+- `tasks` y `task_parts` ya existen (migración `…_tasks.sql`, US-27). `task_rounds` es todavía una propuesta: se concreta en la migración de la US-30, con `new-migration`.
+- **«Hoy» en la base de datos es el día de Madrid** (`(now() at time zone 'Europe/Madrid')::date`), porque la app es para la casa de Sol.
 - Los días se guardan como **fecha local sin hora** (`date` en PostgreSQL, `'YYYY-MM-DD'` en TypeScript), nunca como `Date` con hora. «Hoy», «ayer» y «cada 30 días» son días, y así se evitan errores de zona horaria y cambio de hora.
 - Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 
