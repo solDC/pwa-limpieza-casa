@@ -7,6 +7,13 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-28 · Frecuencias** (#37). La app calcula cuándo toca cada tarea y lo muestra en «Tus tareas» («Toca: hoy», «Toca: finde del 14 nov», «Toca: mié 18 nov»…):
+  - **Semanal, en fin de semana:** toca el sábado y el domingo, y se puede hacer **hasta el viernes siguiente**, porque a veces no da tiempo el finde y entonces no se podría marcar. El sábado empieza la vuelta nueva.
+  - **Fin de semana cada 15 días:** un finde sí y otro no desde el 5-6 de diciembre de 2026, con el mismo plazo hasta el viernes.
+  - **Cada N días:** la primera vez toca desde el día en que se creó; después, N días desde el día en que se terminó, no desde la fecha prevista, para que se adapte si se hace antes o después.
+  - **Puntual:** toca desde que se crea hasta que se hace.
+
+  «Hoy» es siempre el día de Madrid, también en la app. Los cálculos de fechas se hacen sin horas, así que no les afectan las zonas horarias ni el cambio de hora. Todavía no se puede marcar nada como hecho (US-30), así que de momento ninguna tarea se ha terminado nunca.
 - **US-27 · Mis tareas por defecto** (#36). Al crearse un hogar, la base de datos le crea las tareas que usa Sol: Superficies (cocina 50 %, salón 25 %, dormitorio 25 %), semanal en fin de semana; Baño, cada 3 días desde la última vez; Aspirar cosas de Cati, fin de semana cada 15 días desde el 5-6 de diciembre de 2026; Cristales y espejos, cada 30 días; y Cepillar suelo y Limpiar juntas, puntuales. Los hogares que ya existían (como el de Sol) las reciben una vez, al aplicar la migración. Se crean una sola vez: una tarea cancelada no se borra, así que su hogar no vuelve a recibirlas. El Inicio provisional muestra la lista «Tus tareas» con su frecuencia y sus partes; todavía no calcula qué toca (US-29).
 - **Tablas `tasks` y `task_parts`** (migración `…_tasks.sql`), con RLS: cada usuario solo ve las tareas de su hogar, y por ahora solo puede leerlas (crear, marcar y cancelar llegan con sus historias). Las partes solo pueden pertenecer a una tarea de su mismo hogar, y unas reglas impiden combinaciones sin sentido (días de intervalo solo en «cada N días», fecha de inicio solo en «cada 15 días»). La fecha de creación es el día de Madrid, no el de UTC, para que una tarea creada de madrugada no quede con la fecha de ayer.
 - **US-03 · Cerrar sesión** (#4). Botón «Cerrar sesión» en la pantalla de Inicio, que vuelve a la pantalla de entrar. Cierra la sesión **solo en ese dispositivo** (los demás siguen dentro), porque la historia es para no dejar el hogar abierto en un dispositivo compartido. Al volver a abrir la app se sigue fuera, y al entrar de nuevo se ve el mismo hogar. Sin conexión también se cierra en el dispositivo: Supabase borra la sesión aunque no pueda avisar al servidor, que es lo que importa para que nadie vea el hogar.
@@ -31,6 +38,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- **El plazo de las tareas de fin de semana pasa del domingo al viernes siguiente**, en «Conceptos» y en la US-31.
 - **MVP acotado a una app para la casa de Sol, con sus tareas reales.** Al entrar, el hogar tendrá sus 6 tareas por defecto, en lugar de datos de ejemplo. Lo esencial es ver qué toca, marcarlo como hecho y guardar el histórico de cada vuelta como completada, parcial (con su %) o no completada. Se mantienen la base de datos y el inicio de sesión, que ya estaban hechos. El modelo de datos pasa de `completions` a **vueltas** (`task_rounds`), con partes que tienen peso y tareas canceladas que no se borran, para conservar el histórico. Motivo: llegar a la presentación con lo imprescindible.
 - **Botones de «Revisa tu correo» con nombres más claros:** «Enviarme otro email» pasa a «Reenviar email» (mismo email, otra vez) y «Usar otro email» pasa a «← Volver», con aspecto de enlace, porque vuelve a la pantalla anterior para corregir la dirección. Con nombres tan parecidos no quedaba claro cuál era cuál.
 - **La app se llama «Limpieza de casa»** (antes «Limpieza casa»): título de la pestaña, pantallas y nombre de la app instalada. El nombre corto bajo el icono sigue siendo «Limpieza».

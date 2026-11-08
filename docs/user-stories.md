@@ -21,7 +21,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-03 | Cerrar sesión | Nice to have | Hecha | [#4](https://github.com/solDC/pwa-limpieza-casa/issues/4) |
 | US-26 | Entrar con código desde la app instalada | Must have | Hecha | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
-| US-28 | Frecuencias | Must have | Pendiente | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
+| US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
 | US-29 | Qué toca | Must have | Pendiente | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
 | US-30 | Marcar como hecha | Must have | Pendiente | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
 | US-31 | Histórico de cada vuelta | Must have | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
@@ -44,8 +44,8 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 
   | Tipo | Ejemplo | Cuándo toca | Cuándo se acaba el plazo |
   |---|---|---|---|
-  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El domingo por la noche |
-  | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El domingo por la noche |
+  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: se muestra como tarea de finde, pero se puede hacer entre semana |
+  | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
   | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
   | **Puntual** | Cepillar suelo, Limpiar juntas | Desde que se crea | Nunca: pendiente hasta que se hace, y después desaparece |
 
@@ -135,7 +135,7 @@ I want to see the history of every round of every task,
 so that I know how well I'm keeping up with the cleaning.
 - Hay una pantalla «Histórico» con cada vuelta cerrada, de la más reciente a la más antigua: tarea, fechas y estado.
 - El estado es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos».
-- Las vueltas de fin de semana que acaban el domingo sin terminar quedan como parcial o no completada sin que yo haga nada.
+- Las vueltas de fin de semana que llegan al sábado siguiente sin terminar (el plazo acaba el viernes) quedan como parcial o no completada sin que yo haga nada.
 - El porcentaje parcial es la suma de los pesos de las partes hechas.
 
 ### US-32 · Cancelar una tarea (Nice to have)
