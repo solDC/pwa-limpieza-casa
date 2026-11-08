@@ -8,7 +8,7 @@ description: Implementa una historia de usuario de este proyecto (US-xx de docs/
 El flujo principal del proyecto. Coordina las otras piezas:
 
 ```
-implement-story → new-migration (si cambia la base de datos) → write-tests → agente code-reviewer → open-pr
+implement-story → new-migration (si cambia la base de datos) → write-tests → agente code-reviewer → resumen y ok de Sol → open-pr
 ```
 
 Las reglas están en `CLAUDE.md`; aquí está el orden en que se aplican.
@@ -99,10 +99,16 @@ Encarga al agente **`code-reviewer`** que revise la rama. Con su informe:
 - Las sugerencias, coméntalas con Sol.
 - Vuelve a ejecutar las pruebas del paso 5 tras los arreglos.
 
-## 8. Commit y pull request
+## 8. Resumen para Sol y esperar su ok
 
-- Commit con Conventional Commits: `feat: <qué puede hacer el usuario> (US-xx)`. Descripción en español.
-- Sube la rama y sigue con la skill `open-pr`. Si aún no existe, el pull request debe llevar `Closes #<issue>`, la sección **«Cómo probarlo a mano»** (pasos numerados para el despliegue de prueba de Vercel en el móvil, con lo que debería verse en cada uno) y, si hay migración, el aviso de aplicarla con `npx supabase db push --linked` antes de fusionar.
+Antes de cualquier commit, enséñale a Sol:
+
+- Qué se ha hecho, criterio por criterio de aceptación, y con qué prueba se cubre cada uno.
+- El resultado de las pruebas y la compilación (paso 5), y las que no se pudieron ejecutar.
+- Qué encontró el `code-reviewer` y qué se arregló; las sugerencias que quedan para que decida.
+- Lo que queda fuera porque pertenece a otra historia.
+
+**No hagas commit, ni subas la rama, ni abras el pull request hasta que Sol diga que sí.** Con su ok, sigue con la skill `open-pr`, que hace el commit, sube la rama y abre el pull request. Esta skill termina aquí.
 
 ## Antes de terminar
 
@@ -111,5 +117,6 @@ Encarga al agente **`code-reviewer`** que revise la rama. Con su informe:
 - [ ] Los días son `'YYYY-MM-DD'`, nunca `Date` con hora.
 - [ ] `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` pasan, o se ha dicho cuáles no se pudieron ejecutar.
 - [ ] `code-reviewer` no deja bloqueantes ni importantes sin resolver.
-- [ ] CHANGELOG y «Estado» de `CLAUDE.md` actualizados en el mismo commit.
+- [ ] CHANGELOG y «Estado» de `CLAUDE.md` actualizados, para ir en el mismo commit que el código.
+- [ ] Sol ha dado su ok al resumen (paso 8) antes de pasar a `open-pr`.
 - [ ] Nada fuera del alcance de la historia.

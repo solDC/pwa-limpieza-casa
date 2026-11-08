@@ -68,8 +68,14 @@ Por orden de importancia:
 **Convenciones**
 - Nombres técnicos en inglés; comentarios y textos que ve el usuario en español (busca textos en inglés en la interfaz).
 - Archivos en `kebab-case`, componentes en `PascalCase.tsx`.
-- `CHANGELOG.md` actualizado en esta rama, en la sección correcta, explicando qué y por qué.
 - Commits con Conventional Commits (tipo en inglés, descripción en español).
+
+**Documentación**
+- `README.md`, `CLAUDE.md`, `tests/README.md` y `CHANGELOG.md` cuentan lo mismo que el código: nombres de botones y pantallas, variables de entorno, scripts de `package.json`, rutas de archivos.
+- Los comandos que aparecen en la documentación existen y funcionan con las versiones fijadas en el proyecto (por ejemplo, las opciones de `npx supabase …` según la versión de `package.json`: compruébalo con `--help` si hay dudas).
+- `CHANGELOG.md` actualizado en esta rama, en la sección correcta, explicando qué y por qué, y **solo con cambios en la app**. Los cambios en la forma de trabajar (reglas de `CLAUDE.md`, skills, agentes, flujo de ramas o pull requests, issues) no van ahí.
+- Una skill o un agente nuevo está registrado en `CLAUDE.md` (flujo u «Otras skills»).
+- Los pasos en los paneles de Supabase o Vercel no se pueden comprobar desde el código: si cambian, apúntalo en «No comprobado».
 
 No comentes cuestiones de gusto o de formato que no incumplan ninguna regla.
 
