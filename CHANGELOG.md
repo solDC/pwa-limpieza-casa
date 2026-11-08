@@ -29,6 +29,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - `.env.example` con las variables que necesitará Supabase, sin valores reales.
 
 ### Changed
+- **MVP acotado a una app para la casa de Sol, con sus tareas reales.** Al entrar, el hogar tendrá sus 6 tareas por defecto, en lugar de datos de ejemplo. Lo esencial es ver qué toca, marcarlo como hecho y guardar el histórico de cada vuelta como completada, parcial (con su %) o no completada. Se mantienen la base de datos y el inicio de sesión, que ya estaban hechos. El modelo de datos pasa de `completions` a **vueltas** (`task_rounds`), con partes que tienen peso y tareas canceladas que no se borran, para conservar el histórico. Motivo: llegar a la presentación con lo imprescindible.
 - **Botones de «Revisa tu correo» con nombres más claros:** «Enviarme otro email» pasa a «Reenviar email» (mismo email, otra vez) y «Usar otro email» pasa a «← Volver», con aspecto de enlace, porque vuelve a la pantalla anterior para corregir la dirección. Con nombres tan parecidos no quedaba claro cuál era cuál.
 - **La app se llama «Limpieza de casa»** (antes «Limpieza casa»): título de la pestaña, pantallas y nombre de la app instalada. El nombre corto bajo el icono sigue siendo «Limpieza».
 - `src/ui/` pasa a llamarse `src/components/`, el nombre habitual en proyectos React con Vite, para los componentes que comparten varias pantallas. Los de una sola pantalla siguen en su carpeta de `features/`.
@@ -49,6 +50,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 - **El enlace mágico llevaba a producción en lugar de al despliegue de prueba.** La app pedía volver a su dirección sin barra final (`https://dominio`), que no encaja con las Redirect URLs de Supabase (`https://dominio/**`), y Supabase mandaba a la Site URL sin avisar. Ahora pide volver a `https://dominio/`. En local no se notaba porque Supabase siempre acepta `localhost`; una prueba e2e comprueba ahora la dirección de vuelta del enlace, y el Supabase local usa el mismo formato de Redirect URLs que producción.
 
 ### Removed
+- Los **datos de ejemplo** (`src/demo/`), sustituidos por las tareas por defecto.
 - `nginx.conf` y la etapa de nginx del Dockerfile: Vercel sirve la app en producción y ya no hace falta.
 
 ## [0.1.0] - 2026-11-01

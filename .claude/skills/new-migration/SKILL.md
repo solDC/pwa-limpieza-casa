@@ -31,7 +31,7 @@ Todo cambio en la base de datos es una migración en `supabase/migrations/`. Nun
 npx supabase migration new <nombre-en-ingles>
 ```
 
-El nombre en inglés, `snake_case` y descriptivo (`tasks`, `add_task_notes`, `completions_performed_at_index`). Crea `supabase/migrations/<fecha>_<nombre>.sql`.
+El nombre en inglés, `snake_case` y descriptivo (`tasks`, `add_task_notes`, `add_task_rounds`). Crea `supabase/migrations/<fecha>_<nombre>.sql`.
 
 ## 3. Contenido
 

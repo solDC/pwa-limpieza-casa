@@ -4,7 +4,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 ## Qué es
 
-PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must/Should).
+PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
 **Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión) y US-26 (entrar con código desde la app instalada). La pantalla de Inicio es provisional.
 
@@ -26,7 +26,6 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 src/
 ├── domain/      Modelo de tareas, motor de frecuencias y progreso. TypeScript puro.
 ├── storage/     Acceso a Supabase. Única carpeta que importa @supabase/supabase-js.
-├── demo/        Datos de ejemplo, separados de los datos reales.
 ├── features/    Una carpeta por pantalla: home, tasks, history, auth. Cada una con sus
 │                componentes propios (SignInScreen.tsx…) y sus hooks (use-session.ts…).
 └── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
@@ -46,9 +45,15 @@ tests/
 
 ### Modelo de datos
 
+Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `docs/user-stories.md`.
+
 - `households`: el hogar. `household_members`: qué usuarios pertenecen a cada hogar. Hoy cada usuario tiene un único hogar, pero **todo cuelga del hogar, no del usuario**, para poder compartirlo en el futuro (está en el backlog).
-- `tasks`, `task_parts`: las tareas y sus partes opcionales.
-- `completions`: lo que se ha hecho. Guarda `performed_at` (cuándo se hizo), `created_at` (cuándo se apuntó) y quién lo hizo.
+- `tasks`: las tareas del hogar, con su tipo de frecuencia (`weekend_weekly`, `weekend_biweekly`, `interval`, `one_off`), los días del intervalo y la fecha de inicio de las de cada 15 días. Las **canceladas** se marcan con su fecha (`cancelled_on`), **no se borran**, para conservar el histórico.
+- `task_parts`: las partes, cada una con su **peso** en %; los de una tarea suman 100.
+- `task_rounds`: las **vueltas**. Cada una tiene cuándo empieza, cuándo se acaba el plazo (vacío en las de «cada N días» y las puntuales) y cuándo se completó. Las partes hechas en cada vuelta se guardan con el día en que se hicieron.
+- **El estado de una vuelta** (completada, parcial con su %, no completada) **se calcula en `src/domain/`**, no se guarda: así el cierre del domingo no necesita ningún proceso automático.
+- Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo.
+- *Es una propuesta: los nombres y columnas exactos se concretan en la migración de la US-27/US-28, con `new-migration`.*
 - Los días se guardan como **fecha local sin hora** (`date` en PostgreSQL, `'YYYY-MM-DD'` en TypeScript), nunca como `Date` con hora. «Hoy», «ayer» y «cada 30 días» son días, y así se evitan errores de zona horaria y cambio de hora.
 - Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 
@@ -172,4 +177,3 @@ Mantén `CHANGELOG.md` al día **en el mismo commit** que el cambio:
 - Hacer que `domain/` dependa de React, Supabase o el navegador.
 - Saltarse o desactivar una prueba para que pase la compilación.
 - Guardar fechas de días como timestamps con hora.
-- Mezclar los datos de ejemplo con los datos reales del usuario.

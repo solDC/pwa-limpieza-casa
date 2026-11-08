@@ -15,7 +15,7 @@ Las reglas están en `CLAUDE.md`; aquí está el orden en que se aplican.
 
 ## 1. Elegir y entender la historia
 
-1. **Si no se ha dicho cuál**, propón la siguiente: la primera **Must** de la tabla de `docs/user-stories.md` que no esté hecha (mira «Estado» en `CLAUDE.md` y el `CHANGELOG.md`) y cuyas dependencias sí lo estén (por ejemplo, US-12 necesita las tareas de US-04).
+1. **Si no se ha dicho cuál**, propón la siguiente: la primera **Must have** de la tabla de `docs/user-stories.md` que no esté hecha (mira «Estado» en `CLAUDE.md` y el `CHANGELOG.md`) y cuyas dependencias sí lo estén (por ejemplo, US-12 necesita las tareas de US-04).
 2. **Lee:**
    - La historia y sus criterios de aceptación en `docs/user-stories.md`, y su issue (enlazado en la tabla; con las herramientas de GitHub si están disponibles).
    - «Cómo se modelan las tareas» en `README.md` y «Modelo de datos» en `CLAUDE.md`.

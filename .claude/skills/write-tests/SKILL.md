@@ -69,7 +69,6 @@ Por **cada tabla nueva**, como mínimo (usa dos usuarios, por ejemplo `ana` y `b
 - Busca elementos como los ve una persona: `getByRole`, `getByLabel`, `getByText`. Nada de clases CSS ni `data-` salvo que no haya otra forma.
 - Inicio de sesión: `uniqueEmail()` y `waitForMagicLink(email)` de `tests/e2e/helpers/mailbox.ts`. Si varias historias necesitan entrar, mueve la función `signIn` de `us-01-sign-in.spec.ts` a un helper en lugar de copiarla.
 - Si la prueba depende de la fecha, fija el reloj del navegador con `page.clock` en lugar de depender del día real.
-- Los datos de ejemplo (`src/demo/`) no se mezclan con los del usuario de la prueba.
 
 ## 4. Ejecuta
 

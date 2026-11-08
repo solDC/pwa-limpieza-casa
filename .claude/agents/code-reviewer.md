@@ -57,7 +57,6 @@ Por orden de importancia:
 - Solo `src/storage/` importa `@supabase/supabase-js`; `features/` no llama a Supabase.
 - `storage/` traduce `snake_case` ↔ `camelCase`; no se filtran filas de la base de datos a `features/`.
 - Componentes en `components/` solo si los usan dos o más pantallas.
-- Datos de ejemplo (`src/demo/`) mezclados con los reales.
 
 **Pruebas**
 - Cada criterio de aceptación tiene al menos una prueba e2e en `tests/e2e/us-xx-….spec.ts`.
