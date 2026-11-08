@@ -315,6 +315,8 @@ para darme cuenta de que algo no se ha guardado.
 - Si no se puede guardar una tarea, aparece un aviso flotante con el nombre de la tarea y el motivo, visible aunque haya bajado en la lista.
 - El aviso se queda en pantalla hasta que lo cierro con «Cerrar».
 - Si la tarea ya estaba hecha en otro dispositivo y desaparece de la lista (una puntual), el aviso se ve igual.
+- Si al marcar una tarea acaba de cambiar el día (por ejemplo, el viernes justo a medianoche), el aviso dice que ha cambiado el día, no que la fecha del dispositivo esté mal, y la lista se pone al día con el día nuevo.
+- Si no se puede guardar porque la sesión ha caducado, el aviso dice que vuelva a entrar, no que revise la conexión.
 
 *Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
 
