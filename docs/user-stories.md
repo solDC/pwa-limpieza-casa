@@ -128,7 +128,7 @@ Como usuario,
 quiero marcar como hecha una tarea entera,
 para que la app sepa qué he limpiado ya.
 - Puedo marcar como hecha una tarea entera; su vuelta queda completada.
-- Al completar una vuelta, la tarea deja de aparecer en «Qué toca» y se calcula cuándo vuelve a tocar.
+- Al completar una vuelta, la tarea muestra cuándo vuelve a tocar (las puntuales desaparecen).
 - Se apunta como día de hecho el día en que la marco.
 - Si falla el guardado (sin conexión o un error), la app lo dice y no la muestra como hecha.
 
@@ -264,6 +264,38 @@ para no perder lo que hice.
 - En el histórico se ve que esa tarea está cancelada.
 
 *Depende de la US-31 y de la US-32.*
+
+### US-43 · Deshacer una tarea marcada como hecha
+Como usuario,
+quiero deshacer una tarea que he marcado como hecha por error,
+para que la app no crea que la he limpiado.
+- Una tarea hecha muestra cuándo se hizo y un botón «Deshacer» («Hecha el dom 8 nov · Deshacer»), hasta que se vuelve a marcar.
+- Al deshacer, la tarea vuelve a estar como antes de marcarla, con su «Toca:» anterior; las puntuales vuelven a aparecer.
+- Si falla el guardado, la app lo dice y la tarea sigue como hecha.
+
+*Depende de la US-30.*
+
+### US-44 · Deshacer una parte marcada como hecha
+Como usuario,
+quiero deshacer una parte que he marcado como hecha por error,
+para que el progreso de la vuelta sea el real.
+- Una parte hecha de la vuelta en curso tiene un botón «Deshacer».
+- Al deshacer, la parte vuelve a estar sin hacer y el progreso de la vuelta baja su peso.
+- Si la vuelta estaba completada por tener todas las partes hechas, al deshacer una deja de estarlo.
+- Si falla el guardado, la app lo dice y la parte sigue como hecha.
+
+*Depende de la US-39.*
+
+### US-45 · Recuperar una tarea cancelada
+Como usuario,
+quiero recuperar una tarea que cancelé,
+para volver a hacerla sin crearla de nuevo.
+- Puedo ver mis tareas canceladas y recuperar cualquiera.
+- Una tarea recuperada vuelve a aparecer con su frecuencia, sus partes y su histórico.
+- Su próxima vuelta se calcula como si se acabara de crear: las de «cada N días», desde el día en que se recupera.
+- Si falla el guardado, la app lo dice y la tarea sigue cancelada.
+
+*Depende de la US-32.*
 
 ## Visión
 
