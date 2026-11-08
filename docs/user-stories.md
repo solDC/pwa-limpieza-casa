@@ -28,6 +28,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-33 | Añadir una tarea | Nice to have | Pendiente | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
 | US-34 | Elegir el peso de las partes | Nice to have | Pendiente | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
+| US-38 | Cambiar la fecha de una tarea | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 
 ## Conceptos
 
@@ -162,6 +163,18 @@ so that the partial percentage reflects the real effort of each part.
 - No se puede guardar la tarea si los pesos no suman 100 %.
 
 *Depende de la US-33 (añadir una tarea).*
+
+### US-38 · Cambiar la fecha de una tarea (Must have)
+Como usuario,
+quiero poner o cambiar cuándo toca una tarea,
+para que la app se adapte a mis planes.
+- En una tarea puntual puedo ponerle una fecha, cambiarla o quitarla; sin fecha se ve como «Sin fecha» y nunca tiene retraso.
+- Una puntual con fecha que llega a esa fecha sin hacerse aparece como retrasada.
+- En una tarea de cada N días puedo cambiar cuándo toca la próxima vez; las siguientes se cuentan desde el día en que se termine, como siempre.
+- En una tarea de fin de semana puedo mover su vuelta a otro finde, adelantándola o retrasándola. En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
+- Solo se puede elegir hoy o una fecha futura.
+
+*Depende de la US-30: para cambiar una fecha hace falta poder guardar cambios en las tareas.*
 
 ## Historias anteriores
 
