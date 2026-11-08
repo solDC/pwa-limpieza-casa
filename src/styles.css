@@ -127,3 +127,22 @@ button:disabled {
 .account {
   margin-top: 2rem;
 }
+
+/* Lista de tareas (US-27): tarjetas una debajo de otra, sin viñetas. */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-list h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.task-list .card {
+  gap: 0.25rem;
+}

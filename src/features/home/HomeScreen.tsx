@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
+import { TaskList } from './TaskList'
 
 type HouseholdState =
   | { status: 'loading' }
@@ -8,8 +9,8 @@ type HouseholdState =
   | { status: 'error'; message: string }
 
 // Pantalla provisional de Inicio: confirma que has entrado (US-01), muestra tu hogar (US-02)
-// y deja cerrar la sesión (US-03).
-// Se sustituirá por «Qué toca hoy» (US-16) y las demás.
+// y sus tareas (US-27), y deja cerrar la sesión (US-03).
+// Se sustituirá por «Qué toca» (US-29) y las demás.
 export function HomeScreen({ session }: { session: Session }) {
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
   const [signingOut, setSigningOut] = useState(false)
@@ -51,9 +52,10 @@ export function HomeScreen({ session }: { session: Session }) {
       {state.status === 'loaded' && state.household && (
         <section className="card">
           <h2>{state.household.name}</h2>
-          <p className="muted">Aquí irán las tareas de tu hogar.</p>
         </section>
       )}
+
+      <TaskList />
 
       <div className="stack account">
         <button
