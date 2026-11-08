@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentRound, describeDue } from '../../../src/domain/frequency'
+import { canMarkDone, currentRound, describeDue } from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
 
 // US-28 · Frecuencias (#37). Las reglas están en «Conceptos» de docs/user-stories.md.
@@ -167,5 +167,53 @@ describe('describeDue: el texto de «Toca:»', () => {
     expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-12')).toBe(
       'Toca: desde el lun 9 nov',
     )
+  })
+})
+
+// US-30 · Marcar una tarea como hecha (#39)
+describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', () => {
+  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
+  const interval: Frequency = { kind: 'interval', days: 3 }
+  const oneOff: Frequency = { kind: 'oneOff' }
+  const can = (frequency: Frequency, lastCompletedOn: string | null, today: string) => {
+    const shown = round(frequency, lastCompletedOn, today)
+    return shown !== null && canMarkDone({ frequency, lastCompletedOn }, shown, today)
+  }
+
+  it('de fin de semana: sí durante la vuelta, del sábado al viernes', () => {
+    expect(can(weekly, null, '2026-11-14')).toBe(true)
+    expect(can(weekly, null, '2026-11-18')).toBe(true)
+    expect(can(weekly, null, '2026-11-20')).toBe(true)
+  })
+
+  it('de fin de semana: no si ya se hizo y se muestra el finde siguiente', () => {
+    expect(can(weekly, '2026-11-15', '2026-11-18')).toBe(false)
+    expect(can(weekly, '2026-11-20', '2026-11-20')).toBe(false)
+  })
+
+  it('cada 15 días: no antes del primer finde ni en la semana que no toca', () => {
+    expect(can(biweekly, null, '2026-11-18')).toBe(false)
+    expect(can(biweekly, null, '2026-12-05')).toBe(true)
+    expect(can(biweekly, null, '2026-12-11')).toBe(true)
+    expect(can(biweekly, null, '2026-12-12')).toBe(false)
+    expect(can(biweekly, null, '2026-12-19')).toBe(true)
+  })
+
+  it('cada N días: también antes de que toque (cuenta desde el día en que se hace)', () => {
+    expect(can(interval, null, '2026-11-08')).toBe(true)
+    expect(can(interval, '2026-11-08', '2026-11-09')).toBe(true)
+    expect(can(interval, '2026-11-01', '2026-11-20')).toBe(true)
+  })
+
+  // Regresión: marcarla dos veces el mismo día guardaba la vuelta siguiente sin cambiar
+  // el día de la última, y la tarea ya no se podía volver a marcar.
+  it('cada N días: no otra vez el mismo día en que ya se hizo', () => {
+    expect(can(interval, '2026-11-08', '2026-11-08')).toBe(false)
+  })
+
+  it('puntual: sí mientras está pendiente', () => {
+    expect(can(oneOff, null, '2026-11-08')).toBe(true)
+    expect(can(oneOff, '2026-11-08', '2026-11-08')).toBe(false)
   })
 })

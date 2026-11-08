@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { addDays, formatShortDate, localDateIn } from '../../src/domain/dates'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-28 · Frecuencias (#37)
@@ -8,10 +9,6 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 // Las reglas de cada frecuencia (plazos, años bisiestos, cambio de hora, terminar antes o
 // después de tiempo) se prueban en tests/unit/domain/frequency.test.ts. Aquí se comprueba
 // lo que se ve.
-//
-// PENDIENTE PARA LA US-30: «cada N días cuenta desde que se terminó» solo se puede ver
-// cuando se pueda marcar una tarea. La US-30 debe añadir aquí una prueba: marcar el Baño
-// hoy y comprobar que dice «Toca:» con la fecha de dentro de 3 días.
 
 async function signIn(page: Page, email: string) {
   await page.goto('/')
@@ -35,6 +32,18 @@ test.describe('US-28 · Frecuencias', () => {
 
     await expect(task(page, 'Baño')).toContainText('Toca: hoy')
     await expect(task(page, 'Cristales y espejos')).toContainText('Toca: hoy')
+  })
+
+  // Necesita marcar una tarea (US-30). El día en que se hace lo pone la base de datos
+  // (hoy en Madrid), así que se usa el reloj de verdad.
+  test('en «cada N días», la próxima se cuenta desde el día en que se terminó', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    await expect(task(page, 'Baño')).toContainText('Toca: hoy')
+
+    await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
+
+    const inThreeDays = addDays(localDateIn('Europe/Madrid', new Date()), 3)
+    await expect(task(page, 'Baño')).toContainText(`Toca: ${formatShortDate(inThreeDays)}`)
   })
 
   test('las puntuales van sin fecha', async ({ page }) => {

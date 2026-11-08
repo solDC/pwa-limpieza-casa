@@ -61,6 +61,25 @@ function weekendRound(saturday: LocalDate, every: number, lastCompletedOn: Local
 }
 
 /**
+ * Si se puede marcar como hecha la vuelta que se muestra (US-30).
+ * Las de fin de semana, solo durante su vuelta (del sábado al viernes): si ya se hizo,
+ * se muestra el finde siguiente, que aún no ha empezado. Las de «cada N días» y las
+ * puntuales, también antes de que toquen (la siguiente se cuenta desde el día en que se
+ * hacen), pero no dos veces el mismo día.
+ */
+export function canMarkDone(
+  task: Pick<Task, 'frequency' | 'lastCompletedOn'>,
+  round: Round,
+  today: LocalDate,
+): boolean {
+  const { kind } = task.frequency
+  if (kind === 'weekendWeekly' || kind === 'weekendBiweekly') {
+    return round.startsOn !== null && round.startsOn <= today
+  }
+  return task.lastCompletedOn !== today
+}
+
+/**
  * Cuándo toca, en texto: «Toca: finde del 14 nov», «Toca: hoy», «Toca: mañana»,
  * «Toca: mié 18 nov», «Toca: desde el lun 9 nov» o «Sin fecha».
  */

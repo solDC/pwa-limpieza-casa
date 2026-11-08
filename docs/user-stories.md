@@ -23,7 +23,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
 | US-29 | Qué toca | Must have | Pendiente | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
-| US-30 | Marcar una tarea como hecha | Must have | Pendiente | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
+| US-30 | Marcar una tarea como hecha | Must have | Hecha | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
 | US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-33 | Añadir una tarea | Nice to have | Pendiente | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
@@ -31,6 +31,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
+| US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 
 ## Conceptos
 
@@ -128,7 +129,7 @@ Como usuario,
 quiero marcar como hecha una tarea entera,
 para que la app sepa qué he limpiado ya.
 - Puedo marcar como hecha una tarea entera; su vuelta queda completada.
-- Al completar una vuelta, la tarea deja de aparecer en «Qué toca» y se calcula cuándo vuelve a tocar.
+- Al completar una vuelta, la tarea muestra cuándo vuelve a tocar (las puntuales desaparecen).
 - Se apunta como día de hecho el día en que la marco.
 - Si falla el guardado (sin conexión o un error), la app lo dice y no la muestra como hecha.
 
@@ -194,6 +195,16 @@ para adelantarla o retrasarla.
 - Puedo mover la vuelta a otro finde, a partir del actual.
 - En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
 - En las semanales solo se mueve esa vuelta; las siguientes siguen siendo cada finde.
+
+*Depende de la US-30.*
+
+### US-46 · Marcar como hecha en un día anterior (Nice to have)
+Como usuario,
+quiero elegir el día en que hice una tarea al marcarla,
+para que la app cuente bien aunque me acuerde de marcarla tarde.
+- Al marcar una tarea, puedo dejar «hoy» o elegir un día anterior.
+- No puedo elegir un día futuro, ni anterior al inicio de la vuelta en curso (en las de fin de semana, su sábado; en las de cada N días, el día en que se hizo la anterior).
+- La próxima vez que toca se cuenta desde el día elegido.
 
 *Depende de la US-30.*
 
@@ -264,6 +275,48 @@ para no perder lo que hice.
 - En el histórico se ve que esa tarea está cancelada.
 
 *Depende de la US-31 y de la US-32.*
+
+### US-43 · Deshacer una tarea marcada como hecha · [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62)
+Como usuario,
+quiero deshacer una tarea que he marcado como hecha por error,
+para que la app no crea que la he limpiado.
+- Una tarea hecha muestra cuándo se hizo y un botón «Deshacer» («Hecha el dom 8 nov · Deshacer»), hasta que se vuelve a marcar.
+- Al deshacer, la tarea vuelve a estar como antes de marcarla, con su «Toca:» anterior; las puntuales vuelven a aparecer.
+- Si falla el guardado, la app lo dice y la tarea sigue como hecha.
+
+*Depende de la US-30.*
+
+### US-44 · Deshacer una parte marcada como hecha · [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63)
+Como usuario,
+quiero deshacer una parte que he marcado como hecha por error,
+para que el progreso de la vuelta sea el real.
+- Una parte hecha de la vuelta en curso tiene un botón «Deshacer».
+- Al deshacer, la parte vuelve a estar sin hacer y el progreso de la vuelta baja su peso.
+- Si la vuelta estaba completada por tener todas las partes hechas, al deshacer una deja de estarlo.
+- Si falla el guardado, la app lo dice y la parte sigue como hecha.
+
+*Depende de la US-39.*
+
+### US-45 · Recuperar una tarea cancelada · [#64](https://github.com/solDC/pwa-limpieza-casa/issues/64)
+Como usuario,
+quiero recuperar una tarea que cancelé,
+para volver a hacerla sin crearla de nuevo.
+- Puedo ver mis tareas canceladas y recuperar cualquiera.
+- Una tarea recuperada vuelve a aparecer con su frecuencia, sus partes y su histórico.
+- Su próxima vuelta se calcula como si se acabara de crear: las de «cada N días», desde el día en que se recupera.
+- Si falla el guardado, la app lo dice y la tarea sigue cancelada.
+
+*Depende de la US-32.*
+
+### US-47 · Avisos de error visibles · [#67](https://github.com/solDC/pwa-limpieza-casa/issues/67)
+Como usuario de la app en el móvil,
+quiero que los errores al guardar salgan en un aviso que se vea bien,
+para darme cuenta de que algo no se ha guardado.
+- Si no se puede guardar una tarea, aparece un aviso flotante con el nombre de la tarea y el motivo, visible aunque haya bajado en la lista.
+- El aviso se queda en pantalla hasta que lo cierro con «Cerrar».
+- Si la tarea ya estaba hecha en otro dispositivo y desaparece de la lista (una puntual), el aviso se ve igual.
+
+*Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
 
 ## Visión
 
