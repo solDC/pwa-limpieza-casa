@@ -38,9 +38,9 @@ const insertRound = `insert into public.task_rounds (household_id, task_id, star
 
 describe('US-30 · marcar una tarea como hecha', () => {
   it('apunto la vuelta de una tarea de mi hogar, con el día de hoy en Madrid', async () => {
-    const { household, task } = await taskOf(ana, 'Superficies')
+    const { household, task } = await taskOf(ana, 'Cristales y espejos')
     const result = await asUser(db, ana, async (query) => {
-      const inserted = await query(insertRound, [household, task, '2026-11-07', '2026-11-13'])
+      const inserted = await query(insertRound, [household, task, '2026-11-08', null])
       const today = await query(
         `select to_char((now() at time zone 'Europe/Madrid')::date, 'YYYY-MM-DD') as today`,
       )
@@ -72,6 +72,26 @@ describe('US-30 · marcar una tarea como hecha', () => {
     ).rejects.toThrow(/task_rounds_task_id_starts_on_key/)
   })
 
+  // Regresión: con dos «Hecha» el mismo día se guardaba la vuelta siguiente sin que cambiara
+  // la última, y la tarea quedaba bloqueada.
+  it('una tarea no se marca dos veces el mismo día', async () => {
+    const { household, task } = await taskOf(ana, 'Baño')
+    await expect(
+      asUser(db, ana, async (query) => {
+        await query(insertRound, [household, task, '2026-11-08', null])
+        await query(insertRound, [household, task, '2026-11-11', null])
+      }),
+    ).rejects.toThrow(/task_rounds_task_id_completed_on_key/)
+  })
+
+  // Si el reloj del móvil va mal, la vuelta que manda puede no ser la de hoy.
+  it('en las de fin de semana, el día de hoy tiene que estar dentro de la vuelta', async () => {
+    const { household, task } = await taskOf(ana, 'Superficies')
+    await expect(
+      asUser(db, ana, (query) => query(insertRound, [household, task, '2026-01-03', '2026-01-09'])),
+    ).rejects.toThrow(/task_rounds_completed_on_check/)
+  })
+
   it('una puntual solo se hace una vez', async () => {
     const { household, task } = await taskOf(ana, 'Cepillar suelo')
     await expect(
@@ -82,12 +102,6 @@ describe('US-30 · marcar una tarea como hecha', () => {
     ).rejects.toThrow(/task_rounds_task_id_starts_on_key/)
   })
 
-  it('el plazo no puede acabar antes de que empiece la vuelta', async () => {
-    const { household, task } = await taskOf(ana, 'Superficies')
-    await expect(
-      asUser(db, ana, (query) => query(insertRound, [household, task, '2026-11-07', '2026-11-06'])),
-    ).rejects.toThrow(/task_rounds_due_by_check/)
-  })
 })
 
 describe('US-30 · solo veo y apunto vueltas de mi hogar (RLS)', () => {
@@ -104,18 +118,18 @@ describe('US-30 · solo veo y apunto vueltas de mi hogar (RLS)', () => {
   })
 
   it('no puedo apuntar una vuelta en el hogar de otro', async () => {
-    const { household, task } = await taskOf(bruno, 'Superficies')
+    const { household, task } = await taskOf(bruno, 'Cristales y espejos')
     await expect(
-      asUser(db, ana, (query) => query(insertRound, [household, task, '2026-11-14', '2026-11-20'])),
+      asUser(db, ana, (query) => query(insertRound, [household, task, '2026-11-14', null])),
     ).rejects.toThrow(/row-level security/)
   })
 
   it('no puedo apuntar en mi hogar una vuelta de una tarea de otro hogar', async () => {
-    const mine = await taskOf(ana, 'Superficies')
-    const theirs = await taskOf(bruno, 'Superficies')
+    const mine = await taskOf(ana, 'Cristales y espejos')
+    const theirs = await taskOf(bruno, 'Cristales y espejos')
     await expect(
       asUser(db, ana, (query) =>
-        query(insertRound, [mine.household, theirs.task, '2026-11-14', '2026-11-20']),
+        query(insertRound, [mine.household, theirs.task, '2026-11-14', null]),
       ),
     ).rejects.toThrow(/task_rounds_task_fkey/)
   })

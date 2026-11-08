@@ -61,6 +61,8 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
 
     const next = `Toca: ${formatShortDate(addDays(today(), 30))}`
     await expect(task(page, 'Cristales y espejos')).toContainText(next)
+    // Ya está hecha hoy: no se puede marcar otra vez el mismo día.
+    await expect(markDone(page, 'Cristales y espejos')).toHaveCount(0)
     await page.reload()
     await expect(task(page, 'Cristales y espejos')).toContainText(next)
   })

@@ -178,7 +178,7 @@ describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', 
   const oneOff: Frequency = { kind: 'oneOff' }
   const can = (frequency: Frequency, lastCompletedOn: string | null, today: string) => {
     const shown = round(frequency, lastCompletedOn, today)
-    return shown !== null && canMarkDone(frequency, shown, today)
+    return shown !== null && canMarkDone({ frequency, lastCompletedOn }, shown, today)
   }
 
   it('de fin de semana: sí durante la vuelta, del sábado al viernes', () => {
@@ -200,10 +200,16 @@ describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', 
     expect(can(biweekly, null, '2026-12-19')).toBe(true)
   })
 
-  it('cada N días: siempre, también antes de que toque (cuenta desde el día en que se hace)', () => {
+  it('cada N días: también antes de que toque (cuenta desde el día en que se hace)', () => {
     expect(can(interval, null, '2026-11-08')).toBe(true)
     expect(can(interval, '2026-11-08', '2026-11-09')).toBe(true)
     expect(can(interval, '2026-11-01', '2026-11-20')).toBe(true)
+  })
+
+  // Regresión: marcarla dos veces el mismo día guardaba la vuelta siguiente sin cambiar
+  // el día de la última, y la tarea ya no se podía volver a marcar.
+  it('cada N días: no otra vez el mismo día en que ya se hizo', () => {
+    expect(can(interval, '2026-11-08', '2026-11-08')).toBe(false)
   })
 
   it('puntual: sí mientras está pendiente', () => {

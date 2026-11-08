@@ -28,18 +28,25 @@ create table public.task_rounds (
   -- La vuelta solo puede apuntar a una tarea de su mismo hogar.
   constraint task_rounds_task_fkey
     foreign key (task_id, household_id) references public.tasks (id, household_id) on delete cascade,
-  constraint task_rounds_due_by_check
-    check (due_by is null or (starts_on is not null and due_by >= starts_on)),
+  -- Si la vuelta tiene plazo (las de fin de semana), se tiene que hacer dentro de ella.
+  -- La vuelta la calcula el móvil con su reloj, y el día lo pone la base de datos: si el
+  -- reloj del móvil va mal (o se marca justo al cambiar de día), se rechaza en lugar de
+  -- apuntar como hecha una vuelta que no es la de hoy.
+  constraint task_rounds_completed_on_check
+    check (due_by is null or (starts_on is not null and completed_on between starts_on and due_by)),
   -- Cada vuelta se guarda una sola vez, aunque se pulse dos veces «Hecha» (o desde dos móviles).
   -- Dos puntuales sin fecha cuentan como la misma vuelta: una puntual solo se hace una vez.
-  constraint task_rounds_task_id_starts_on_key unique nulls not distinct (task_id, starts_on)
+  constraint task_rounds_task_id_starts_on_key unique nulls not distinct (task_id, starts_on),
+  -- Y una tarea no se hace dos veces el mismo día: en las de «cada N días», una segunda vez
+  -- guardaría la vuelta siguiente sin cambiar el día de la última, y la tarea se bloquearía.
+  constraint task_rounds_task_id_completed_on_key unique (task_id, completed_on)
 );
 
 comment on table public.task_rounds is 'Vueltas terminadas de cada tarea: cuándo tocaba y qué día se hizo.';
 
 create index task_rounds_household_id_idx on public.task_rounds (household_id);
--- La app lee la última vuelta terminada de cada tarea.
-create index task_rounds_task_id_completed_on_idx on public.task_rounds (task_id, completed_on desc);
+-- La última vuelta terminada de cada tarea, que lee la app, usa el índice de
+-- task_rounds_task_id_completed_on_key.
 
 -- ---------------------------------------------------------------------------
 -- Seguridad (Row Level Security)

@@ -100,7 +100,7 @@ function TaskItem({
       {task.parts.length > 0 && (
         <p>{task.parts.map((part) => `${part.name} ${part.weight} %`).join(' · ')}</p>
       )}
-      {canMarkDone(task.frequency, round, today) && (
+      {canMarkDone(task, round, today) && (
         <button type="button" onClick={handleComplete} disabled={saving}>
           {saving ? 'Guardando…' : 'Marcar como hecha'}
         </button>
