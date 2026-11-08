@@ -32,13 +32,17 @@ export function dayOfWeek(date: LocalDate): number {
 
 /** Qué día es en esa zona horaria en ese momento. El momento llega como parámetro. */
 export function localDateIn(timeZone: string, now: Date): LocalDate {
-  // 'en-CA' da el formato AAAA-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
+  // Se monta con las partes (año, mes, día) y no con el texto formateado de un idioma,
+  // que puede cambiar según el navegador.
+  const parts = new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(now)
+  }).formatToParts(now)
+  const part = (type: 'year' | 'month' | 'day') =>
+    parts.find((candidate) => candidate.type === type)?.value ?? ''
+  return `${part('year')}-${part('month')}-${part('day')}`
 }
 
 const WEEKDAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
