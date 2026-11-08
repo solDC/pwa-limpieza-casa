@@ -7,8 +7,11 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 //
 // Las reglas de cada frecuencia (plazos, años bisiestos, cambio de hora, terminar antes o
 // después de tiempo) se prueban en tests/unit/domain/frequency.test.ts. Aquí se comprueba
-// lo que se ve. «Cada N días cuenta desde que se terminó» solo se puede ver cuando se pueda
-// marcar una tarea como hecha (US-30).
+// lo que se ve.
+//
+// PENDIENTE PARA LA US-30: «cada N días cuenta desde que se terminó» solo se puede ver
+// cuando se pueda marcar una tarea. La US-30 debe añadir aquí una prueba: marcar el Baño
+// hoy y comprobar que dice «Toca:» con la fecha de dentro de 3 días.
 
 async function signIn(page: Page, email: string) {
   await page.goto('/')
@@ -41,11 +44,28 @@ test.describe('US-28 · Frecuencias', () => {
     await expect(task(page, 'Limpiar juntas')).toContainText('Toca: hoy')
   })
 
+  // Se fija la hora del navegador en un día concreto para comprobar el finde exacto.
+  // Las de fin de semana no dependen del día en que se crearon las tareas.
   test('las de fin de semana dicen de qué finde son', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-11-04T12:00:00+01:00')) // miércoles
     await signIn(page, uniqueEmail())
 
-    const weekend = /Toca: finde del \d{1,2} (ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)/
-    await expect(task(page, 'Superficies')).toContainText(weekend)
-    await expect(task(page, 'Aspirar cosas de Cati')).toContainText(weekend)
+    // Entre semana sigue siendo la vuelta del finde anterior (plazo hasta el viernes).
+    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+    // Antes del primer finde de Cati, toca el primero.
+    await expect(task(page, 'Aspirar cosas de Cati')).toContainText('Toca: finde del 5 dic')
+  })
+
+  // Regresión: en el móvil, la app puede quedarse abierta en segundo plano de un día para
+  // otro. Al volver a ella, «hoy» tiene que ser el día nuevo.
+  test('al volver a la app otro día, «Toca» se actualiza', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-11-06T22:00:00+01:00')) // viernes
+    await signIn(page, uniqueEmail())
+    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+
+    await page.clock.setFixedTime(new Date('2026-11-07T09:00:00+01:00')) // sábado
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+
+    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 7 nov')
   })
 })

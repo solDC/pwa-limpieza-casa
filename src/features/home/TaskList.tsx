@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { localDateIn } from '../../domain/dates'
 import { currentRound, describeDue } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { listTasks } from '../../storage/tasks'
+import { useToday } from './use-today'
 
 type TasksState =
   | { status: 'loading' }
@@ -12,9 +12,6 @@ type TasksState =
 // US-27 · Mis tareas por defecto: las tareas del hogar, con su frecuencia y sus partes.
 // US-28 · Frecuencias: cuándo toca cada una («Toca: …»).
 // No separa lo que toca hoy de lo retrasado: eso es la US-29.
-
-/** «Hoy» es siempre el día de Madrid, como en la base de datos. */
-const TIME_ZONE = 'Europe/Madrid'
 export function TaskList() {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
 
@@ -28,7 +25,7 @@ export function TaskList() {
     }
   }, [])
 
-  const today = localDateIn(TIME_ZONE, new Date())
+  const today = useToday()
 
   return (
     <section className="stack" aria-labelledby="tasks-heading">
