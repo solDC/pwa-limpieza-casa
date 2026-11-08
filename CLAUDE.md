@@ -84,6 +84,7 @@ Cada historia sigue este orden, con las skills y el agente de `.claude/`. Los pu
 Para un cambio pequeño fuera de una historia, como un texto o un arreglo, el mismo principio: proponer, esperar el sí, hacer, comprobar y pedir confirmación antes del commit y el pull request.
 
 **Otras skills:**
+- **`new-story`**: cuando Sol describe algo que quiere en la app, para convertirlo en una historia de usuario de `docs/user-stories.md`, con su ok antes de escribirla.
 - **`sync-issues`**: cuando cambian las historias de `docs/user-stories.md`, para que los issues de GitHub digan lo mismo.
 - **`release-check`**: antes de fusionar, o cuando Sol pregunta qué hay que configurar fuera del código.
 - **`create-skill`**: para proponer, crear o mejorar skills y agentes. Se registran aquí, no en el CHANGELOG.
