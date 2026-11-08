@@ -57,7 +57,7 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    Si es un **agente**, crea en su lugar `.claude/agents/<nombre>.md`: el mismo frontmatter (`name`, `description`) más `tools` con solo las herramientas que necesita (un revisor: `Read, Grep, Glob, Bash`, sin `Edit` ni `Write`). El cuerpo es su prompt de sistema: qué revisa, en qué orden y cómo informa (hallazgos por gravedad, con `archivo:línea` y la regla de `CLAUDE.md` que incumple).
 3. **Revisa** la skill o el agente contra el código: que las rutas, scripts de `package.json` y comandos existen de verdad.
 4. **CLAUDE.md, no el CHANGELOG:** el CHANGELOG solo cuenta cambios en la app. Añade la skill o el agente nuevo a «Flujo de trabajo de una historia» de `CLAUDE.md`, si forma parte del flujo, o a la lista «Otras skills» con una línea: para qué sirve y cuándo usarla.
-5. **Resumen para Sol y esperar su ok** antes del commit (ver «Cómo trabajar con Sol» en `CLAUDE.md`). Con su ok, commit con Conventional Commits: `chore: skill <nombre> para …`.
+5. **Commit y resumen para Sol.** Los commits de borrador en la rama de trabajo se pueden hacer y subir en cualquier momento (ver «Cómo trabajar con Sol» en `CLAUDE.md`), con Conventional Commits: `chore: skill <nombre> para …`. **Enséñale a Sol el resumen y espera su ok antes de abrir el pull request.**
 6. **Explica a Sol** cómo usarla (`/<nombre>` o pidiéndolo con palabras) y sugiere la siguiente candidata de la lista.
 
 ## Antes de terminar
@@ -67,4 +67,4 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
 - [ ] Las rutas y comandos citados existen en el repositorio.
 - [ ] No contradice ninguna regla de `CLAUDE.md`.
 - [ ] Registrada en `CLAUDE.md` (flujo u «Otras skills»), no en el CHANGELOG.
-- [ ] Sol ha dado su ok antes del commit.
+- [ ] Sol ha dado su ok antes de abrir el pull request.
