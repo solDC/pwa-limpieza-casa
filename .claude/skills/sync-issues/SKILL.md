@@ -23,8 +23,9 @@ Para cada historia, una de estas acciones:
 | Historia sin issue | **Crear** el issue |
 | El título, el texto, los criterios o la prioridad no coinciden | **Actualizar** el issue |
 | Historia absorbida o sustituida por otra | **Cerrar** como *not planned*, con un comentario que diga cuál la sustituye |
-| Historia que pasa al backlog (para una versión futura) | **Dejar abierta** con la etiqueta `backlog` y quitar `must`/`should` |
+| Historia que pasa al backlog (para una versión futura) | **Dejar abierta** con la etiqueta `backlog` y quitar `must have`/`nice to have` |
 | Historia hecha (está en «Estado» de `CLAUDE.md` y su pull request está fusionado) | No tocar: se cerró con `Closes #…` |
+| Etiqueta de prioridad antigua (`must`, `should`) | **Cambiarla** por `must have` o `nice to have` |
 | Issue de historia que ya no aparece en el documento | **Preguntar** a Sol qué hacer |
 
 ## 3. Enseñar la lista a Sol y esperar su ok
@@ -35,10 +36,10 @@ Una tabla con cada issue afectado, la acción y el motivo. No hagas nada hasta q
 
 Con el ok de Sol:
 
-- **Issue nuevo:** título `US-xx · Título`; etiquetas `user-story` y `must` o `should`; cuerpo con este formato:
+- **Issue nuevo:** título `US-xx · Título`; etiquetas `user-story` y `must have` o `nice to have`; cuerpo con este formato:
 
   ```markdown
-  **Prioridad:** Must · **Área:** <sección de docs/user-stories.md>
+  **Prioridad:** Must have · **Área:** <sección de docs/user-stories.md>
 
   > As a …,
   > I want …,

@@ -8,43 +8,29 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 El detalle, con las historias de usuario y su prioridad, está en [`docs/user-stories.md`](docs/user-stories.md).
 
-- **Cuenta de usuario:** inicio de sesión con un enlace mágico que llega por email, sin contraseña.
-- **Inicio:** lo que toca hoy, lo retrasado y lo que está a medias, con su progreso.
-- **Tareas:** crear, editar y borrar, con partes opcionales y progreso parcial («Cristales: 2 de 4»).
-- **Frecuencias:** por calendario («todos los sábados»), por intervalo («cada 30 días desde la última vez», editable en cada tarea) o puntual.
-- **Marcar como hecho** una tarea entera o una parte, eligiendo cuándo se hizo (hoy, ayer u otra fecha), con botón de deshacer.
-- **Historial** de lo hecho, con la fecha real.
-- **Datos de ejemplo** de un hogar real, con Cati, la gata, que se pueden cargar o borrar.
+Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
+
+- **Cuenta de usuario:** se entra por email, sin contraseña, con el enlace o con el código que llega en el email.
+- **Mis tareas por defecto:** Superficies (cocina, salón y dormitorio), Baño, Aspirar cosas de Cati, Cristales y espejos, Cepillar suelo y Limpiar juntas.
+- **Qué toca:** lo que toca hoy y lo retrasado, con su progreso.
+- **Marcar como hecha** una tarea entera o una parte.
+- **Histórico** de cada vuelta: completada, parcial (con su %) o no completada.
+- **Cancelar** una tarea sin perder su histórico, y **añadir** tareas nuevas *(Nice to have)*.
 - **Instalable** como una PWA. Necesita conexión a internet.
 
 ## Backlog (fuera del MVP)
 
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario.
 - **Uso sin conexión,** con sincronización al recuperar la conexión.
+- Las historias aplazadas (editar, deshacer, elegir cuándo lo hice, icono…) están en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Cómo se modelan las tareas
 
-La **tarea** es la pieza central y significa «algo que hay que mantener». Puede ser:
+- **Tarea:** algo que hay que mantener. Puede ser una acción («Aspirar cosas de Cati») o un lugar («Baño»). Puede tener **partes** (lugares o acciones), cada una con su peso en %.
+- **Frecuencias:** semanal en fin de semana, fin de semana cada 15 días, cada N días desde la última vez, o puntual.
+- **Vuelta:** cada vez que toca hacer una tarea. Se cierra como completada, parcial (con su %) o no completada.
 
-- **Una acción:** «Limpiar los cristales».
-- **Un espacio:** «Baño», que incluye todo lo que conlleva limpiarlo.
-
-Cada tarea puede tener **partes**, aunque no es obligatorio. Las partes pueden ser sitios (salón, cocina) o trabajos concretos (inodoro, ducha, espejo).
-
-**Progreso:**
-- Con partes, es el número de partes hechas en la ronda actual frente al total.
-- Sin partes, la tarea está hecha o no.
-- El progreso de una ronda no se pierde aunque cambie el día. La ronda se cierra cuando se completan todas las partes.
-
-**Frecuencia**, a elegir en cada tarea:
-
-| Tipo | Ejemplo | Cómo se calcula la próxima fecha |
-|---|---|---|
-| Calendario | Todos los fines de semana · el día 1 de cada mes | Siguiente fecha del calendario |
-| Intervalo | Cada 30 días (editable) | Desde la última vez que se terminó |
-| Puntual | Una sola vez | Sin repetición |
-
-**Historial:** cada registro guarda cuándo se hizo (`performed_at`), cuándo se apuntó (`created_at`) y quién lo hizo. Llegar a la fecha prevista nunca marca una tarea como hecha.
+El detalle, con las tablas de frecuencias y estados, está en «Conceptos» de [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Tecnología
 
@@ -79,7 +65,6 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 ├── src/
 │   ├── domain/             Modelo de tareas, motor de frecuencias y progreso (TypeScript puro)
 │   ├── storage/            Acceso a Supabase
-│   ├── demo/               Datos de ejemplo, separados de los datos reales
 │   ├── features/
 │   │   ├── home/           Pantalla de Inicio
 │   │   ├── tasks/          Lista, detalle y edición de tareas
