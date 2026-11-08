@@ -2,7 +2,7 @@
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
-🚧 **MVP en desarrollo.** Ya se puede entrar con un enlace mágico y cada usuario tiene su hogar (US-01 y US-02). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código), cerrar sesión, y cada usuario tiene su hogar con las tareas por defecto (US-01, US-02, US-03, US-26 y US-27). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 

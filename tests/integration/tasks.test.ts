@@ -170,6 +170,8 @@ describe('US-27 · solo veo las tareas de mi hogar (RLS)', () => {
       `insert into public.tasks (household_id, name, frequency) values ('${household}', 'X', 'one_off')`,
       `update public.tasks set name = 'X'`,
       `delete from public.tasks`,
+      `insert into public.task_parts (household_id, task_id, name, weight)
+       select household_id, id, 'X', 10 from public.tasks limit 1`,
       `update public.task_parts set weight = 1`,
       `delete from public.task_parts`,
     ]) {
