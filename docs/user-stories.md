@@ -222,3 +222,30 @@ so that I enjoy using it every day.
 - Se ve bien en el móvil y en el ordenador.
 
 *Para concretar antes de implementarla: colores, tipografía y estilo. Es un trabajo de diseño que puede acabar en varias historias. El icono de la pantalla de inicio no puede estar animado.*
+
+### US-36 · Tener varias casas y cambiar entre ellas · [#50](https://github.com/solDC/pwa-limpieza-casa/issues/50)
+As a user,
+I want to have more than one home and switch between them,
+so that I can keep track of the cleaning of each one.
+- Puedo crear otra casa, con un nombre; se crea con las tareas por defecto de la US-27.
+- Puedo cambiar de casa desde el Inicio, y la app recuerda la última que usé.
+- Cada casa tiene sus propias tareas y su histórico.
+
+*Para usar otras tareas en una casa nueva: cancelar las que no sirvan (US-32) y añadir las nuevas (US-33).*
+
+### US-37 · Archivar una casa · [#51](https://github.com/solDC/pwa-limpieza-casa/issues/51)
+As a user,
+I want to archive a home I no longer use, and recover it if I need it again,
+so that it stops appearing without losing its history.
+- La app pide confirmación antes de archivar.
+- Una casa archivada deja de aparecer al cambiar de casa, pero conserva sus tareas y su histórico.
+- Puedo ver mis casas archivadas y recuperar cualquiera.
+- No puedo archivar mi única casa activa.
+
+*Depende de la US-36. Cuando se pueda compartir una casa (ver «Visión»), solo quien la creó podrá archivarla; las demás personas solo podrán salir de ella.*
+
+## Visión
+
+Ideas para más adelante, todavía sin historia.
+
+- **Compartir la casa con otras personas:** invitar a alguien por email; las dos personas ven las mismas tareas, pueden marcarlas y el histórico dice quién hizo cada cosa; quien creó la casa puede quitar a otras personas. La base de datos ya está preparada: todo cuelga del hogar y un hogar puede tener varios miembros.

@@ -20,9 +20,9 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 
 ## Backlog (fuera del MVP)
 
-- **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario.
+- **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario. Está descrito en la sección «Visión» de [`docs/user-stories.md`](docs/user-stories.md).
 - **Uso sin conexión,** con sincronización al recuperar la conexión.
-- Las historias aplazadas (editar, deshacer, elegir cuándo lo hice, icono…) están en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).
+- Las historias aplazadas (editar, deshacer, elegir cuándo lo hice, rediseño, varias casas…) están en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Cómo se modelan las tareas
 
