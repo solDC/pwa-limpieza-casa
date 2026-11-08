@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { canMarkDone, currentRound, describeDue } from '../../../src/domain/frequency'
+import { canMarkDone, currentRound, describeDue, isWeekend } from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
 
 // US-28 · Frecuencias (#37). Las reglas están en «Conceptos» de docs/user-stories.md.
 
 const createdOn = '2026-11-08'
 const round = (frequency: Frequency, lastCompletedOn: string | null, today: string) =>
-  currentRound({ frequency, createdOn }, lastCompletedOn, today)
+  currentRound({ frequency, createdOn, lastCompletedOn }, today)
 
 describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el viernes', () => {
   const weekly: Frequency = { kind: 'weekendWeekly' }
@@ -215,5 +215,17 @@ describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', 
   it('puntual: sí mientras está pendiente', () => {
     expect(can(oneOff, null, '2026-11-08')).toBe(true)
     expect(can(oneOff, '2026-11-08', '2026-11-08')).toBe(false)
+  })
+})
+
+describe('isWeekend: si una frecuencia es de fin de semana', () => {
+  it('lo son la semanal y la de cada 15 días', () => {
+    expect(isWeekend({ kind: 'weekendWeekly' })).toBe(true)
+    expect(isWeekend({ kind: 'weekendBiweekly', startOn: '2026-12-05' })).toBe(true)
+  })
+
+  it('no lo son la de cada N días ni la puntual', () => {
+    expect(isWeekend({ kind: 'interval', days: 3 })).toBe(false)
+    expect(isWeekend({ kind: 'oneOff' })).toBe(false)
   })
 })

@@ -1,26 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
-import {
-  uniqueEmail,
-  waitBeforeNextEmail,
-  waitForSignInEmail,
-  type SignInEmail,
-} from './helpers/mailbox'
+import { signIn } from './helpers/app'
+import { uniqueEmail, waitBeforeNextEmail } from './helpers/mailbox'
 
 // US-03 · Cerrar sesión (#4)
 //
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
-
-/** Entra con el enlace del email. Con `after`, espera a un email más nuevo que ese. */
-async function signIn(page: Page, email: string, after?: SignInEmail): Promise<SignInEmail> {
-  await page.goto('/')
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
-  await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
-  const signInEmail = await waitForSignInEmail(email, { after })
-  await page.goto(signInEmail.link)
-  await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
-  return signInEmail
-}
 
 async function expectSignedOut(page: Page) {
   await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()

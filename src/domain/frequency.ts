@@ -16,17 +16,21 @@ export type Round = {
 /** Las tareas de fin de semana tocan el sábado y se pueden hacer hasta el viernes siguiente. */
 const WEEKEND_ROUND_DAYS = 7
 
+/** Si es de fin de semana (semanal o cada 15 días). */
+export function isWeekend(frequency: Frequency): boolean {
+  return frequency.kind === 'weekendWeekly' || frequency.kind === 'weekendBiweekly'
+}
+
 /**
- * La vuelta actual de una tarea o, si ya se hizo, la siguiente.
- * `lastCompletedOn` es el día en que se terminó la última vuelta (`null` si nunca).
+ * La vuelta actual de una tarea o, si ya se hizo, la siguiente, según el día en que se
+ * terminó la última vuelta (`lastCompletedOn`, `null` si nunca).
  * Devuelve `null` si ya no vuelve a tocar (una puntual ya hecha).
  */
 export function currentRound(
-  task: Pick<Task, 'frequency' | 'createdOn'>,
-  lastCompletedOn: LocalDate | null,
+  task: Pick<Task, 'frequency' | 'createdOn' | 'lastCompletedOn'>,
   today: LocalDate,
 ): Round | null {
-  const { frequency } = task
+  const { frequency, lastCompletedOn } = task
   switch (frequency.kind) {
     case 'weekendWeekly': {
       const saturday = addDays(today, -((dayOfWeek(today) + 1) % 7))
@@ -72,10 +76,7 @@ export function canMarkDone(
   round: Round,
   today: LocalDate,
 ): boolean {
-  const { kind } = task.frequency
-  if (kind === 'weekendWeekly' || kind === 'weekendBiweekly') {
-    return round.startsOn !== null && round.startsOn <= today
-  }
+  if (isWeekend(task.frequency)) return round.startsOn !== null && round.startsOn <= today
   return task.lastCompletedOn !== today
 }
 
@@ -89,9 +90,7 @@ export function describeDue(frequency: Frequency, round: Round, today: LocalDate
 }
 
 function describeDate(frequency: Frequency, startsOn: LocalDate, today: LocalDate): string {
-  if (frequency.kind === 'weekendWeekly' || frequency.kind === 'weekendBiweekly') {
-    return `finde del ${formatDayMonth(startsOn)}`
-  }
+  if (isWeekend(frequency)) return `finde del ${formatDayMonth(startsOn)}`
   const days = daysBetween(today, startsOn)
   if (days === 0) return 'hoy'
   if (days === 1) return 'mañana'
