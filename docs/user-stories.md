@@ -31,7 +31,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
-| US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | — |
+| US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 
 ## Conceptos
 
@@ -276,7 +276,7 @@ para no perder lo que hice.
 
 *Depende de la US-31 y de la US-32.*
 
-### US-43 · Deshacer una tarea marcada como hecha
+### US-43 · Deshacer una tarea marcada como hecha · [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62)
 Como usuario,
 quiero deshacer una tarea que he marcado como hecha por error,
 para que la app no crea que la he limpiado.
@@ -286,7 +286,7 @@ para que la app no crea que la he limpiado.
 
 *Depende de la US-30.*
 
-### US-44 · Deshacer una parte marcada como hecha
+### US-44 · Deshacer una parte marcada como hecha · [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63)
 Como usuario,
 quiero deshacer una parte que he marcado como hecha por error,
 para que el progreso de la vuelta sea el real.
@@ -297,7 +297,7 @@ para que el progreso de la vuelta sea el real.
 
 *Depende de la US-39.*
 
-### US-45 · Recuperar una tarea cancelada
+### US-45 · Recuperar una tarea cancelada · [#64](https://github.com/solDC/pwa-limpieza-casa/issues/64)
 Como usuario,
 quiero recuperar una tarea que cancelé,
 para volver a hacerla sin crearla de nuevo.
