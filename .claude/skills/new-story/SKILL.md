@@ -16,7 +16,7 @@ Escribe historias nuevas para `docs/user-stories.md`. No las implementa (eso es 
    - Qué problema resuelve y en qué situación lo usa Sol (¿en el iPhone con la app instalada?, ¿en el ordenador?).
    - Casos límite: qué pasa si no hay conexión, si se hace dos veces, si acaba el plazo, si se cancela.
    - Valores concretos: fechas, porcentajes, textos de botones.
-   - Si es imprescindible para la demo (**Must**) o se puede recortar (**Should**). Propón una prioridad, pero decide Sol.
+   - Si es imprescindible para la demo (**Must have**) o se puede recortar (**Nice to have**). Propón una prioridad, pero decide Sol.
 
 ## 2. Comprobar que encaja
 
@@ -33,7 +33,7 @@ Antes de escribirla, revisa y cuenta a Sol lo que encuentres:
 Con el formato de `docs/user-stories.md`:
 
 ```markdown
-### US-xx · Título corto en español (Must)
+### US-xx · Título corto en español (Must have)
 As a <tipo de usuario>,
 I want <qué quiere hacer>,
 so that <para qué le sirve>.
@@ -45,7 +45,7 @@ so that <para qué le sirve>.
 - **Historia** en inglés (*As a… I want… so that…*), como las demás; **título y criterios en español**.
 - **Criterios comprobables:** cada uno describe algo que se ve o se puede hacer en la app, y se puede convertir en una prueba e2e («Al marcar todas las partes, la vuelta queda completada»). Nada de «que sea rápido» o «que sea bonito» sin concretar.
 - Pocos criterios (de 2 a 5). Si salen muchos, probablemente son dos historias: propón dividirla.
-- Lo que sea un extra deseable va marcado como *Nice to have* dentro de los criterios.
+- **No hay criterios opcionales.** Si una parte de la idea es un extra deseable, va en **una historia aparte** con prioridad **Nice to have**, que depende de la principal.
 - **Sección:** la que corresponda (Cuenta, Tareas…) o «Backlog» si Sol la quiere para más adelante.
 
 ## 4. Enseñárselo a Sol y esperar su ok
@@ -71,6 +71,6 @@ Si Sol pide revisar historias ya escritas, aplica los pasos 2 y 3 como lista de 
 
 - [ ] Sol ha respondido a las preguntas y ha dado su ok al borrador.
 - [ ] La historia no duplica otra y encaja con «Conceptos».
-- [ ] Cada criterio se puede comprobar con una prueba.
+- [ ] Cada criterio se puede comprobar con una prueba, y ninguno es opcional.
 - [ ] Número, prioridad y sección correctos; tabla de resumen al día.
 - [ ] Propuesto el paso siguiente: `sync-issues`.
