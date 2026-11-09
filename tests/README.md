@@ -44,4 +44,4 @@ docker compose exec app npm run test:e2e
 
 (Con Docker Compose, Supabase local debe estar arrancado en tu ordenador.)
 
-Las pruebas e2e compilan la app y la sirven en http://localhost:4173 (la versión compilada, la más parecida a Vercel). Si una falla, `npx playwright show-report` abre un informe con capturas y una traza paso a paso.
+Las pruebas e2e compilan la app y la sirven en http://localhost:4173 (la versión compilada, la más parecida a Vercel). La excepción es `e2e/app-update.spec.ts` (versión nueva de la app): sirve `dist/` con su propio servidor, en un puerto libre, para poder simular un despliegue nuevo. Si en local ya tenías `npm run preview` arrancado, `dist/` no se vuelve a compilar: páralo antes. Si una falla, `npx playwright show-report` abre un informe con capturas y una traza paso a paso.

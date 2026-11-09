@@ -174,3 +174,8 @@ button:disabled {
 .update-notice p {
   margin: 0;
 }
+
+/* Mientras sale el aviso, sitio abajo para que no tape lo último de la pantalla. */
+.has-update-notice .app {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+}

@@ -11,6 +11,8 @@ const CHECK_EVERY_MS = 60 * 60 * 1000
  *
  * Ahora busca también al volver a la app y cada hora. Si hay una versión nueva, no
  * recarga sola (podría cortar a quien está guardando algo): avisa, y `update()` la carga.
+ * Si hay otras pestañas abiertas con la app, se recargan con ella, porque todas tienen que
+ * usar la misma versión.
  */
 export function useAppUpdate(): { updateAvailable: boolean; update: () => Promise<void> } {
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null)

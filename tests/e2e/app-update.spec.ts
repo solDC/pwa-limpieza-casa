@@ -13,6 +13,18 @@ import { extname, join, normalize } from 'node:path'
 // afectar a las demás pruebas.
 
 const notice = 'Hay una versión nueva de la app.'
+
+/** Si la página ya funciona con la versión instalada y no queda ninguna esperando. */
+function serviceWorkerState(page: import('@playwright/test').Page) {
+  return page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration()
+    return {
+      controlled: navigator.serviceWorker.controller !== null,
+      waiting: registration?.waiting !== null,
+      installing: registration?.installing !== null,
+    }
+  })
+}
 const dist = join(process.cwd(), 'dist')
 const types: Record<string, string> = {
   '.html': 'text/html',
@@ -48,7 +60,7 @@ test.beforeAll(async () => {
     }
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
-  baseUrl = `http://localhost:${(server.address() as AddressInfo).port}`
+  baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
 })
 
 test.afterAll(() => new Promise<void>((resolve) => server.close(() => resolve())))
@@ -75,6 +87,12 @@ test.describe('Versión nueva de la app (#76)', () => {
     await page.getByRole('button', { name: 'Actualizar' }).click()
     await reloaded
     await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
+    // Funciona con la versión nueva, y no queda ninguna esperando que hiciera volver el aviso.
+    await expect.poll(() => serviceWorkerState(page)).toEqual({
+      controlled: true,
+      waiting: false,
+      installing: false,
+    })
     await expect(page.getByText(notice)).toHaveCount(0)
   })
 
@@ -88,19 +106,23 @@ test.describe('Versión nueva de la app (#76)', () => {
     version = 'versión 2'
     await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
     await expect(page.getByText(notice)).toBeVisible()
+    // La versión nueva espera a que se pulse «Actualizar».
+    expect(await serviceWorkerState(page)).toEqual({
+      controlled: true,
+      waiting: true,
+      installing: false,
+    })
 
     const reloaded = page.waitForEvent('load')
     await page.getByRole('button', { name: 'Actualizar' }).click()
     await reloaded
+    // La que esperaba es la que manda ahora: ya no queda ninguna esperando.
+    await expect.poll(() => serviceWorkerState(page)).toEqual({
+      controlled: true,
+      waiting: false,
+      installing: false,
+    })
     await expect(page.getByText(notice)).toHaveCount(0)
-    // Ya funciona con la versión nueva.
-    expect(
-      await page.evaluate(async () => {
-        const response = await fetch('/sw.js', { cache: 'no-store' })
-        const registration = await navigator.serviceWorker.getRegistration()
-        return { active: registration?.active?.state, latest: (await response.text()).includes('versión 2') }
-      }),
-    ).toEqual({ active: 'activated', latest: true })
   })
 
   test('sin versión nueva, no sale ningún aviso', async ({ page }) => {
