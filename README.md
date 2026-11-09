@@ -221,40 +221,65 @@ Sin ellas, la app muestra un aviso de que falta la configuración.
 
 ## Puesta en producción
 
-Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos.
+Vercel publica `main` en producción y cada pull request en su propio **despliegue de prueba**. Cada uno usa un proyecto de Supabase distinto, para que lo que se marca al probar no toque el hogar de verdad:
+
+| | Producción | Pruebas |
+|---|---|---|
+| **Lo usan** | La dirección de producción y la app instalada | Los despliegues de prueba de los pull requests |
+| **Proyecto de Supabase** | El de siempre | Uno solo para pruebas (por ejemplo, `limpieza-casa-pruebas`) |
+| **Migraciones de un pull request** | Justo antes de fusionarlo | En cuanto se abre, para poder probarlo |
+| **Datos** | Los de verdad: no se tocan al probar | Se pueden cambiar para cada prueba ([`docs/test-data.md`](docs/test-data.md)) |
+
+Los ids de los dos proyectos están en `supabase/projects.json`. No son secretos: son la parte de la URL de Supabase (`https://<id-del-proyecto>.supabase.co`), que ya es pública.
 
 ### Una sola vez
 
-1. **Supabase → Authentication → URL Configuration:**
-   - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
-   - **Redirect URLs:** esa misma dirección con `/**` al final, y la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
-2. **Vercel → Settings → Environment Variables:** añade `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para **Production** y **Preview**. Los valores están en el botón **Connect** del panel de Supabase (la clave puede ser la *publishable* o la *anon*; nunca la *secret* ni la *service_role*). Los nombres tienen que ser exactamente esos. Después, vuelve a desplegar.
-3. **Servidor de correo propio (SMTP).** Supabase no deja editar las plantillas del email con su servidor gratuito, que además solo envía unos 2 emails por hora y solo a los miembros del proyecto. En **Supabase → Authentication → Emails → SMTP Settings**, activa **Enable custom SMTP**. Para la demo basta con Gmail:
-   - Crea una **contraseña de aplicación** en tu cuenta de Google (myaccount.google.com → Seguridad → Contraseñas de aplicaciones; hace falta la verificación en dos pasos).
+En **cada uno de los dos proyectos** de Supabase (el de pruebas se crea en el panel de Supabase con **New project**; el plan gratis permite dos):
+
+1. **Authentication → URL Configuration:**
+   - **Producción:**
+     - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
+     - **Redirect URLs:** esa misma dirección con `/**` al final. **Sin** las de los despliegues de prueba: así un despliegue de prueba no puede entrar nunca en producción.
+   - **Pruebas:**
+     - **Site URL:** la dirección de un despliegue de prueba cualquiera (solo se usa si una dirección no está en la lista de abajo).
+     - **Redirect URLs:** la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
+2. **Servidor de correo propio (SMTP).** Supabase no deja editar las plantillas del email con su servidor gratuito, que además solo envía unos 2 emails por hora y solo a los miembros del proyecto. En **Authentication → Emails → SMTP Settings**, activa **Enable custom SMTP**. Para la demo basta con Gmail:
+   - Crea una **contraseña de aplicación** en tu cuenta de Google (myaccount.google.com → Seguridad → Contraseñas de aplicaciones; hace falta la verificación en dos pasos). Sirve la misma para los dos proyectos.
    - **Host:** `smtp.gmail.com` · **Port:** `587` · **Username** y **Sender email:** tu dirección de Gmail · **Password:** la contraseña de aplicación · **Sender name:** `Limpieza de casa`.
 
    Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
-4. **Plantillas del email, en español y con el código (US-26).** En **Supabase → Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
+3. **Plantillas del email, en español y con el código (US-26).** En **Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
    - **Subject:** `Tu acceso a Limpieza de casa: {{ .Token }}` (Supabase pone el código en lugar de `{{ .Token }}`)
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
-   Si cambias ese archivo, vuelve a pegarlo en las dos plantillas: la nube no lo lee del repo.
+   Si cambias ese archivo, vuelve a pegarlo en las dos plantillas de los dos proyectos: la nube no lo lee del repo.
 
    Comprueba también, en la configuración del proveedor **Email** (Authentication → Sign In / Providers → Email), que el código tiene **6 dígitos** (*Email OTP Length*) y caduca en **3600 segundos** (*Email OTP Expiration*), como en local (`supabase/config.toml`): el email dice que caduca en una hora. En la nube, Supabase deja además un tiempo mínimo entre dos emails a la misma dirección (60 segundos por defecto; en local, 1 segundo): si se pide otro antes, la app avisa de que se han pedido demasiados seguidos.
-5. **Enlaza el repo con el proyecto de Supabase**, desde la terminal del dev container. Te pedirá iniciar sesión y la contraseña de la base de datos:
+
+Después:
+
+4. **Vercel → Settings → Environment Variables:** `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`, con los valores de **cada proyecto en su entorno**:
+   - **Production:** los del proyecto de producción.
+   - **Preview:** los del proyecto de pruebas.
+
+   Los valores están en el botón **Connect** del panel de cada proyecto (la clave puede ser la *publishable* o la *anon*; nunca la *secret* ni la *service_role*). Los nombres tienen que ser exactamente esos. Después, vuelve a desplegar.
+5. **Los ids de los proyectos** en `supabase/projects.json` (`produccion` y `pruebas`), con un pull request como cualquier otro cambio.
+6. **Inicia sesión en la CLI de Supabase**, desde la terminal del dev container:
 
    ```
    npx supabase login
-   npx supabase link --project-ref <id-del-proyecto>
    ```
 
-   El id del proyecto es la parte de la URL de Supabase: `https://<id-del-proyecto>.supabase.co`.
+   La sesión se guarda dentro del dev container: **si lo reconstruyes, hay que volver a hacer `npx supabase login`**. Si no, la CLI responde «Access token not provided».
+7. **Aplica todas las migraciones al proyecto de pruebas**, que está vacío (ver el apartado siguiente):
 
-   La sesión de `npx supabase login` se guarda dentro del dev container: **si lo reconstruyes, hay que volver a hacer `npx supabase login`**. Si no, la CLI responde «Access token not provided». El enlace con el proyecto (`link`) sí se conserva.
+   ```
+   npm run db:push:pruebas
+   ```
 
 ### Cada vez que haya una migración nueva
 
-Cuando un pull request añade archivos en `supabase/migrations/`, hay que aplicarlos a la base de datos de la nube **desde la rama de ese pull request y antes de fusionarlo**, para que su despliegue de prueba ya funcione:
+Cuando un pull request añade archivos en `supabase/migrations/`, se aplican **desde la rama de ese pull request**: primero en pruebas y, cuando ya está probado, en producción.
 
 1. Cámbiate a la rama del pull request (por ejemplo, `feature/us-01-sign-in`) e instala las dependencias por si han cambiado:
 
@@ -266,17 +291,29 @@ Cuando un pull request añade archivos en `supabase/migrations/`, hay que aplica
 
    Si VS Code pide reconstruir el dev container, acepta: la rama ha cambiado su configuración.
 
-2. Aplica las migraciones. La CLI las lista y pide confirmación (responde `Y`):
+2. **Al abrir el pull request,** en pruebas, para que su despliegue de prueba funcione:
 
    ```
-   npx supabase db push --linked
+   npm run db:push:pruebas
    ```
 
-`--linked` indica que se apliquen en el proyecto enlazado (la nube), no en el Supabase local. Los comandos de Supabase siempre van con `npx` delante: así se usa la versión de la CLI fijada en el proyecto (`package.json`), no otra que descargue `npx` y cuyas opciones pueden cambiar.
+3. **Justo antes de fusionarlo,** cuando ya lo has probado, en producción:
+
+   ```
+   npm run db:push:produccion
+   ```
+
+   Las migraciones tienen que ser compatibles con la versión de `main` (el pull request lo avisa si no): así producción sigue funcionando entre el `db:push` y la fusión.
+
+Cada comando enlaza primero la CLI con su proyecto y después aplica las migraciones, así que no hay que acordarse de en cuál está enlazada. `db:push:produccion` pide antes escribir `produccion`, para no aplicarlo en producción por error; y los dos se niegan a seguir si en `supabase/projects.json` los dos ids son iguales. Pide la contraseña de la base de datos de ese proyecto (Project Settings → Database) y, antes de aplicar, lista las migraciones y pide confirmación (responde `Y`). Para ver qué se aplicaría sin aplicarlo: `npm run db:push:pruebas -- --dry-run` (es la única opción extra que admiten).
 
 Si responde «Remote database is up to date» sin listar nada, probablemente estás en otra rama (por ejemplo, `main`), donde esa migración aún no existe.
 
-Si la app nueva usa una tabla que aún no existe en la nube, fallará hasta que se aplique la migración.
+Si la app usa una tabla que aún no existe en un proyecto, fallará en ese entorno hasta que se aplique la migración.
+
+### Si el despliegue de prueba no carga
+
+Supabase **pausa los proyectos gratuitos tras 7 días sin uso**. Si un despliegue de prueba se queda cargando o no deja entrar, entra en el panel del proyecto de pruebas y pulsa **Restore project**. Tarda unos minutos.
 
 ### Instalarla como app
 

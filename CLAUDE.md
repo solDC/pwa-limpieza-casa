@@ -66,7 +66,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - **Una migración ya fusionada en `main` no se edita:** se corrige con otra nueva.
 - Cada migración que crea tablas incluye su RLS, sus políticas y los permisos de cada rol (`anon`, `authenticated`) en el mismo archivo, con comentarios en español.
 - Las funciones `security definer` llevan `set search_path = ''` y nombres de tabla con esquema (`public.households`).
-- En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube las aplica Sol con `npx supabase db push --linked` (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva.
+- En local: `npx supabase db reset` aplica todas las migraciones desde cero. En la nube hay dos proyectos de Supabase, **producción** y **pruebas** (el de los despliegues de prueba de Vercel), y las aplica Sol desde la rama del PR: `npm run db:push:pruebas` al abrirlo y `npm run db:push:produccion` justo antes de fusionar (ver README, «Puesta en producción»). Avísale en el pull request cuando haya una migración nueva. Para preparar datos de una prueba a mano, `docs/test-data.md`.
 
 ## Cómo trabajar con Sol
 
