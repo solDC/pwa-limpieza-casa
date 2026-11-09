@@ -8,7 +8,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 
 **Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca) y US-30 (marcar una tarea como hecha). La pantalla de Inicio es provisional.
 
-**Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
+**Nombre de la app:** «Limpieza de casa», también el nombre corto (`short_name`) que se propone al instalarla.
 
 ## Arquitectura
 

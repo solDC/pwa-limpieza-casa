@@ -17,7 +17,13 @@ test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ pa
   const response = await request.get(href!)
   expect(response.ok()).toBe(true)
   const manifest = await response.json()
-  expect(manifest).toMatchObject({ name: 'Limpieza de casa', lang: 'es', display: 'standalone' })
+  expect(manifest).toMatchObject({
+    name: 'Limpieza de casa',
+    // El que propone el iPhone al instalarla: completo, para no tener que escribirlo.
+    short_name: 'Limpieza de casa',
+    lang: 'es',
+    display: 'standalone',
+  })
   expect(manifest.icons.some((icon: { purpose?: string }) => icon.purpose === 'maskable')).toBe(true)
 })
 
