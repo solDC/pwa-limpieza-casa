@@ -49,7 +49,8 @@ export async function waitForSignInEmail(
         await fetch(`${mailpitUrl}/api/v1/message/${latest.ID}`)
       ).json()) as MailpitMessage
       const link = findVerifyLink(message.Text) ?? findVerifyLink(message.HTML)
-      const code = message.Text.match(/código:\s*(\d{6,10})/i)?.[1]
+      // El primer número de 6 a 10 cifras después de «código» (también va en el asunto).
+      const code = message.Text.match(/código\D*?(\d{6,10})/i)?.[1]
       if (!link) throw new Error(`El email a ${email} no contiene un enlace de acceso`)
       if (!code) throw new Error(`El email a ${email} no contiene un código de acceso`)
       return { id: latest.ID, subject: message.Subject, link, code }

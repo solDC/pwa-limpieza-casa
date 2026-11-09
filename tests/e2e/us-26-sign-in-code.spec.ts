@@ -3,8 +3,9 @@ import { uniqueEmail, waitBeforeNextEmail, waitForSignInEmail } from './helpers/
 
 // US-26 · Entrar con código desde la app instalada (#29)
 //
-// En el iPhone, la app instalada no recibe la sesión del enlace del email (iOS lo abre
-// en Safari). Por eso el email trae también un código que se escribe en la app.
+// El email trae un código, que sirve en cualquier dispositivo, y un enlace como atajo.
+// En el iPhone, la app instalada no recibe la sesión del enlace (iOS lo abre en Safari):
+// allí solo sirve el código.
 // Casi todas necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
 // Las que simulan respuestas de Supabase con page.route no lo necesitan.
 
@@ -35,14 +36,26 @@ async function requestEmailWithoutSending(page: Page, email = uniqueEmail()) {
 }
 
 test.describe('US-26 · Entrar con código desde la app instalada', () => {
-  test('el email trae el enlace y también un código de 6 dígitos', async ({ page }) => {
+  test('el email trae un código de 6 dígitos, también en el asunto, y el enlace', async ({
+    page,
+  }) => {
     const email = uniqueEmail()
     await requestEmail(page, email)
 
     const signInEmail = await waitForSignInEmail(email)
-    expect(signInEmail.subject).toBe('Tu acceso a Limpieza de casa')
-    expect(signInEmail.link).toContain('/auth/v1/verify')
     expect(signInEmail.code).toMatch(/^\d{6}$/)
+    expect(signInEmail.subject).toBe(`Tu acceso a Limpieza de casa: ${signInEmail.code}`)
+    expect(signInEmail.link).toContain('/auth/v1/verify')
+  })
+
+  test('«Revisa tu correo» propone escribir el código, y el enlace como alternativa', async ({
+    page,
+  }) => {
+    await requestEmailWithoutSending(page)
+
+    await expect(page.getByText('con un código. Escríbelo aquí para entrar.')).toBeVisible()
+    await expect(page.getByText('También puedes pulsar el enlace del email.')).toBeVisible()
+    await expect(page.getByText('iPhone')).toHaveCount(0)
   })
 
   test('escribo el código en «Revisa tu correo» y entro sin salir de la app', async ({ page }) => {

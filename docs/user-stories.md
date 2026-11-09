@@ -80,10 +80,10 @@ quiero cerrar sesión,
 para que nadie más vea mi hogar en un dispositivo compartido.
 
 ### US-26 · Entrar con código desde la app instalada (Must have)
-Como usuario con la app instalada en el iPhone,
+Como usuario,
 quiero entrar escribiendo el código del email,
-para entrar en la app instalada, donde el enlace del email no funciona.
-- El email trae el enlace y también un código de 6 dígitos.
+para entrar desde cualquier dispositivo sin abrir otra ventana, también en la app instalada del iPhone, donde el enlace del email no funciona.
+- El email trae un código de 6 dígitos (primero, y también en el asunto) y el enlace.
 - En la pantalla «Revisa tu correo» puedo escribir el código y entrar sin salir de la app.
 - El enlace sigue funcionando igual que antes: no hace falta escribir el código.
 - Si el código es incorrecto o ha caducado, la app lo dice y deja intentarlo de nuevo o pedir otro email.

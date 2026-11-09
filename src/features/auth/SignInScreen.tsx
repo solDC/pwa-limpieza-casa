@@ -21,7 +21,8 @@ type SentStep = Extract<Step, { name: 'sent' }>
 const maxCodeLength = 10
 
 // US-01 · Entrar con enlace mágico.
-// US-26 · Entrar con el código del email, para la app instalada en el iPhone.
+// US-26 · Entrar con el código del email: sirve en cualquier dispositivo, también en la app
+// instalada del iPhone, donde el enlace no funciona.
 export function SignInScreen() {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -80,13 +81,11 @@ export function SignInScreen() {
         <section className="card" aria-live="polite">
           <h2>Revisa tu correo</h2>
           <p>
-            Te hemos enviado un email a <strong>{step.email}</strong>. Pulsa el enlace para entrar.
+            Te hemos enviado un email a <strong>{step.email}</strong> con un código. Escríbelo aquí
+            para entrar.
           </p>
 
           <form className="stack" onSubmit={handleCodeSubmit}>
-            <p className="muted">
-              ¿Usas la app instalada en el iPhone? Escribe aquí el código que viene en el email.
-            </p>
             <label htmlFor="code">Código del email</label>
             <input
               id="code"
@@ -117,6 +116,7 @@ export function SignInScreen() {
             )}
           </form>
 
+          <p className="muted">También puedes pulsar el enlace del email.</p>
           <p className="muted">
             Si no ves el email en unos minutos, mira en la carpeta de spam o pide otro.
           </p>

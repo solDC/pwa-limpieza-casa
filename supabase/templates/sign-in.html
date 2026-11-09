@@ -1,19 +1,21 @@
 <!--
   Email para entrar en Limpieza de casa (US-01 y US-26).
   Se usa para «Magic Link» y para «Confirm signup» (el primer email de un usuario nuevo).
-  Lleva el enlace y también el código: en el iPhone, la app instalada no recibe
-  la sesión del enlace (se abre en Safari), así que allí se escribe el código.
+  El código va primero: sirve en cualquier dispositivo (también en la app instalada del
+  iPhone, que no recibe la sesión del enlace porque iOS lo abre en Safari) y no abre otra
+  ventana. El enlace es un atajo: solo deja dentro del dispositivo donde se pulsa.
+  El asunto también lleva el código, para verlo en la notificación sin abrir el email.
 
   En local lo usa supabase/config.toml. En la nube hay que pegarlo en
-  Supabase → Authentication → Email Templates (en las dos plantillas).
+  Supabase → Authentication → Email Templates (en las dos plantillas), con su asunto.
 -->
-<h2>Entra en Limpieza de casa</h2>
+<h2>Tu código para entrar</h2>
 
-<p>Pulsa este enlace para entrar:</p>
-<p><a href="{{ .ConfirmationURL }}">Entrar en Limpieza de casa</a></p>
-
-<p>¿Tienes la app instalada en el iPhone? Vuelve a la app y escribe este código:</p>
+<p>Escribe este código en la app:</p>
 <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">{{ .Token }}</p>
 
-<p>El enlace y el código caducan en una hora y solo sirven una vez.<br>
+<p>O, si lo prefieres, pulsa este enlace para entrar desde este dispositivo:</p>
+<p><a href="{{ .ConfirmationURL }}">Entrar en Limpieza de casa</a></p>
+
+<p>El código y el enlace caducan en una hora y solo sirven una vez.<br>
 Si no has pedido entrar, ignora este email.</p>
