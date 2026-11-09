@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { formatDayMonth } from '../../domain/dates'
 import {
@@ -28,7 +28,8 @@ export function NewTaskForm({
 }: {
   householdId: string
   today: LocalDate
-  onSaved: () => void
+  /** Se ha guardado: recibe el nombre de la tarea. */
+  onSaved: (name: string) => void
   onCancel: () => void
 }) {
   const [draft, setDraft] = useState<NewTaskDraft>(emptyDraft)
@@ -40,7 +41,11 @@ export function NewTaskForm({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
   const weekends = nextWeekends(today)
+
+  // Al abrirlo, se empieza por el nombre (también con el teclado o VoiceOver).
+  useEffect(() => nameRef.current?.focus(), [])
 
   function update(changes: Partial<NewTaskDraft>) {
     const next = { ...draft, ...changes }
@@ -91,7 +96,7 @@ export function NewTaskForm({
     setSaving(true)
     try {
       await createTask(householdId, result.task)
-      onSaved()
+      onSaved(result.task.name)
     } catch (error) {
       setSaveError((error as Error).message)
       setSaving(false)
@@ -114,6 +119,7 @@ export function NewTaskForm({
       <label htmlFor="new-task-name">Nombre</label>
       <input
         id="new-task-name"
+        ref={nameRef}
         value={draft.name}
         onChange={(event) => update({ name: event.target.value })}
         aria-invalid={invalid(errors?.name)}
@@ -161,7 +167,12 @@ export function NewTaskForm({
       )}
 
       {draft.frequencyKind === 'weekendBiweekly' && (
-        <fieldset className="stack" disabled={saving}>
+        <fieldset
+          className="stack"
+          aria-invalid={invalid(errors?.biweeklyStartOn)}
+          aria-describedby={errors?.biweeklyStartOn ? 'new-task-biweekly-error' : undefined}
+          disabled={saving}
+        >
           <legend>Primer fin de semana</legend>
           {weekends.map((saturday) => (
             <label key={saturday} className="choice">

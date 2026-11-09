@@ -150,6 +150,28 @@ test.describe('US-33 · Añadir una tarea', () => {
     await expect(taskNames(page)).toHaveCount(6)
   })
 
+  // Para usarlo con el teclado o con un lector de pantalla (VoiceOver).
+  test('el foco va al nombre al abrir, vuelve a «Añadir tarea» al cerrar, y al guardar lo anuncia', async ({
+    page,
+  }) => {
+    await signIn(page, uniqueEmail())
+    await openForm(page)
+    await expect(form(page).getByLabel('Nombre')).toBeFocused()
+
+    await form(page).getByRole('button', { name: 'Cancelar' }).click()
+    await expect(page.getByRole('button', { name: 'Añadir tarea' })).toBeFocused()
+
+    await openForm(page)
+    await form(page).getByLabel('Nombre').fill('Regar las plantas')
+    await form(page).getByLabel('Puntual').check()
+    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+
+    await expect(page.getByRole('status').filter({ hasText: 'Tarea añadida' })).toHaveText(
+      'Tarea añadida: Regar las plantas.',
+    )
+    await expect(page.getByRole('button', { name: 'Añadir tarea' })).toBeFocused()
+  })
+
   test('si no se puede guardar, lo dice y no se pierde lo escrito', async ({ page }) => {
     await signIn(page, uniqueEmail())
     await page.route('**/rest/v1/rpc/create_task', (route) =>

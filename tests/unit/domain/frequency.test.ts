@@ -325,6 +325,25 @@ describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
     })
   })
 
+  it('cada 15 días, creada el domingo de un finde que no toca: el siguiente de su calendario', () => {
+    // El 12-13 de diciembre no toca (sí el 5 y el 19).
+    expect(roundOf(cati, '2026-12-13', '2026-12-13')).toEqual({
+      startsOn: '2026-12-19',
+      dueBy: '2026-12-25',
+    })
+  })
+
+  it('cada 15 días, creada antes de su primer finde: toca el primero', () => {
+    expect(roundOf(cati, '2026-11-18', '2026-11-18')).toEqual({
+      startsOn: '2026-12-05',
+      dueBy: '2026-12-11',
+    })
+    expect(roundOf(cati, '2026-11-18', '2026-12-01')).toEqual({
+      startsOn: '2026-12-05',
+      dueBy: '2026-12-11',
+    })
+  })
+
   it('las de cada N días y las puntuales no cambian: tocan desde el día en que se crean', () => {
     expect(roundOf({ kind: 'interval', days: 3 }, '2026-11-18', '2026-11-18')).toEqual({
       startsOn: '2026-11-18',

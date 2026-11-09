@@ -9,6 +9,8 @@
 -- tareas (las de por defecto, US-27):
 -- - Los pesos de las partes de una tarea suman 100.
 -- - En las de «fin de semana cada 15 días», el primer finde empieza en sábado.
+-- - En las de «cada N días», como mucho 365 días; y como mucho 20 partes por tarea.
+--   Son los mismos límites que el formulario (src/domain/new-task.ts).
 
 -- ---------------------------------------------------------------------------
 -- Reglas
@@ -16,7 +18,9 @@
 
 alter table public.tasks
   add constraint tasks_biweekly_start_on_saturday_check
-    check (biweekly_start_on is null or extract(isodow from biweekly_start_on) = 6);
+    check (biweekly_start_on is null or extract(isodow from biweekly_start_on) = 6),
+  add constraint tasks_interval_days_max_check
+    check (interval_days is null or interval_days <= 365);
 
 -- Los pesos de las partes de una tarea suman 100. Se comprueba al final de la
 -- transacción (deferrable initially deferred), cuando ya están todas las partes:
@@ -80,6 +84,10 @@ declare
 begin
   if not public.is_household_member(target_household_id) then
     raise exception using errcode = '42501', message = 'No eres miembro de ese hogar.';
+  end if;
+
+  if coalesce(cardinality(part_names), 0) > 20 then
+    raise exception using errcode = '22023', message = 'Como mucho 20 partes por tarea.';
   end if;
 
   if coalesce(cardinality(part_names), 0) <> coalesce(cardinality(part_weights), 0) then

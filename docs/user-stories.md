@@ -218,7 +218,7 @@ quiero que una tarea recién creada no salga retrasada por una vuelta que empez�
 para que la lista solo me avise de lo que de verdad he dejado sin hacer.
 - Una tarea de fin de semana creada de lunes a viernes empieza el sábado siguiente: hasta entonces dice «Toca: finde del…», sin retraso.
 - Creada en sábado o domingo, toca ese mismo fin de semana.
-- En las de cada 15 días, la primera vuelta es la primera de su calendario que empieza el día en que se crea o después.
+- En las de cada 15 días, la primera vuelta es la primera de su calendario cuyo sábado o domingo es el día en que se crea o después (como en las semanales: creada en el domingo de un finde que toca, toca ese finde).
 - Si alguien se da de alta entre semana, sus tareas por defecto de fin de semana no salen retrasadas.
 
 ## Historias anteriores

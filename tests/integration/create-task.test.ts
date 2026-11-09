@@ -147,6 +147,18 @@ describe('US-33 · no se guarda una tarea que no vale', () => {
     )
   })
 
+  it('«cada N días» con más de 365 días', async () => {
+    await expect(rejects({ frequency: 'interval', intervalDays: 366 })).rejects.toThrow(
+      /tasks_interval_days_max_check/,
+    )
+  })
+
+  it('con más de 20 partes', async () => {
+    const parts = Array.from({ length: 21 }, (_, index) => `Parte ${index + 1}`)
+    const weights = [...Array(20).fill(5), 0]
+    await expect(rejects({ parts, weights })).rejects.toThrow(/Como mucho 20 partes/)
+  })
+
   it('«cada 15 días» sin el primer finde, o con un primer finde que no empieza en sábado', async () => {
     await expect(rejects({ frequency: 'weekend_biweekly', intervalDays: null })).rejects.toThrow(
       /tasks_biweekly_start_on_check/,

@@ -25,6 +25,22 @@ export function TaskList({ householdId }: { householdId?: string }) {
   const [adding, setAdding] = useState(false)
   // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
   const [reloadError, setReloadError] = useState<string | null>(null)
+  // Lo que anuncian los lectores de pantalla al guardar una tarea (región `status`).
+  const [announcement, setAnnouncement] = useState('')
+  // Al cerrar el formulario, el foco vuelve a «Añadir tarea» en lugar de perderse.
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const focusAddButton = useRef(false)
+  useEffect(() => {
+    if (!adding && focusAddButton.current) {
+      focusAddButton.current = false
+      addButtonRef.current?.focus()
+    }
+  }, [adding])
+
+  function closeForm() {
+    focusAddButton.current = true
+    setAdding(false)
+  }
   const today = useToday()
 
   // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
@@ -88,8 +104,9 @@ export function TaskList({ householdId }: { householdId?: string }) {
           <NewTaskForm
             householdId={householdId}
             today={today}
-            onSaved={() => {
-              setAdding(false)
+            onSaved={(name) => {
+              closeForm()
+              setAnnouncement(`Tarea añadida: ${name}.`)
               setReloadError(null)
               // La tarea nueva sale en la lista, en su sitio según lo que toca. Si no se
               // puede poner al día, se dice, para que no se añada otra vez.
@@ -102,13 +119,25 @@ export function TaskList({ householdId }: { householdId?: string }) {
                   ),
               })
             }}
-            onCancel={() => setAdding(false)}
+            onCancel={closeForm}
           />
         ) : (
-          <button type="button" className="button-secondary" onClick={() => setAdding(true)}>
+          <button
+            ref={addButtonRef}
+            type="button"
+            className="button-secondary"
+            onClick={() => {
+              setAnnouncement('')
+              setAdding(true)
+            }}
+          >
             Añadir tarea
           </button>
         ))}
+      {/* Siempre en la página: los lectores de pantalla solo leen lo que cambia dentro. */}
+      <p role="status" className="muted">
+        {announcement}
+      </p>
 
       {reloadError && <ErrorMessage>{reloadError}</ErrorMessage>}
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
