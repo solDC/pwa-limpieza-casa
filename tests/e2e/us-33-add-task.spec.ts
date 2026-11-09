@@ -167,4 +167,26 @@ test.describe('US-33 · Añadir una tarea', () => {
     await expect(form(page).getByLabel('Nombre')).toHaveValue('Regar las plantas')
     await expect(form(page).getByLabel('Puntual')).toBeChecked()
   })
+
+  // Para no añadirla dos veces: si se guarda pero la lista no se puede poner al día
+  // (por ejemplo, se corta la conexión justo después), lo dice.
+  test('si se guarda pero no se puede poner al día la lista, lo dice', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    await openForm(page)
+    await form(page).getByLabel('Nombre').fill('Regar las plantas')
+    await form(page).getByLabel('Puntual').check()
+    await page.route('**/rest/v1/tasks?*', (route) =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"Error"}' }),
+    )
+
+    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+
+    await expect(form(page)).toHaveCount(0)
+    await expect(page.getByRole('alert')).toHaveText(
+      'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
+    )
+    await page.unroute('**/rest/v1/tasks?*')
+    await page.reload()
+    await expect(task(page, 'Regar las plantas')).toBeVisible()
+  })
 })

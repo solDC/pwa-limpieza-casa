@@ -23,6 +23,8 @@ type TasksState =
 export function TaskList({ householdId }: { householdId?: string }) {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
   const [adding, setAdding] = useState(false)
+  // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
+  const [reloadError, setReloadError] = useState<string | null>(null)
   const today = useToday()
 
   // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
@@ -35,20 +37,22 @@ export function TaskList({ householdId }: { householdId?: string }) {
 
   /**
    * Carga la lista. Si es una recarga (`keepOnError`) y falla, la lista se queda como estaba
-   * (con el aviso de la tarjeta) en lugar de cambiarse entera por el error.
+   * (con el aviso de la tarjeta, o `onKeptError`) en lugar de cambiarse entera por el error.
    */
-  function load({ keepOnError }: { keepOnError: boolean }) {
+  function load({ keepOnError, onKeptError }: { keepOnError: boolean; onKeptError?: () => void }) {
     const request = ++lastRequest.current
     const changesAtStart = localChanges.current
     const isCurrent = () => mounted.current && request === lastRequest.current
     listTasks()
       .then((tasks) => {
         if (!isCurrent()) return
-        if (localChanges.current !== changesAtStart) return load({ keepOnError: true })
+        if (localChanges.current !== changesAtStart) return load({ keepOnError: true, onKeptError })
         setState({ status: 'loaded', tasks })
       })
       .catch((error: Error) => {
-        if (isCurrent() && !keepOnError) setState({ status: 'error', message: error.message })
+        if (!isCurrent()) return
+        if (!keepOnError) setState({ status: 'error', message: error.message })
+        else onKeptError?.()
       })
   }
 
@@ -86,9 +90,17 @@ export function TaskList({ householdId }: { householdId?: string }) {
             today={today}
             onSaved={() => {
               setAdding(false)
-              // La tarea nueva sale en la lista, en su sitio según lo que toca.
+              setReloadError(null)
+              // La tarea nueva sale en la lista, en su sitio según lo que toca. Si no se
+              // puede poner al día, se dice, para que no se añada otra vez.
               localChanges.current++
-              load({ keepOnError: true })
+              load({
+                keepOnError: true,
+                onKeptError: () =>
+                  setReloadError(
+                    'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
+                  ),
+              })
             }}
             onCancel={() => setAdding(false)}
           />
@@ -98,6 +110,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
           </button>
         ))}
 
+      {reloadError && <ErrorMessage>{reloadError}</ErrorMessage>}
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
       {state.status === 'error' && <ErrorMessage>{state.message}</ErrorMessage>}
       {state.status === 'loaded' && (
