@@ -32,6 +32,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
+| US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Pendiente | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 
 ## Conceptos
 
@@ -44,6 +45,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
   | **Parcial (X %)** | Se acaba el plazo con algunas partes hechas; X es la suma de sus pesos |
   | **No completada** | Se acaba el plazo sin hacer nada |
   | **Cancelada** | Se cancela la tarea con la vuelta en curso (US-40) |
+  | **Saltada** | Me la salto a propósito, por ejemplo un finde que no estoy en casa (US-49) |
 
 - **Frecuencias:**
 
@@ -210,6 +212,15 @@ para que la app cuente bien aunque me acuerde de marcarla tarde.
 
 *Depende de la US-30.*
 
+### US-48 · Las tareas nuevas no empiezan con retraso (Nice to have)
+Como usuario,
+quiero que una tarea recién creada no salga retrasada por una vuelta que empezó antes de crearla,
+para que la lista solo me avise de lo que de verdad he dejado sin hacer.
+- Una tarea de fin de semana creada de lunes a viernes empieza el sábado siguiente: hasta entonces dice «Toca: finde del…», sin retraso.
+- Creada en sábado o domingo, toca ese mismo fin de semana.
+- En las de cada 15 días, la primera vuelta es la primera de su calendario que empieza el día en que se crea o después.
+- Si alguien se da de alta entre semana, sus tareas por defecto de fin de semana no salen retrasadas.
+
 ## Historias anteriores
 
 Las historias US-04 a US-25 eran del MVP original, más amplio. Así quedan con el MVP acotado:
@@ -266,7 +277,7 @@ para saber cómo voy con la limpieza.
 - Las vueltas de fin de semana que llegan al sábado siguiente sin terminar (el plazo acaba el viernes) quedan como parcial o no completada sin que yo haga nada.
 - El porcentaje parcial es la suma de los pesos de las partes hechas.
 
-*Pendiente de decidir antes de implementarla: qué pasa con una vuelta de fin de semana que empezó antes de crearse la tarea (no debería salir como «no completada»).*
+*La primera vuelta de una tarea es la primera que empieza después de crearla (US-48), así que no hay vueltas anteriores a la tarea en el histórico.*
 
 ### US-40 · Ver en el histórico las tareas canceladas · [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58)
 Como usuario,
@@ -321,6 +332,17 @@ para darme cuenta de que algo no se ha guardado.
 - Si no se puede guardar porque la sesión ha caducado, el aviso dice que vuelva a entrar, no que revise la conexión.
 
 *Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
+
+### US-49 · Saltarse una vuelta · [#72](https://github.com/solDC/pwa-limpieza-casa/issues/72)
+Como usuario,
+quiero saltarme a propósito una vuelta de una tarea, por ejemplo un finde que no estoy en casa,
+para que no salga como retrasada.
+- Una tarea que toca o va con retraso tiene un botón «Saltar esta vez», que pide confirmación.
+- Al saltarla, la tarea muestra cuándo vuelve a tocar, como si se hubiera hecho; las puntuales no se pueden saltar (para eso está cancelarla, US-32).
+- En las de cada N días, la siguiente se cuenta desde el día en que se salta.
+- Si falla el guardado, la app lo dice y la tarea sigue como estaba.
+
+*Depende de la US-30. Cuando exista el histórico (US-31), esa vuelta sale como «Saltada», no como «No completada».*
 
 ## Visión
 
