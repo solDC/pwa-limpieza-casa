@@ -33,6 +33,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
+| US-51 | Cambiar el peso de las partes de una tarea | Nice to have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 | US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 
 ## Conceptos
@@ -233,6 +234,17 @@ para que no me salga como pendiente hoy algo que pienso empezar más adelante.
 - Después, las siguientes se cuentan desde el día en que se termine, como siempre.
 
 *Depende de la US-33. Cambiarlo en una tarea que ya existe es la US-41; ponerle fecha a una puntual al crearla, la US-38.*
+
+### US-51 · Cambiar el peso de las partes de una tarea (Nice to have)
+Como usuario,
+quiero cambiar cuánto cuenta cada parte de una tarea que ya existe,
+para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo que pensaba.
+- En «Tus tareas», una tarea con partes tiene «Cambiar pesos», que muestra el peso de cada parte en %, con lo que suman.
+- Las reglas son las mismas que al crearla (US-34): cada peso de 1 a 100, y no se puede guardar si no suman 100 %.
+- Al guardar, la tarea muestra los pesos nuevos; con «Cancelar», se quedan como estaban.
+- Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
+
+*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha).*
 
 ## Historias anteriores
 
