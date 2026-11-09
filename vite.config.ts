@@ -14,8 +14,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Limpieza de casa',
-        // El completo también al instalarla: el iPhone lo propone como nombre del icono.
-        short_name: 'Limpieza de casa',
+        // Bajo el icono en Android: corto, para que no salga cortado. El iPhone usa el
+        // nombre completo de `apple-mobile-web-app-title` (index.html).
+        short_name: 'Limpieza',
         description: 'Organiza las tareas de mantenimiento del hogar',
         lang: 'es',
         start_url: '/',
