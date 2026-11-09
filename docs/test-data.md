@@ -70,19 +70,31 @@ where u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
 
 ## Borrar una cuenta de prueba
 
-Borra la cuenta, su hogar y sus tareas.
+Borra la cuenta y su hogar, con sus tareas. No toca ningún otro hogar.
 
 ```sql
 with account as (
-  delete from auth.users
+  select id from auth.users
   where email = 'mariasol.dc+prueba1@gmail.com' and email like '%+prueba%'
-  returning id
+),
+deleted_households as (
+  -- Su hogar, si no tiene más miembros.
+  delete from public.households h
+  where h.id in (
+      select m.household_id from public.household_members m
+      where m.user_id in (select id from account)
+    )
+    and not exists (
+      select 1 from public.household_members other
+      where other.household_id = h.id and other.user_id not in (select id from account)
+    )
+  returning h.id
+),
+deleted_accounts as (
+  delete from auth.users where id in (select id from account) returning id
 )
-select count(*) as deleted_accounts from account;
-
--- Los hogares que se han quedado sin nadie.
-delete from public.households h
-where not exists (select 1 from public.household_members m where m.household_id = h.id);
+select (select count(*) from deleted_accounts) as deleted_accounts,
+  (select count(*) from deleted_households) as deleted_households;
 ```
 
 Las de las tareas retrasadas de fin de semana no necesitan consulta: dependen solo del día. Una tarea de fin de semana sin hacer sale retrasada de lunes a viernes.
