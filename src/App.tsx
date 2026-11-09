@@ -1,4 +1,5 @@
 import { ErrorMessage } from './components/ErrorMessage'
+import { UpdateNotice } from './features/app-update/UpdateNotice'
 import { Screen } from './components/Screen'
 import { SignInScreen } from './features/auth/SignInScreen'
 import { useSession } from './features/auth/use-session'
@@ -6,7 +7,12 @@ import { HomeScreen } from './features/home/HomeScreen'
 import { isSupabaseConfigured } from './storage/supabase-client'
 
 export default function App() {
-  return isSupabaseConfigured ? <AppWithSession /> : <MissingConfiguration />
+  return (
+    <>
+      {isSupabaseConfigured ? <AppWithSession /> : <MissingConfiguration />}
+      <UpdateNotice />
+    </>
+  )
 }
 
 function AppWithSession() {
