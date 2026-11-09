@@ -48,6 +48,8 @@ let server: Server
 let baseUrl: string
 /** Lo que se añade a sw.js: cambiarlo es como desplegar una versión nueva. */
 let version = ''
+/** Código que se añade al final de sw.js, para simular fallos de la versión nueva. */
+let swExtra = ''
 /** Cuántas veces se ha pedido sw.js: cada vez es una búsqueda de versión nueva. */
 let swRequests = 0
 
@@ -59,7 +61,7 @@ test.beforeAll(async () => {
       let body: Buffer | string = await readFile(file.startsWith(dist) ? file : join(dist, 'index.html'))
       if (path === '/sw.js') {
         swRequests++
-        body = `${body}\n// ${version}\n`
+        body = `${body}\n// ${version}\n${swExtra}\n`
       }
       response.writeHead(200, {
         'Content-Type': types[extname(file)] ?? 'application/octet-stream',
@@ -80,6 +82,7 @@ test.afterAll(() => new Promise<void>((resolve) => server.close(() => resolve())
 
 test.beforeEach(() => {
   version = 'versión 1'
+  swExtra = ''
 })
 
 test.describe('Versión nueva de la app (#76)', () => {
@@ -150,17 +153,59 @@ test.describe('Versión nueva de la app (#76)', () => {
     version = 'versión 2'
     await returnToApp(page)
     await expect(notice(page)).toBeVisible()
+    // Mientras sale, lo de detrás no se puede usar.
+    await expect(page.getByLabel('Email').click({ timeout: 1_000 })).rejects.toThrow()
 
     // Una marca en la página: si se recargara, desaparecería.
     await page.evaluate(() => ((window as unknown as { notReloaded: boolean }).notReloaded = true))
+    const notReloaded = () =>
+      page.evaluate(() => (window as unknown as { notReloaded?: boolean }).notReloaded)
     await page.getByRole('button', { name: 'Más tarde' }).click()
 
     await expect(notice(page)).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
-    expect(await page.evaluate(() => (window as unknown as { notReloaded?: boolean }).notReloaded)).toBe(true)
+    expect(await notReloaded()).toBe(true)
+    // Cerrado el aviso, lo de detrás vuelve a funcionar.
+    await page.getByLabel('Email').click()
 
     await returnToApp(page)
     await expect(notice(page)).toBeVisible()
+
+    // La tecla Escape cuenta como «Más tarde».
+    await page.keyboard.press('Escape')
+    await expect(notice(page)).toHaveCount(0)
+    expect(await notReloaded()).toBe(true)
+    await returnToApp(page)
+    await expect(notice(page)).toBeVisible()
+  })
+
+  test('si «Actualizar» no consigue cargar la versión nueva, la ventana no se queda bloqueada', async ({
+    page,
+  }) => {
+    // El reloj de la página lo controla la prueba, para no esperar los 10 segundos de verdad.
+    await page.clock.install()
+    await page.goto(baseUrl)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    await page.reload()
+    // La versión nueva no llega a activarse nunca (como si se cortara a medias).
+    version = 'versión 2'
+    swExtra = 'self.skipWaiting = () => Promise.resolve()'
+    await returnToApp(page)
+    await expect(notice(page)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Actualizar' }).click()
+
+    // Mientras se actualiza, no se puede cerrar ni volver a pulsar.
+    await expect(page.getByRole('button', { name: 'Actualizando…' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Más tarde' })).toBeDisabled()
+    await page.keyboard.press('Escape')
+    await expect(notice(page)).toBeVisible()
+
+    // Pasado el tiempo sin recargar, los botones vuelven a funcionar.
+    await page.clock.fastForward(10_000)
+    await expect(page.getByRole('button', { name: 'Actualizar' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Más tarde' }).click()
+    await expect(notice(page)).toHaveCount(0)
   })
 
   test('sin versión nueva, no sale ningún aviso', async ({ page }) => {

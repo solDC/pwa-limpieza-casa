@@ -321,7 +321,7 @@ En Chrome o Edge, abre la app y pulsa el icono de instalar en la barra de direcc
 
 El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Una vez desplegada en Vercel, que usa HTTPS, se podrá instalar también en el móvil.
 
-Cuando se publica una versión nueva, la app lo avisa abajo («Hay una versión nueva de la app.») al volver a ella o, como mucho, en una hora. Al pulsar **Actualizar** se carga la nueva.
+Cuando se publica una versión nueva, la app lo avisa con una ventana en el centro («Hay una versión nueva de la app.») al volver a ella o, como mucho, en una hora. **Actualizar** carga la nueva; **Más tarde** cierra la ventana, que vuelve a salir la próxima vez que se vuelve a la app. Si se cierra la app del todo, al abrirla ya está la nueva.
 
 ## Contribuir
 

@@ -152,7 +152,7 @@ button:disabled {
   font-weight: 600;
 }
 
-/* Aviso de versión nueva de la app (#76): abajo, encima de todo y siempre a la vista. */
+/* Aviso de versión nueva de la app (#76): una ventana en el centro, con el fondo oscurecido. */
 .update-dialog {
   width: min(22rem, calc(100vw - 2rem));
   padding: 1.5rem;
@@ -161,6 +161,16 @@ button:disabled {
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
+}
+
+.update-dialog:not([open]) {
+  /* Los navegadores que no conocen <dialog> (iOS anterior a 15.4) lo mostrarían siempre. */
+  display: none;
+}
+
+/* Mientras está abierta, la página de detrás no se desplaza (iOS Safari sí lo haría). */
+body:has(.update-dialog[open]) {
+  overflow: hidden;
 }
 
 .update-dialog::backdrop {
