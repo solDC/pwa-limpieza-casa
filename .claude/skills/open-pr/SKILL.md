@@ -79,11 +79,14 @@ Y el resultado real: «Comprobado en local: 12/12 de integración y 16/16 e2e».
 Lo que no se pudo ejecutar, dicho claramente.
 
 ## ⚠️ Antes de fusionar: migración nueva
-Aplicarla en la nube desde la terminal del dev container, en esta rama:
+Aplicarla desde la terminal del dev container, en esta rama:
     git fetch
     git switch <rama>
     npm install
-    npx supabase db push --linked
+Para probar el PR, en el proyecto de pruebas:
+    npm run db:push:pruebas
+Justo antes de fusionar, cuando ya está probado, en producción:
+    npm run db:push:produccion
 Si no es compatible con la versión de main, explicar qué se rompe y en qué orden hacerlo.
 (También aquí: variables nuevas que haya que añadir en Vercel, o cualquier configuración manual.)
 
@@ -93,6 +96,8 @@ En el despliegue de prueba de Vercel
 1. Acción concreta. Qué debería verse, con los textos exactos de la pantalla.
 2. …
 Un paso o más por criterio de aceptación, incluidos los casos de error.
+Si la prueba necesita datos preparados (tareas sin hacer, retrasadas…), decir con qué cuenta
+de prueba (`+prueba`) y qué consulta de docs/test-data.md usar en el proyecto de pruebas.
 
 ## Pendiente o riesgos
 Lo que no se ha comprobado, limitaciones conocidas y mejoras propuestas para más adelante.

@@ -7,7 +7,7 @@ description: Dice a Sol qué hay que hacer fuera del código (Supabase de la nub
 
 Parte de lo que hace funcionar la app no está en el repositorio: la base de datos de la nube, las variables de Vercel, las plantillas del email o las direcciones permitidas. Esta skill mira la rama y da a Sol la lista de lo que le toca hacer, con los pasos exactos.
 
-**No ejecutes nada en Supabase ni en Vercel**, ni comandos que cambien la nube (`npx supabase db push --linked`): solo explica qué hacer. Lo hace Sol.
+**No ejecutes nada en Supabase ni en Vercel**, ni comandos que cambien la nube (`npm run db:push:pruebas`, `npm run db:push:produccion`): solo explica qué hacer. Lo hace Sol.
 
 Los pasos de cada panel están en el README, «Puesta en producción». Si un panel ha cambiado de nombre o de sitio, díselo a Sol y actualiza el README (con su ok).
 
@@ -27,11 +27,12 @@ Para cada archivo cambiado, mira si implica algo fuera del código:
 
 | Si cambia… | Qué tiene que hacer Sol | Cuándo |
 |---|---|---|
-| `supabase/migrations/` | Aplicar la migración en la nube **desde esta rama**: `git switch <rama>`, `npm install`, `npx supabase login` (si reconstruyó el dev container) y `npx supabase db push --linked`. Comprobar en Table Editor (esquema `public`) | Antes de fusionar, para que el despliegue de prueba funcione |
-| `supabase/templates/` | Pegar el archivo en Supabase → Authentication → Emails → Templates, en **Confirm signup** y **Magic Link** (necesita el SMTP propio configurado) | Antes de probar el email |
+| `supabase/migrations/` | Aplicar la migración **desde esta rama**: `git switch <rama>`, `npm install`, `npx supabase login` (si reconstruyó el dev container) y `npm run db:push:pruebas`. Comprobar en Table Editor (esquema `public`) del proyecto de pruebas | Al abrir el PR, para que el despliegue de prueba funcione |
+| `supabase/migrations/` (2.º paso) | Cuando ya está probado: `npm run db:push:produccion`, desde la misma rama. Si la migración no es compatible con `main`, explicar en qué orden hacerlo | Justo antes de fusionar |
+| `supabase/templates/` o el asunto en `supabase/config.toml` | Pegar el archivo (y el asunto) en Supabase → Authentication → Emails → Templates, en **Confirm signup** y **Magic Link**, en **los dos proyectos** (necesita el SMTP propio configurado) | En pruebas, antes de probar el email; en producción, antes de fusionar |
 | `supabase/config.toml` | Solo afecta al Supabase **local**. Si el cambio también debe valer en la nube (Redirect URLs, límites, duración del código), hay que hacerlo a mano en el panel. Decir cuál | Antes de fusionar |
-| `.env.example` con una variable nueva | Añadirla en Vercel → Settings → Environment Variables, en **Production** y **Preview**, y hacer *Redeploy*. Solo variables públicas (`VITE_`), nunca la *secret* ni la *service_role* | Antes de fusionar |
-| Una dirección o dominio nuevo | Añadirlo a Supabase → Authentication → URL Configuration → Redirect URLs, con `/**` al final | Antes de probar el inicio de sesión |
+| `.env.example` con una variable nueva | Añadirla en Vercel → Settings → Environment Variables, en **Production** y **Preview** (cada una con el valor de su proyecto de Supabase), y hacer *Redeploy*. Solo variables públicas (`VITE_`), nunca la *secret* ni la *service_role* | Antes de fusionar |
+| Una dirección o dominio nuevo | Añadirlo a Supabase → Authentication → URL Configuration → Redirect URLs, con `/**` al final, en el proyecto que le toque (producción o pruebas) | Antes de probar el inicio de sesión |
 | `vite.config.ts` (manifiesto de la PWA) o los iconos | Borrar la app instalada en el móvil y volver a instalarla, para ver el nombre o el icono nuevos | Después de fusionar |
 | Envío de emails (código de `storage/auth.ts` que envía más emails, o pruebas a mano que piden varios) | Revisar Authentication → Rate Limits («Rate limit for sending emails») | Antes de probar |
 
