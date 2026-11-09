@@ -91,7 +91,7 @@ El código que usa la tabla va en `src/storage/` (que traduce `snake_case` a `ca
 ## 6. Documentar
 
 - **CHANGELOG** (mismo commit): en `### Added` o `### Changed`, qué tablas o columnas cambian, qué reglas de seguridad tienen y por qué.
-- **Pull request:** avisa a Sol de que hay una migración nueva y de que debe aplicarla desde la rama del PR, antes de fusionar, con `npx supabase db push --linked` (README, «Puesta en producción»). Si no es compatible con la versión anterior, dilo en el aviso.
+- **Pull request:** avisa a Sol de que hay una migración nueva y de que debe aplicarla desde la rama del PR: en pruebas al abrirlo (`npm run db:push:pruebas`) y en producción justo antes de fusionar (`npm run db:push:produccion`) (README, «Puesta en producción»). Si no es compatible con la versión anterior, dilo en el aviso.
 - Commit: `feat: …` si forma parte de una historia; `fix: …` si corrige una migración anterior.
 
 ## Nunca
