@@ -9,14 +9,6 @@ test('la app carga y muestra su nombre', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Limpieza de casa' })).toBeVisible()
 })
 
-test('al instalarla en el iPhone, propone el nombre completo', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
-    'content',
-    'Limpieza de casa',
-  )
-})
-
 test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ page, request }) => {
   await page.goto('/')
   const href = await page.locator('link[rel="manifest"]').getAttribute('href')
@@ -27,8 +19,8 @@ test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ pa
   const manifest = await response.json()
   expect(manifest).toMatchObject({
     name: 'Limpieza de casa',
-    // Bajo el icono en Android: corto, para que no salga cortado.
-    short_name: 'Limpieza',
+    // El que propone el iPhone al instalarla: completo, para no tener que escribirlo.
+    short_name: 'Limpieza de casa',
     lang: 'es',
     display: 'standalone',
   })
