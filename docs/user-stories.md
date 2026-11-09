@@ -333,6 +333,8 @@ para darme cuenta de que algo no se ha guardado.
 
 *Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
 
+*El aviso de versión nueva de la app (#76) ya es una ventana en el centro de la pantalla, con el fondo oscurecido. En esta historia se convierte en un componente común (`src/components/`), y los avisos de error lo usan también.*
+
 ### US-49 · Saltarse una vuelta · [#72](https://github.com/solDC/pwa-limpieza-casa/issues/72)
 Como usuario,
 quiero saltarme a propósito una vuelta de una tarea, por ejemplo un finde que no estoy en casa,

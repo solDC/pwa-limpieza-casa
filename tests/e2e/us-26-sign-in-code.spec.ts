@@ -130,10 +130,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await waitBeforeNextEmail(page)
     await page.getByRole('button', { name: 'Reenviar email' }).click()
 
-    // Hay otra región «status» en todas las pantallas, vacía: la del aviso de versión nueva.
-    await expect(
-      page.getByRole('status').filter({ hasText: 'Te hemos enviado otro email' }),
-    ).toHaveText(`Te hemos enviado otro email a ${email}.`)
+    await expect(page.getByRole('status')).toHaveText(`Te hemos enviado otro email a ${email}.`)
     await expect(page.getByRole('alert')).toHaveCount(0)
     await expect(page.getByLabel('Código del email')).toHaveValue('')
 

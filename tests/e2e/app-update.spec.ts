@@ -12,7 +12,15 @@ import { extname, join, normalize } from 'node:path'
 // servidor propio, en otro puerto, donde pueden «desplegar» una versión nueva sin
 // afectar a las demás pruebas.
 
-const notice = 'Hay una versión nueva de la app.'
+/** La ventana del aviso. Cerrada, no cuenta: getByRole solo ve lo que está a la vista. */
+function notice(page: import('@playwright/test').Page) {
+  return page.getByRole('dialog', { name: 'Hay una versión nueva de la app.' })
+}
+
+/** Simula volver a la app (desde otra pestaña, o del segundo plano en el iPhone). */
+function returnToApp(page: import('@playwright/test').Page) {
+  return page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+}
 
 /** Si la página ya funciona con la versión instalada y no queda ninguna esperando. */
 function serviceWorkerState(page: import('@playwright/test').Page) {
@@ -80,13 +88,17 @@ test.describe('Versión nueva de la app (#76)', () => {
   }) => {
     await page.goto(baseUrl)
     await page.evaluate(() => navigator.serviceWorker.ready)
-    await expect(page.getByText(notice)).toHaveCount(0)
+    await expect(notice(page)).toHaveCount(0)
 
     version = 'versión 2'
-    // Se vuelve a la app (por ejemplo, desde otra pestaña o del segundo plano en el iPhone).
-    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+    await returnToApp(page)
 
-    await expect(page.getByText(notice)).toBeVisible()
+    await expect(notice(page)).toBeVisible()
+    // En el centro de la pantalla, para que se vea.
+    const box = (await notice(page).boundingBox())!
+    const viewport = page.viewportSize()!
+    expect(Math.abs(box.y + box.height / 2 - viewport.height / 2)).toBeLessThan(viewport.height / 10)
+    expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(viewport.width / 10)
 
     const reloaded = page.waitForEvent('load')
     await page.getByRole('button', { name: 'Actualizar' }).click()
@@ -98,7 +110,7 @@ test.describe('Versión nueva de la app (#76)', () => {
       waiting: false,
       installing: false,
     })
-    await expect(page.getByText(notice)).toHaveCount(0)
+    await expect(notice(page)).toHaveCount(0)
   })
 
   // El caso normal: la app ya se había abierto antes y funciona con la copia guardada.
@@ -109,8 +121,8 @@ test.describe('Versión nueva de la app (#76)', () => {
     expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true)
 
     version = 'versión 2'
-    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
-    await expect(page.getByText(notice)).toBeVisible()
+    await returnToApp(page)
+    await expect(notice(page)).toBeVisible()
     // La versión nueva espera a que se pulse «Actualizar».
     expect(await serviceWorkerState(page)).toEqual({
       controlled: true,
@@ -127,14 +139,35 @@ test.describe('Versión nueva de la app (#76)', () => {
       waiting: false,
       installing: false,
     })
-    await expect(page.getByText(notice)).toHaveCount(0)
+    await expect(notice(page)).toHaveCount(0)
+  })
+
+  test('«Más tarde» cierra el aviso sin recargar, y vuelve a salir al volver a la app', async ({
+    page,
+  }) => {
+    await page.goto(baseUrl)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    version = 'versión 2'
+    await returnToApp(page)
+    await expect(notice(page)).toBeVisible()
+
+    // Una marca en la página: si se recargara, desaparecería.
+    await page.evaluate(() => ((window as unknown as { notReloaded: boolean }).notReloaded = true))
+    await page.getByRole('button', { name: 'Más tarde' }).click()
+
+    await expect(notice(page)).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
+    expect(await page.evaluate(() => (window as unknown as { notReloaded?: boolean }).notReloaded)).toBe(true)
+
+    await returnToApp(page)
+    await expect(notice(page)).toBeVisible()
   })
 
   test('sin versión nueva, no sale ningún aviso', async ({ page }) => {
     await page.goto(baseUrl)
     await page.evaluate(() => navigator.serviceWorker.ready)
     const before = swRequests
-    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+    await returnToApp(page)
 
     // Ha buscado de verdad una versión nueva (ha pedido sw.js otra vez)…
     await expect.poll(() => swRequests).toBeGreaterThan(before)
@@ -144,6 +177,6 @@ test.describe('Versión nueva de la app (#76)', () => {
       installing: false,
     })
     await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
-    await expect(page.getByText(notice)).toHaveCount(0)
+    await expect(notice(page)).toHaveCount(0)
   })
 })
