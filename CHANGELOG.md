@@ -7,6 +7,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-48 · Las tareas nuevas no empiezan con retraso** (#71). Una tarea de fin de semana empieza en el primer finde que llega después de crearla: creada de lunes a viernes, «Toca: finde del…» del sábado siguiente, en lugar de salir «Retrasada» por un finde que ya había pasado; creada en sábado o domingo, toca ese mismo finde. Las de cada 15 días empiezan en el primer finde de su calendario desde ese día. Vale también para las tareas por defecto de quien se da de alta entre semana, y para las que se puedan añadir (US-33). Hasta que llega ese primer finde no se pueden marcar como hechas, como cualquier tarea de fin de semana antes de su vuelta. Las de cada N días y las puntuales no cambian.
 - **US-29 · Qué toca** (#38). «Tus tareas» sale ordenada por urgencia: primero las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales y al final las que tocan más adelante, por fecha. Así se ve qué hacer sin buscar. No hay sección aparte para las de más adelante: es una sola lista.
   - Las retrasadas lo dicen: «Retrasada 3 días (tocaba el lun 9 nov)», o «Retrasada 1 día». En las de cada N días, el retraso cuenta desde el día siguiente al que tocaban (antes decían «Toca: desde el lun 9 nov»).
   - Las de fin de semana tocan el sábado y el domingo; si no se han hecho, de lunes a viernes van con retraso, contando desde el lunes (el lunes, 1 día), y el sábado empieza la vuelta nueva. Las puntuales nunca van con retraso.

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth, formatShortDate, localDateIn } from '../../src/domain/dates'
 import { signIn, task } from './helpers/app'
+import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-30 · Marcar una tarea como hecha (#39)
@@ -21,7 +22,12 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
   test('una tarea de fin de semana hecha pasa al finde siguiente, también al volver a entrar', async ({
     page,
   }) => {
-    await signIn(page, uniqueEmail())
+    const email = uniqueEmail()
+    await signIn(page, email)
+    // Creada hace un mes: si fuera de hoy y hoy es entre semana, su primera vuelta sería el
+    // sábado siguiente y aún no se podría marcar (US-48).
+    await setAllTasksCreatedOn(email, addDays(today(), -30))
+    await page.reload()
     const saturday = addDays(today(), -((dayOfWeek(today()) + 1) % 7))
     // Usa el reloj de verdad: el sábado y el domingo dice «Toca: finde del…» y de lunes a
     // viernes, «Retrasada… (tocaba el finde del…)» (US-29).
@@ -212,8 +218,11 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
 
   // La vuelta la calcula el móvil con su reloj; el día lo pone la base de datos.
   test('si la fecha del dispositivo no es la de hoy, la app lo dice', async ({ page }) => {
+    const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // un sábado pasado
-    await signIn(page, uniqueEmail())
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
+    await page.reload()
     await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
 
     await markDone(page, 'Superficies').click()

@@ -23,3 +23,24 @@ export async function setTaskCreatedOn(email: string, taskName: string, createdO
     await db.end()
   }
 }
+
+/**
+ * Cambia el día en que se crearon todas las tareas del hogar de ese usuario: como si se
+ * hubiera dado de alta ese día (las tareas por defecto se crean al darse de alta).
+ */
+export async function setAllTasksCreatedOn(email: string, createdOn: string) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `update public.tasks t set created_on = $2
+       from public.household_members m
+       join auth.users u on u.id = m.user_id
+       where m.household_id = t.household_id and u.email = $1`,
+      [email, createdOn],
+    )
+    if (!rowCount) throw new Error(`No se han encontrado tareas de ${email}`)
+  } finally {
+    await db.end()
+  }
+}

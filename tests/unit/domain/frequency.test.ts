@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { canMarkDone, currentRound, describeDue, isWeekend } from '../../../src/domain/frequency'
+import {
+  canMarkDone,
+  currentRound,
+  describeDue,
+  dueStatus,
+  isWeekend,
+} from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
 
 // US-28 · Frecuencias (#37). Las reglas están en «Conceptos» de docs/user-stories.md.
@@ -53,7 +59,10 @@ describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el vie
 
   it('cruza el 29 de febrero y el cambio de hora', () => {
     expect(round(weekly, null, '2028-02-29')).toEqual({ startsOn: '2028-02-26', dueBy: '2028-03-03' })
-    expect(round(weekly, null, '2026-03-29')).toEqual({ startsOn: '2026-03-28', dueBy: '2026-04-03' })
+    // Una tarea creada antes de ese cambio de hora (con fecha anterior al resto de pruebas).
+    expect(
+      currentRound({ frequency: weekly, createdOn: '2026-01-01', lastCompletedOn: null }, '2026-03-29'),
+    ).toEqual({ startsOn: '2026-03-28', dueBy: '2026-04-03' })
   })
 })
 
@@ -242,5 +251,88 @@ describe('isWeekend: si una frecuencia es de fin de semana', () => {
   it('no lo son la de cada N días ni la puntual', () => {
     expect(isWeekend({ kind: 'interval', days: 3 })).toBe(false)
     expect(isWeekend({ kind: 'oneOff' })).toBe(false)
+  })
+})
+
+// US-48 · Las tareas nuevas no empiezan con retraso (#71)
+describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
+  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const cati: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
+  const roundOf = (frequency: Frequency, created: string, today: string) =>
+    currentRound({ frequency, createdOn: created, lastCompletedOn: null }, today)!
+
+  it('de fin de semana, creada de lunes a viernes: empieza el sábado siguiente, sin retraso', () => {
+    // Lunes, miércoles y viernes.
+    for (const day of ['2026-11-16', '2026-11-18', '2026-11-20']) {
+      const first = roundOf(weekly, day, day)
+      expect(first).toEqual({ startsOn: '2026-11-21', dueBy: '2026-11-27' })
+      expect(dueStatus(weekly, first, day)).toEqual({ status: 'upcoming' })
+      expect(describeDue(weekly, first, day)).toBe('Toca: finde del 21 nov')
+    }
+  })
+
+  it('de fin de semana, creada en sábado o domingo: toca ese mismo fin de semana', () => {
+    expect(roundOf(weekly, '2026-11-14', '2026-11-14')).toEqual({
+      startsOn: '2026-11-14',
+      dueBy: '2026-11-20',
+    })
+    expect(roundOf(weekly, '2026-11-15', '2026-11-15')).toEqual({
+      startsOn: '2026-11-14',
+      dueBy: '2026-11-20',
+    })
+    // Y si no se hace, el lunes va con retraso, como cualquier otra.
+    const first = roundOf(weekly, '2026-11-15', '2026-11-16')
+    expect(dueStatus(weekly, first, '2026-11-16')).toEqual({ status: 'overdue', days: 1 })
+  })
+
+  it('cuando llega su primer finde, es una vuelta normal', () => {
+    expect(roundOf(weekly, '2026-11-18', '2026-11-21')).toEqual({
+      startsOn: '2026-11-21',
+      dueBy: '2026-11-27',
+    })
+    expect(roundOf(weekly, '2026-11-18', '2026-11-30')).toEqual({
+      startsOn: '2026-11-28',
+      dueBy: '2026-12-04',
+    })
+  })
+
+  it('cruza el cambio de año', () => {
+    expect(roundOf(weekly, '2026-12-30', '2026-12-30')).toEqual({
+      startsOn: '2027-01-02',
+      dueBy: '2027-01-08',
+    })
+  })
+
+  it('cada 15 días: la primera vuelta es la primera de su calendario desde el día en que se crea', () => {
+    // Creada el miércoles después de un finde que tocaba: espera al siguiente de su calendario.
+    expect(roundOf(cati, '2026-12-09', '2026-12-09')).toEqual({
+      startsOn: '2026-12-19',
+      dueBy: '2026-12-25',
+    })
+    // Creada en la semana que no toca: también el siguiente de su calendario.
+    expect(roundOf(cati, '2026-12-16', '2026-12-16')).toEqual({
+      startsOn: '2026-12-19',
+      dueBy: '2026-12-25',
+    })
+    // Creada en el sábado o el domingo de un finde que toca: ese mismo finde.
+    expect(roundOf(cati, '2026-12-19', '2026-12-19')).toEqual({
+      startsOn: '2026-12-19',
+      dueBy: '2026-12-25',
+    })
+    expect(roundOf(cati, '2026-12-20', '2026-12-20')).toEqual({
+      startsOn: '2026-12-19',
+      dueBy: '2026-12-25',
+    })
+  })
+
+  it('las de cada N días y las puntuales no cambian: tocan desde el día en que se crean', () => {
+    expect(roundOf({ kind: 'interval', days: 3 }, '2026-11-18', '2026-11-18')).toEqual({
+      startsOn: '2026-11-18',
+      dueBy: null,
+    })
+    expect(roundOf({ kind: 'oneOff' }, '2026-11-18', '2026-11-18')).toEqual({
+      startsOn: null,
+      dueBy: null,
+    })
   })
 })

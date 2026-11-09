@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { addDays, formatShortDate, localDateIn } from '../../src/domain/dates'
 import { signIn, task } from './helpers/app'
+import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-28 · Frecuencias (#37)
@@ -40,11 +41,14 @@ test.describe('US-28 · Frecuencias', () => {
     }
   })
 
-  // Se fija la hora del navegador en un día concreto para comprobar el finde exacto.
-  // Las de fin de semana no dependen del día en que se crearon las tareas.
+  // Se fija la hora del navegador en un día concreto para comprobar el finde exacto, con
+  // las tareas creadas antes (si no, su primera vuelta sería posterior: US-48).
   test('las de fin de semana dicen de qué finde son', async ({ page }) => {
+    const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-11-04T12:00:00+01:00')) // miércoles
-    await signIn(page, uniqueEmail())
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
+    await page.reload()
 
     // Entre semana sigue siendo la vuelta del finde anterior (plazo hasta el viernes),
     // con retraso desde el lunes (US-29).
@@ -58,8 +62,11 @@ test.describe('US-28 · Frecuencias', () => {
   // Regresión: en el móvil, la app puede quedarse abierta en segundo plano de un día para
   // otro. Al volver a ella, «hoy» tiene que ser el día nuevo.
   test('al volver a la app otro día, «Toca» se actualiza', async ({ page }) => {
+    const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-11-06T22:00:00+01:00')) // viernes
-    await signIn(page, uniqueEmail())
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
+    await page.reload()
     await expect(task(page, 'Superficies')).toContainText('tocaba el finde del 31 oct')
 
     await page.clock.setFixedTime(new Date('2026-11-07T09:00:00+01:00')) // sábado
