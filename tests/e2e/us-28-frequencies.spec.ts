@@ -46,8 +46,11 @@ test.describe('US-28 · Frecuencias', () => {
     await page.clock.setFixedTime(new Date('2026-11-04T12:00:00+01:00')) // miércoles
     await signIn(page, uniqueEmail())
 
-    // Entre semana sigue siendo la vuelta del finde anterior (plazo hasta el viernes).
-    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+    // Entre semana sigue siendo la vuelta del finde anterior (plazo hasta el viernes),
+    // con retraso desde el lunes (US-29).
+    await expect(task(page, 'Superficies')).toContainText(
+      'Retrasada 3 días (tocaba el finde del 31 oct)',
+    )
     // Antes del primer finde de Cati, toca el primero.
     await expect(task(page, 'Aspirar cosas de Cati')).toContainText('Toca: finde del 5 dic')
   })
@@ -57,7 +60,7 @@ test.describe('US-28 · Frecuencias', () => {
   test('al volver a la app otro día, «Toca» se actualiza', async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-11-06T22:00:00+01:00')) // viernes
     await signIn(page, uniqueEmail())
-    await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
+    await expect(task(page, 'Superficies')).toContainText('tocaba el finde del 31 oct')
 
     await page.clock.setFixedTime(new Date('2026-11-07T09:00:00+01:00')) // sábado
     await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))

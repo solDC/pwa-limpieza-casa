@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
-import { canMarkDone, currentRound, describeDue } from '../../domain/frequency'
+import { agenda } from '../../domain/agenda'
+import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
 import { useToday } from './use-today'
@@ -12,38 +13,52 @@ type TasksState =
 
 // US-27 · Mis tareas por defecto: las tareas del hogar, con su frecuencia y sus partes.
 // US-28 · Frecuencias: cuándo toca cada una («Toca: …»).
+// US-29 · Qué toca: primero las retrasadas, luego las de hoy, las puntuales y las de más
+// adelante (src/domain/agenda.ts).
 // US-30 · Marcar una tarea como hecha: la tarea pasa a mostrar cuándo vuelve a tocar,
 // y las puntuales hechas desaparecen.
-// No separa lo que toca hoy de lo retrasado: eso es la US-29.
 export function TaskList() {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
+  const today = useToday()
 
   // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
   const mounted = useRef(true)
+  // Cuál es la última carga pedida: si llegan desordenadas, solo cuenta la última.
+  const lastRequest = useRef(0)
+  // Cuántas tareas se han marcado en la pantalla. Si cambia mientras se carga la lista, la
+  // lista que llega puede ser de antes y no incluirlas: se vuelve a pedir.
+  const localChanges = useRef(0)
+
+  /**
+   * Carga la lista. Si es una recarga (`keepOnError`) y falla, la lista se queda como estaba
+   * (con el aviso de la tarjeta) en lugar de cambiarse entera por el error.
+   */
+  function load({ keepOnError }: { keepOnError: boolean }) {
+    const request = ++lastRequest.current
+    const changesAtStart = localChanges.current
+    const isCurrent = () => mounted.current && request === lastRequest.current
+    listTasks()
+      .then((tasks) => {
+        if (!isCurrent()) return
+        if (localChanges.current !== changesAtStart) return load({ keepOnError: true })
+        setState({ status: 'loaded', tasks })
+      })
+      .catch((error: Error) => {
+        if (isCurrent() && !keepOnError) setState({ status: 'error', message: error.message })
+      })
+  }
 
   useEffect(() => {
     mounted.current = true
-    listTasks()
-      .then((tasks) => mounted.current && setState({ status: 'loaded', tasks }))
-      .catch(
-        (error: Error) => mounted.current && setState({ status: 'error', message: error.message }),
-      )
+    load({ keepOnError: false })
     return () => {
       mounted.current = false
     }
+    // Solo al abrir la lista. `load` solo usa refs y setState, que no cambian.
   }, [])
 
-  // Vuelve a cargar una lista que ya se ve. Si falla, la lista se queda como estaba
-  // (con el aviso de la tarjeta) en lugar de cambiarse entera por el error.
-  function reload() {
-    listTasks()
-      .then((tasks) => mounted.current && setState({ status: 'loaded', tasks }))
-      .catch(() => {})
-  }
-
-  const today = useToday()
-
   function handleCompleted(taskId: string, completedOn: LocalDate) {
+    localChanges.current++
     setState((current) =>
       current.status === 'loaded'
         ? {
@@ -61,18 +76,17 @@ export function TaskList() {
       <h2 id="tasks-heading">Tus tareas</h2>
 
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
-      {state.status === 'error' && (
-        <ErrorMessage>{state.message}</ErrorMessage>
-      )}
+      {state.status === 'error' && <ErrorMessage>{state.message}</ErrorMessage>}
       {state.status === 'loaded' && (
         <ul className="task-list" aria-label="Tus tareas">
-          {state.tasks.map((task) => (
+          {agenda(state.tasks, today).map(({ task, round }) => (
             <TaskItem
               key={task.id}
               task={task}
+              round={round}
               today={today}
               onCompleted={handleCompleted}
-              onStale={reload}
+              onStale={() => load({ keepOnError: true })}
             />
           ))}
         </ul>
@@ -83,11 +97,14 @@ export function TaskList() {
 
 function TaskItem({
   task,
+  round,
   today,
   onCompleted,
   onStale,
 }: {
   task: Task
+  /** La vuelta que se muestra (las puntuales ya hechas no llegan aquí). */
+  round: Round
   today: LocalDate
   onCompleted: (taskId: string, completedOn: LocalDate) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
@@ -95,12 +112,7 @@ function TaskItem({
 }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const round = currentRound(task, today)
-  // Una puntual ya hecha no vuelve a tocar: desaparece.
-  if (!round) return null
-
   async function handleComplete() {
-    if (!round) return
     setSaving(true)
     setError(null)
     try {

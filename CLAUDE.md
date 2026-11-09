@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias) y US-30 (marcar una tarea como hecha). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca) y US-30 (marcar una tarea como hecha). La pantalla de Inicio es provisional.
 
 **Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
 
@@ -56,7 +56,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - `tasks` y `task_parts` existen desde la migración `…_tasks.sql` (US-27), y `task_rounds` desde `…_task_rounds.sql` (US-30).
 - **«Hoy» es el día de Madrid**, en la base de datos (`(now() at time zone 'Europe/Madrid')::date`) y en la app (`useToday()` de `src/features/home/use-today.ts`, que se actualiza al volver a la app), aunque el dispositivo esté en otra zona horaria. La app es para la casa de Sol; si algún día hay usuarios en otras zonas, se revisa.
 - **El usuario nunca ve horas.** Si alguna vez se muestra una (por ejemplo, de `created_at`), se convierte a la hora de Madrid.
-- **El motor de frecuencias** está en `src/domain/frequency.ts`: `currentRound()` da la vuelta actual o la siguiente de una tarea (desde cuándo toca y hasta cuándo hay plazo), y `describeDue()` el texto de «Toca: …».
+- **El motor de frecuencias** está en `src/domain/frequency.ts`: `currentRound()` da la vuelta actual o la siguiente de una tarea (desde cuándo toca y hasta cuándo hay plazo), `dueStatus()` si va retrasada (y cuántos días), toca hoy o más adelante, y `describeDue()` el texto de «Toca: …» o «Retrasada…». El orden de la lista (US-29) está en `src/domain/agenda.ts`.
 - Los días se guardan como **fecha local sin hora** (`date` en PostgreSQL, `'YYYY-MM-DD'` en TypeScript), nunca como `Date` con hora. «Hoy», «ayer» y «cada 30 días» son días, y así se evitan errores de zona horaria y cambio de hora.
 - Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 

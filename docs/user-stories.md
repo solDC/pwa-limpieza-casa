@@ -22,7 +22,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-26 | Entrar con código desde la app instalada | Must have | Hecha | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
-| US-29 | Qué toca | Must have | Pendiente | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
+| US-29 | Qué toca | Must have | Hecha | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
 | US-30 | Marcar una tarea como hecha | Must have | Hecha | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
 | US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
@@ -49,7 +49,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 
   | Tipo | Ejemplo | Cuándo toca | Cuándo se acaba el plazo |
   |---|---|---|---|
-  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: se muestra como tarea de finde, pero se puede hacer entre semana |
+  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: de lunes a viernes se puede hacer, como retrasada (el lunes, 1 día) |
   | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
   | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
   | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha: pendiente hasta que se hace, y después desaparece | Nunca: sin fecha no tiene retraso |
@@ -119,10 +119,12 @@ para que la app me diga qué hacer cuando de verdad toca.
 Como usuario,
 quiero ver en el Inicio qué toca y qué está retrasado,
 para saber qué hacer sin buscar.
-- En Inicio veo las tareas que tocan hoy (las de fin de semana, el sábado y el domingo) y las pendientes puntuales.
-- Las retrasadas muestran cuántos días de retraso llevan.
-- Las tareas con partes muestran su progreso en la vuelta actual («Cocina hecha · 50 %»).
-- Las que no tocan todavía se ven aparte, con la fecha en que tocarán.
+- Las tareas retrasadas dicen cuántos días de retraso llevan («Retrasada 3 días»; con 1, «Retrasada 1 día»).
+- Las de fin de semana tocan el sábado y el domingo. Si no se han hecho, de lunes a viernes salen como retrasadas, contando desde el lunes (el lunes, 1 día), y el sábado empieza la vuelta nueva.
+- En las de cada N días, el retraso se cuenta desde el día siguiente al que tocaban. Las puntuales nunca van con retraso.
+- En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales y al final las que tocan más adelante, por fecha.
+
+*El progreso de las tareas con partes («Cocina hecha · 50 %») llega con la US-39, que es cuando se pueden marcar.*
 
 ### US-30 · Marcar una tarea como hecha (Must have)
 Como usuario,
