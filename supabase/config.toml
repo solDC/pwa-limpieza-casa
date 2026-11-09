@@ -254,16 +254,16 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Uncomment to customize email template
-# Email para entrar (US-01 y US-26), en español, con el enlace y el código.
+# Email para entrar (US-01 y US-26), en español, con el código (también en el asunto) y el enlace.
 # Las dos plantillas usan el mismo archivo: «magic_link» es el email de quien ya tiene cuenta
 # y «confirmation», el primero de un usuario nuevo (si la confirmación está activada).
 # En la nube hay que pegar el mismo contenido en Authentication → Email Templates.
 [auth.email.template.magic_link]
-subject = "Tu acceso a Limpieza de casa"
+subject = "Tu acceso a Limpieza de casa: {{ .Token }}"
 content_path = "./supabase/templates/sign-in.html"
 
 [auth.email.template.confirmation]
-subject = "Tu acceso a Limpieza de casa"
+subject = "Tu acceso a Limpieza de casa: {{ .Token }}"
 content_path = "./supabase/templates/sign-in.html"
 
 # [auth.email.template.invite]

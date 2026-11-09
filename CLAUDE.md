@@ -16,7 +16,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 - **PWA:** vite-plugin-pwa. Es instalable, pero **necesita conexión**: no hay modo sin conexión en el MVP.
 - **Datos y usuarios:** Supabase (PostgreSQL + Auth). La app habla directamente con Supabase desde el navegador.
 - **Seguridad de los datos:** Row Level Security (RLS) en **todas** las tablas. Un usuario solo ve y modifica los datos de los hogares de los que es miembro. Una tabla sin RLS es un fallo de seguridad.
-- **Inicio de sesión:** por email, sin contraseña. El email trae un enlace y un código: el enlace sirve en el navegador; el código, en la app instalada del iPhone (iOS abre el enlace en Safari, que no comparte la sesión con la app). La plantilla del email está en `supabase/templates/sign-in.html` y en la nube hay que copiarla a mano (ver README).
+- **Inicio de sesión:** por email, sin contraseña. El email trae un código (también en el asunto) y un enlace: el código sirve en cualquier dispositivo, también en la app instalada del iPhone (iOS abre el enlace en Safari, que no comparte la sesión con la app); el enlace es un atajo para entrar desde el dispositivo donde se pulsa. La plantilla del email está en `supabase/templates/sign-in.html` y en la nube hay que copiarla a mano (ver README).
 - **Despliegue:** Vercel (compila con `npm run build` y publica `dist/`).
 - **Desarrollo:** dev container (requisito de la clase), que construye el mismo `Dockerfile` que `docker-compose.yml`, con la misma versión de Node que Vercel. Supabase local con la CLI de Supabase.
 

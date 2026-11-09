@@ -235,7 +235,7 @@ Vercel publica `main` automáticamente. Supabase de la nube necesita estos pasos
 
    Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
 4. **Plantillas del email, en español y con el código (US-26).** En **Supabase → Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
-   - **Subject:** `Tu acceso a Limpieza de casa`
+   - **Subject:** `Tu acceso a Limpieza de casa: {{ .Token }}` (Supabase pone el código en lugar de `{{ .Token }}`)
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
    Si cambias ese archivo, vuelve a pegarlo en las dos plantillas: la nube no lo lee del repo.

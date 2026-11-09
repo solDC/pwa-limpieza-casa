@@ -104,10 +104,10 @@ function isNetworkError(error: Error): boolean {
 
 function describeAuthError(error: Error): string {
   if (error instanceof AuthApiError && error.status === 429) {
-    return 'Has pedido demasiados enlaces seguidos. Espera un poco y vuelve a intentarlo.'
+    return 'Has pedido demasiados emails seguidos. Espera un poco y vuelve a intentarlo.'
   }
   if (isNetworkError(error)) {
-    return 'No se ha podido enviar el enlace. Comprueba tu conexión a internet.'
+    return 'No se ha podido enviar el email. Comprueba tu conexión a internet.'
   }
-  return 'No se ha podido enviar el enlace. Inténtalo de nuevo.'
+  return 'No se ha podido enviar el email. Inténtalo de nuevo.'
 }
