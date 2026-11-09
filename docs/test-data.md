@@ -43,6 +43,8 @@ where r.household_id = m.household_id and m.user_id = u.id
 
 Para tener una tarea de cada N días retrasada sin esperar: una que nunca se ha hecho toca desde el día en que se creó. Con `- 5`, Baño (cada 3 días) tocaba hace 5 días y sale «Retrasada 5 días».
 
+**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta: cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo y el día de creación no cuenta. Si ya la has marcado, ejecuta antes «Dejar todas las tareas sin hacer».
+
 ```sql
 update public.tasks t
 set created_on = (now() at time zone 'Europe/Madrid')::date - 5
