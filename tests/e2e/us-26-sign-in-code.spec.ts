@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { requestSignInEmail } from './helpers/app'
 import { uniqueEmail, waitBeforeNextEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-26 · Entrar con código desde la app instalada (#29)
@@ -12,9 +13,7 @@ import { uniqueEmail, waitBeforeNextEmail, waitForSignInEmail } from './helpers/
 const wrongCodeError = 'El código no es correcto o ha caducado. Revísalo o pide otro email.'
 
 async function requestEmail(page: Page, email: string) {
-  await page.goto('/')
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+  await requestSignInEmail(page, email)
   await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
 }
 

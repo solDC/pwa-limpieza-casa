@@ -142,7 +142,7 @@ export function SignInScreen() {
       ) : (
         <form className="card" onSubmit={handleSubmit}>
           <h2>Entrar</h2>
-          <p>Escribe tu email y te enviaremos un enlace para entrar. Sin contraseñas.</p>
+          <p>Escribe tu email y te enviaremos un código para entrar. Sin contraseñas.</p>
 
           <label htmlFor="email">Email</label>
           <input
@@ -158,7 +158,7 @@ export function SignInScreen() {
           />
 
           <button type="submit" disabled={step.name === 'sending'}>
-            {step.name === 'sending' ? 'Enviando…' : 'Enviarme el enlace'}
+            {step.name === 'sending' ? 'Enviando…' : 'Enviarme el código'}
           </button>
 
           {step.name === 'form' && step.error && (

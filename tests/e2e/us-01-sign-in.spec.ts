@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { requestSignInEmail } from './helpers/app'
 import { uniqueEmail, waitForMagicLink } from './helpers/mailbox'
 
 // US-01 · Entrar con enlace mágico (#2)
@@ -9,9 +10,7 @@ import { uniqueEmail, waitForMagicLink } from './helpers/mailbox'
 // No usa el signIn() común de helpers/app.ts: aquí se prueba el propio inicio de sesión,
 // así que comprueba cada paso y deja a cada prueba comprobar que ha entrado.
 async function signIn(page: Page, email: string) {
-  await page.goto('/')
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+  await requestSignInEmail(page, email)
   await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
   await expect(page.getByText(email)).toBeVisible()
 
@@ -48,18 +47,20 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
     baseURL,
   }) => {
     const email = uniqueEmail()
-    await page.goto('/')
-    await page.getByLabel('Email').fill(email)
-    await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+    await requestSignInEmail(page, email)
 
     const link = new URL(await waitForMagicLink(email))
     expect(link.searchParams.get('redirect_to')).toBe(new URL('/', baseURL).href)
   })
 
-  test('sin sesión, la app pide el email', async ({ page }) => {
+  test('sin sesión, la app pide el email para enviar un código', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
     await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(
+      page.getByText('Escribe tu email y te enviaremos un código para entrar. Sin contraseñas.'),
+    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Enviarme el código' })).toBeVisible()
   })
 
   test('un enlace caducado avisa y deja pedir otro', async ({ page }) => {
@@ -74,7 +75,7 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
 
   // Regresión: supabase-js marca los errores 5xx del servidor igual que un fallo de red,
   // y la app pedía revisar la conexión cuando el problema era de Supabase.
-  test('si Supabase falla al enviar el enlace, la app no culpa a la conexión', async ({ page }) => {
+  test('si Supabase falla al enviar el email, la app no culpa a la conexión', async ({ page }) => {
     await page.route('**/auth/v1/otp*', (route) =>
       route.fulfill({
         status: 500,
@@ -82,12 +83,10 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
         body: JSON.stringify({ code: 500, error_code: 'unexpected_failure', msg: 'Error' }),
       }),
     )
-    await page.goto('/')
-    await page.getByLabel('Email').fill(uniqueEmail())
-    await page.getByRole('button', { name: 'Enviarme el enlace' }).click()
+    await requestSignInEmail(page, uniqueEmail())
 
     await expect(page.getByRole('alert')).toHaveText(
-      'No se ha podido enviar el enlace. Inténtalo de nuevo.',
+      'No se ha podido enviar el email. Inténtalo de nuevo.',
     )
   })
 })
