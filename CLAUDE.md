@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha) y US-48 (las tareas nuevas no empiezan con retraso). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-33 (añadir una tarea) y US-48 (las tareas nuevas no empiezan con retraso). La pantalla de Inicio es provisional.
 
 **Nombre de la app:** «Limpieza de casa», también el nombre corto (`short_name`), que es el que propone el iPhone al instalarla (la etiqueta `apple-mobile-web-app-title` no le sirve). En Android sale cortado bajo el icono.
 
@@ -54,6 +54,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - `task_rounds`: las **vueltas** terminadas. Cada una tiene cuándo empieza (vacío en las puntuales), cuándo se acaba el plazo (vacío en las de «cada N días» y las puntuales) y el día en que se completó, que pone siempre la base de datos. Las vueltas que nadie marca no tienen fila. Las partes hechas en cada vuelta (US-39) se guardarán con el día en que se hicieron.
 - **El estado de una vuelta** (completada, parcial con su %, no completada) **se calcula en `src/domain/`**, no se guarda: así el cierre de la vuelta (el sábado, para las de fin de semana) no necesita ningún proceso automático.
 - Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo.
+- **Las tareas nuevas** (US-33) se crean con la función `create_task`, que guarda la tarea y sus partes de una vez. La app no puede insertar directamente en `tasks` ni en `task_parts`. Los pesos de las partes de una tarea **suman 100**: lo comprueba la base de datos al final de cada transacción (migración `…_create_tasks.sql`).
 - `tasks` y `task_parts` existen desde la migración `…_tasks.sql` (US-27), y `task_rounds` desde `…_task_rounds.sql` (US-30).
 - **«Hoy» es el día de Madrid**, en la base de datos (`(now() at time zone 'Europe/Madrid')::date`) y en la app (`useToday()` de `src/features/home/use-today.ts`, que se actualiza al volver a la app), aunque el dispositivo esté en otra zona horaria. La app es para la casa de Sol; si algún día hay usuarios en otras zonas, se revisa.
 - **El usuario nunca ve horas.** Si alguna vez se muestra una (por ejemplo, de `created_at`), se convierte a la hora de Madrid.

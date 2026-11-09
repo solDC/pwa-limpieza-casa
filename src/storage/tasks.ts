@@ -1,8 +1,9 @@
 import type { Round } from '../domain/frequency'
+import type { NewTask } from '../domain/new-task'
 import type { Frequency, LocalDate, Task } from '../domain/task'
 import { getSupabase } from './supabase-client'
 
-// Tareas del hogar (US-27) y sus vueltas terminadas (US-30).
+// Tareas del hogar (US-27 y US-33) y sus vueltas terminadas (US-30).
 // Las reglas RLS hacen que cada usuario solo vea y apunte las de su hogar.
 
 type TaskRow = {
@@ -70,6 +71,39 @@ export async function completeTask(task: Task, round: Round): Promise<LocalDate>
   }
   if (error) throw new Error('No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.')
   return (data as { completed_on: string }).completed_on
+}
+
+/**
+ * Añade una tarea al hogar (US-33), con sus partes, de una vez: si falla, no se guarda
+ * nada. La base de datos pone el día de creación (hoy en Madrid) y la pone al final.
+ */
+export async function createTask(householdId: string, task: NewTask): Promise<void> {
+  const { frequency } = task
+  const { error } = await getSupabase().rpc('create_task', {
+    target_household_id: householdId,
+    task_name: task.name,
+    task_frequency: toFrequencyColumn(frequency),
+    task_interval_days: frequency.kind === 'interval' ? frequency.days : null,
+    task_biweekly_start_on: frequency.kind === 'weekendBiweekly' ? frequency.startOn : null,
+    part_names: task.parts.map((part) => part.name),
+    part_weights: task.parts.map((part) => part.weight),
+  })
+  if (error) {
+    throw new Error('No se ha podido guardar la tarea. Revisa la conexión e inténtalo de nuevo.')
+  }
+}
+
+function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
+  switch (frequency.kind) {
+    case 'weekendWeekly':
+      return 'weekend_weekly'
+    case 'weekendBiweekly':
+      return 'weekend_biweekly'
+    case 'interval':
+      return 'interval'
+    case 'oneOff':
+      return 'one_off'
+  }
 }
 
 function toTask(row: TaskRow): Task {

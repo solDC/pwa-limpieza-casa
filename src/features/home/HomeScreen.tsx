@@ -54,7 +54,9 @@ export function HomeScreen({ session }: { session: Session }) {
         </section>
       )}
 
-      <TaskList />
+      <TaskList
+        householdId={state.status === 'loaded' ? state.household?.id : undefined}
+      />
 
       <div className="stack account">
         <button

@@ -4,6 +4,7 @@ import { agenda } from '../../domain/agenda'
 import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
+import { NewTaskForm } from '../tasks/NewTaskForm'
 import { useToday } from './use-today'
 
 type TasksState =
@@ -17,8 +18,11 @@ type TasksState =
 // adelante (src/domain/agenda.ts).
 // US-30 · Marcar una tarea como hecha: la tarea pasa a mostrar cuándo vuelve a tocar,
 // y las puntuales hechas desaparecen.
-export function TaskList() {
+// US-33 · Añadir una tarea: «Añadir tarea» abre el formulario encima de la lista.
+// `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
+export function TaskList({ householdId }: { householdId?: string }) {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
+  const [adding, setAdding] = useState(false)
   const today = useToday()
 
   // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
@@ -74,6 +78,25 @@ export function TaskList() {
   return (
     <section className="stack" aria-labelledby="tasks-heading">
       <h2 id="tasks-heading">Tus tareas</h2>
+
+      {householdId &&
+        (adding ? (
+          <NewTaskForm
+            householdId={householdId}
+            today={today}
+            onSaved={() => {
+              setAdding(false)
+              // La tarea nueva sale en la lista, en su sitio según lo que toca.
+              localChanges.current++
+              load({ keepOnError: true })
+            }}
+            onCancel={() => setAdding(false)}
+          />
+        ) : (
+          <button type="button" className="button-secondary" onClick={() => setAdding(true)}>
+            Añadir tarea
+          </button>
+        ))}
 
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
       {state.status === 'error' && <ErrorMessage>{state.message}</ErrorMessage>}
