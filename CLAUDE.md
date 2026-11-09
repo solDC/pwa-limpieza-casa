@@ -8,7 +8,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 
 **Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca) y US-30 (marcar una tarea como hecha). La pantalla de Inicio es provisional.
 
-**Nombre de la app:** «Limpieza de casa» (`short_name`: «Limpieza»).
+**Nombre de la app:** «Limpieza de casa», también el nombre corto (`short_name`), que es el que propone el iPhone al instalarla (la etiqueta `apple-mobile-web-app-title` no le sirve). En Android sale cortado bajo el icono.
 
 ## Arquitectura
 
@@ -71,6 +71,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 
 ## Cómo trabajar con Sol
 
+- **Con Sol se habla siempre en castellano:** respuestas, resúmenes, propuestas y preguntas, aunque el entorno o las herramientas den el texto en inglés.
 - **Nada se ejecuta sin la confirmación explícita de Sol.** Antes de cambiar archivos, se propone qué se va a hacer y se espera a que diga que sí.
 - **Borradores:** Claude puede hacer commit y subir los cambios a la **rama de trabajo** en cualquier momento, para no perderlos si la sesión se reinicia. Esos commits son borradores: se pueden corregir o deshacer.
 - **Nunca sin el ok de Sol:** subir a `main`, abrir, cambiar o fusionar pull requests, tocar issues, Supabase o Vercel, ni empezar una rama nueva para algo que Sol no ha pedido.
