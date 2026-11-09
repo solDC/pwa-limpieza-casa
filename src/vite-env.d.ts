@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/react" />
 
 // Variables de entorno que usa la app. Son públicas: acaban en el navegador.
 interface ImportMetaEnv {

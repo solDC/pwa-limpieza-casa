@@ -7,7 +7,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // La versión nueva se carga cuando el usuario pulsa «Actualizar» en el aviso (#76),
+      // no sola: ver src/features/app-update/. La app registra el service worker ahí.
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Limpieza de casa',
