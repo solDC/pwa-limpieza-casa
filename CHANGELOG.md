@@ -9,6 +9,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ### Added
 - **US-34 · Elegir el peso de las partes** (#43, ahora Must have). Al añadir una tarea con partes, cada parte tiene su campo «Peso» en %, y debajo se ve cuánto suman. Si no se cambian, se reparten a partes iguales, como antes.
   - Mientras no se ha cambiado ningún peso, al añadir o quitar una parte se vuelven a repartir a partes iguales. Desde que se cambia uno, ya no: la parte nueva entra con 0 % y los demás se quedan como estaban, para no perder lo puesto.
+  - Si se quitan todas las partes, los pesos vuelven a repartirse solos. El peso se puede escribir con el símbolo («50 %»). VoiceOver anuncia cómo cambia la suma mientras se corrige.
   - No se puede guardar si los pesos no suman 100 % («Los pesos tienen que sumar 100 % (ahora suman 90 %).») ni si alguno no es un número entero de 1 a 100. La base de datos ya lo exigía desde la US-33, así que no hay migración.
   - Cambiar los pesos de una tarea que ya existe es otra historia.
 - **US-33 · Añadir una tarea** (#42). En «Tus tareas», «Añadir tarea» abre un formulario con el nombre, cada cuánto toca (las cuatro frecuencias) y, si se quiere, sus partes. Al guardarla sale en la lista, en su sitio según lo que toca.

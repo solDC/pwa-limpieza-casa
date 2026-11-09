@@ -249,6 +249,8 @@ export function NewTaskForm({
         {draft.partNames.length > 0 && (
           <p
             id="new-task-weights-total"
+            // VoiceOver anuncia la suma (o el aviso) al cambiar, sin salir del campo del peso.
+            aria-live="polite"
             className={total === 100 ? 'muted' : 'error'}
             // No es un campo: se marca aparte para llevar el foco aquí si es lo único que falla.
             data-invalid={errors?.weightsTotal ? true : undefined}

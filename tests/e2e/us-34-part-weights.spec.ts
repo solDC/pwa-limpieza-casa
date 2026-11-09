@@ -14,7 +14,7 @@ function form(page: Page) {
 }
 
 function weight(page: Page, part: number) {
-  return form(page).getByLabel(`Peso de la parte ${part}`)
+  return form(page).getByLabel(`Peso de la parte ${part}`, { exact: true })
 }
 
 /** Abre «Nueva tarea» con una tarea puntual y esas partes, sin tocar los pesos. */
@@ -86,7 +86,10 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
 
     await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page)).toContainText('Los pesos tienen que sumar 100 % (ahora suman 90 %).')
+    const totalError = form(page).getByText('Los pesos tienen que sumar 100 % (ahora suman 90 %).')
+    await expect(totalError).toBeVisible()
+    // Es lo único que falla: el cursor va al aviso, para que se lea (también con VoiceOver).
+    await expect(totalError).toBeFocused()
     await expect(task(page, 'Cocina a fondo')).toHaveCount(0)
 
     // Al corregirlo, ya se puede guardar.

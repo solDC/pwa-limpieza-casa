@@ -207,6 +207,24 @@ describe('los pesos de las partes en el formulario', () => {
     expect(removePart(withNewPart, 1).partWeights).toEqual(['70', '0'])
   })
 
+  it('al quitar todas las partes, se vuelven a repartir solos: la siguiente parte cuenta 100 %', () => {
+    let draft = setPartWeight(withParts('Horno', 'Nevera'), 0, '70')
+    draft = removePart(removePart(draft, 1), 0)
+    expect(draft).toMatchObject({ partNames: [], partWeights: [], weightsEdited: false })
+    expect(addPart(draft).partWeights).toEqual(['100'])
+  })
+
+  it('el peso puede llevar el símbolo %: «50%» y «50 %» valen 50', () => {
+    let draft = withParts('Horno', 'Nevera')
+    draft = setPartWeight(draft, 0, '50%')
+    draft = setPartWeight(draft, 1, '50 %')
+    expect(weightsTotal(draft)).toBe(100)
+    expect(validateNewTask(draft)).toMatchObject({
+      ok: true,
+      task: { parts: [{ weight: 50 }, { weight: 50 }] },
+    })
+  })
+
   it('weightsTotal suma lo escrito (lo que no es un número cuenta como 0)', () => {
     const draft = setPartWeight(setPartWeight(withParts('Horno', 'Nevera', 'Campana'), 0, '50'), 1, 'treinta')
     expect(weightsTotal(draft)).toBe(83) // 50 + 0 + 33

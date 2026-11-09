@@ -68,13 +68,17 @@ export function addPart(draft: NewTaskDraft): NewTaskDraft {
   return { ...draft, partNames, partWeights }
 }
 
-/** Quita una parte. Si no se ha cambiado ningún peso, se reparten de nuevo. */
+/**
+ * Quita una parte. Si no se ha cambiado ningún peso, se reparten de nuevo. Sin partes, ya
+ * no queda ningún peso que conservar: vuelven a repartirse solos.
+ */
 export function removePart(draft: NewTaskDraft, index: number): NewTaskDraft {
   const partNames = draft.partNames.filter((_, i) => i !== index)
-  const partWeights = draft.weightsEdited
+  const weightsEdited = draft.weightsEdited && partNames.length > 0
+  const partWeights = weightsEdited
     ? draft.partWeights.filter((_, i) => i !== index)
     : equalWeights(partNames.length).map(String)
-  return { ...draft, partNames, partWeights }
+  return { ...draft, partNames, partWeights, weightsEdited }
 }
 
 export function renamePart(draft: NewTaskDraft, index: number, name: string): NewTaskDraft {
@@ -95,9 +99,9 @@ export function weightsTotal(draft: NewTaskDraft): number {
   return draft.partWeights.reduce((total, weight) => total + (parseWeight(weight) ?? 0), 0)
 }
 
-/** Un peso válido: un número entero de 1 a 100. Si no, `null`. */
+/** Un peso válido: un número entero de 1 a 100, con o sin «%» detrás. Si no, `null`. */
 function parseWeight(text: string): number | null {
-  const trimmed = text.trim()
+  const trimmed = text.trim().replace(/\s*%$/, '')
   const weight = Number(trimmed)
   return /^\d+$/.test(trimmed) && weight >= 1 && weight <= 100 ? weight : null
 }
