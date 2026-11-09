@@ -40,6 +40,8 @@ let server: Server
 let baseUrl: string
 /** Lo que se añade a sw.js: cambiarlo es como desplegar una versión nueva. */
 let version = ''
+/** Cuántas veces se ha pedido sw.js: cada vez es una búsqueda de versión nueva. */
+let swRequests = 0
 
 test.beforeAll(async () => {
   server = createServer(async (request, response) => {
@@ -47,7 +49,10 @@ test.beforeAll(async () => {
     const file = normalize(join(dist, path === '/' ? 'index.html' : path))
     try {
       let body: Buffer | string = await readFile(file.startsWith(dist) ? file : join(dist, 'index.html'))
-      if (path === '/sw.js') body = `${body}\n// ${version}\n`
+      if (path === '/sw.js') {
+        swRequests++
+        body = `${body}\n// ${version}\n`
+      }
       response.writeHead(200, {
         'Content-Type': types[extname(file)] ?? 'application/octet-stream',
         'Cache-Control': 'no-cache',
@@ -128,11 +133,17 @@ test.describe('Versión nueva de la app (#76)', () => {
   test('sin versión nueva, no sale ningún aviso', async ({ page }) => {
     await page.goto(baseUrl)
     await page.evaluate(() => navigator.serviceWorker.ready)
+    const before = swRequests
     await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
 
+    // Ha buscado de verdad una versión nueva (ha pedido sw.js otra vez)…
+    await expect.poll(() => swRequests).toBeGreaterThan(before)
+    // …y, como es la misma, no hay ninguna instalándose ni esperando.
+    await expect.poll(() => serviceWorkerState(page)).toMatchObject({
+      waiting: false,
+      installing: false,
+    })
     await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
-    // Se comprueba que algo NO pasa: no hay nada que esperar, así que se le da un segundo.
-    await page.waitForTimeout(1_000)
     await expect(page.getByText(notice)).toHaveCount(0)
   })
 })

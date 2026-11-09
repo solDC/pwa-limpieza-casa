@@ -26,7 +26,8 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 src/
 ├── domain/      Modelo de tareas, motor de frecuencias y progreso. TypeScript puro.
 ├── storage/     Acceso a Supabase. Única carpeta que importa @supabase/supabase-js.
-├── features/    Una carpeta por pantalla: home, tasks, history, auth. Cada una con sus
+├── features/    Una carpeta por pantalla (home, tasks, history, auth) o por función de toda
+│                la app (app-update, el aviso de versión nueva). Cada una con sus
 │                componentes propios (SignInScreen.tsx…) y sus hooks (use-session.ts…).
 └── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
 
