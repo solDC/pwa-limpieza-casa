@@ -4,6 +4,7 @@ import { agenda } from '../../domain/agenda'
 import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
 import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
+import { NewTaskForm } from '../tasks/NewTaskForm'
 import { useToday } from './use-today'
 
 type TasksState =
@@ -17,8 +18,29 @@ type TasksState =
 // adelante (src/domain/agenda.ts).
 // US-30 · Marcar una tarea como hecha: la tarea pasa a mostrar cuándo vuelve a tocar,
 // y las puntuales hechas desaparecen.
-export function TaskList() {
+// US-33 · Añadir una tarea: «Añadir tarea» abre el formulario encima de la lista.
+// `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
+export function TaskList({ householdId }: { householdId?: string }) {
   const [state, setState] = useState<TasksState>({ status: 'loading' })
+  const [adding, setAdding] = useState(false)
+  // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
+  const [reloadError, setReloadError] = useState<string | null>(null)
+  // Lo que anuncian los lectores de pantalla al guardar una tarea (región `status`).
+  const [announcement, setAnnouncement] = useState('')
+  // Al cerrar el formulario, el foco vuelve a «Añadir tarea» en lugar de perderse.
+  const addButtonRef = useRef<HTMLButtonElement>(null)
+  const focusAddButton = useRef(false)
+  useEffect(() => {
+    if (!adding && focusAddButton.current) {
+      focusAddButton.current = false
+      addButtonRef.current?.focus()
+    }
+  }, [adding])
+
+  function closeForm() {
+    focusAddButton.current = true
+    setAdding(false)
+  }
   const today = useToday()
 
   // Para no tocar la pantalla si la lista llega cuando ya no está abierta.
@@ -31,20 +53,22 @@ export function TaskList() {
 
   /**
    * Carga la lista. Si es una recarga (`keepOnError`) y falla, la lista se queda como estaba
-   * (con el aviso de la tarjeta) en lugar de cambiarse entera por el error.
+   * (con el aviso de la tarjeta, o `onKeptError`) en lugar de cambiarse entera por el error.
    */
-  function load({ keepOnError }: { keepOnError: boolean }) {
+  function load({ keepOnError, onKeptError }: { keepOnError: boolean; onKeptError?: () => void }) {
     const request = ++lastRequest.current
     const changesAtStart = localChanges.current
     const isCurrent = () => mounted.current && request === lastRequest.current
     listTasks()
       .then((tasks) => {
         if (!isCurrent()) return
-        if (localChanges.current !== changesAtStart) return load({ keepOnError: true })
+        if (localChanges.current !== changesAtStart) return load({ keepOnError: true, onKeptError })
         setState({ status: 'loaded', tasks })
       })
       .catch((error: Error) => {
-        if (isCurrent() && !keepOnError) setState({ status: 'error', message: error.message })
+        if (!isCurrent()) return
+        if (!keepOnError) setState({ status: 'error', message: error.message })
+        else onKeptError?.()
       })
   }
 
@@ -75,6 +99,47 @@ export function TaskList() {
     <section className="stack" aria-labelledby="tasks-heading">
       <h2 id="tasks-heading">Tus tareas</h2>
 
+      {householdId &&
+        (adding ? (
+          <NewTaskForm
+            householdId={householdId}
+            today={today}
+            onSaved={(name) => {
+              closeForm()
+              setAnnouncement(`Tarea añadida: ${name}.`)
+              setReloadError(null)
+              // La tarea nueva sale en la lista, en su sitio según lo que toca. Si no se
+              // puede poner al día, se dice, para que no se añada otra vez.
+              localChanges.current++
+              load({
+                keepOnError: true,
+                onKeptError: () =>
+                  setReloadError(
+                    'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
+                  ),
+              })
+            }}
+            onCancel={closeForm}
+          />
+        ) : (
+          <button
+            ref={addButtonRef}
+            type="button"
+            className="button-secondary"
+            onClick={() => {
+              setAnnouncement('')
+              setAdding(true)
+            }}
+          >
+            Añadir tarea
+          </button>
+        ))}
+      {/* Siempre en la página: los lectores de pantalla solo leen lo que cambia dentro. */}
+      <p role="status" className="muted">
+        {announcement}
+      </p>
+
+      {reloadError && <ErrorMessage>{reloadError}</ErrorMessage>}
       {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
       {state.status === 'error' && <ErrorMessage>{state.message}</ErrorMessage>}
       {state.status === 'loaded' && (

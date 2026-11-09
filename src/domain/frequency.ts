@@ -33,16 +33,18 @@ export function currentRound(
   const { frequency, lastCompletedOn } = task
   switch (frequency.kind) {
     case 'weekendWeekly': {
-      const saturday = addDays(today, -((dayOfWeek(today) + 1) % 7))
-      return weekendRound(saturday, 7, lastCompletedOn)
+      const saturday = saturdayOnOrBefore(today)
+      return notBefore(weekendRound(saturday, 7, lastCompletedOn), firstWeekend(task))
     }
     case 'weekendBiweekly': {
-      if (today < frequency.startOn) return weekendRound(frequency.startOn, 14, lastCompletedOn)
+      if (today < frequency.startOn) {
+        return notBefore(weekendRound(frequency.startOn, 14, lastCompletedOn), firstWeekend(task))
+      }
       const weeksSinceStart = Math.floor(daysBetween(frequency.startOn, today) / 7)
       const saturday = addDays(frequency.startOn, Math.floor(weeksSinceStart / 2) * 14)
       // En la semana que no toca, ya se ve el finde siguiente.
       const current = weeksSinceStart % 2 === 0 ? saturday : addDays(saturday, 14)
-      return weekendRound(current, 14, lastCompletedOn)
+      return notBefore(weekendRound(current, 14, lastCompletedOn), firstWeekend(task))
     }
     case 'interval':
       return {
@@ -53,6 +55,33 @@ export function currentRound(
       // Va sin fecha: pendiente hasta que se hace, sin retraso. Poder ponerle una es la US-38.
       return lastCompletedOn ? null : { startsOn: null, dueBy: null }
   }
+}
+
+function saturdayOnOrBefore(day: LocalDate): LocalDate {
+  return addDays(day, -((dayOfWeek(day) + 1) % 7))
+}
+
+/**
+ * US-48 · El sábado de la primera vuelta de una tarea de fin de semana: el primer finde de
+ * su calendario cuyo sábado o domingo es el día en que se creó o después. Así, una tarea
+ * creada entre semana no empieza con retraso por un finde que ya había pasado.
+ */
+function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
+  // El último sábado que aún vale: el de la víspera, si se crea en domingo.
+  const earliest = addDays(task.createdOn, -1)
+  if (task.frequency.kind === 'weekendBiweekly') {
+    const { startOn } = task.frequency
+    if (earliest <= startOn) return startOn
+    return addDays(startOn, Math.ceil(daysBetween(startOn, earliest) / 14) * 14)
+  }
+  const saturday = saturdayOnOrBefore(task.createdOn)
+  return saturday >= earliest ? saturday : addDays(saturday, 7)
+}
+
+/** La vuelta, o la que empieza el sábado `first` si es anterior a ese día. */
+function notBefore(round: Round, first: LocalDate): Round {
+  if (round.startsOn !== null && round.startsOn >= first) return round
+  return { startsOn: first, dueBy: addDays(first, WEEKEND_ROUND_DAYS - 1) }
 }
 
 /** La vuelta que empieza ese sábado o, si ya se hizo dentro de ella, la siguiente. */

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { signIn, task } from './helpers/app'
-import { setTaskCreatedOn } from './helpers/database'
+import { setAllTasksCreatedOn, setTaskCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-29 · Qué toca (#38)
@@ -32,6 +32,7 @@ test.describe('US-29 · Qué toca', () => {
     const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-10-28T12:00:00+01:00')) // un miércoles
     await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
     await setTaskCreatedOn(email, 'Baño', '2026-10-26')
     await setTaskCreatedOn(email, 'Cristales y espejos', '2026-10-28')
     await page.reload()
@@ -56,8 +57,11 @@ test.describe('US-29 · Qué toca', () => {
   test('las de fin de semana tocan sábado y domingo, van con retraso de lunes a viernes y el sábado empieza otra vuelta', async ({
     page,
   }) => {
+    const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // sábado
-    await signIn(page, uniqueEmail())
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
+    await page.reload()
     await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
     await expect(task(page, 'Superficies')).not.toContainText('Retrasada')
 
@@ -106,6 +110,7 @@ test.describe('US-29 · Qué toca', () => {
     const email = uniqueEmail()
     await page.clock.setFixedTime(new Date('2026-10-28T12:00:00+01:00')) // un miércoles
     await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
     await setTaskCreatedOn(email, 'Cristales y espejos', '2026-10-30')
     await setTaskCreatedOn(email, 'Baño', '2026-12-10')
     await page.reload()

@@ -54,6 +54,20 @@ where t.household_id = m.household_id and m.user_id = u.id
   and t.name = 'Baño';
 ```
 
+## Que la cuenta se creara hace unas semanas
+
+Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada».
+
+Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas.
+
+```sql
+update public.tasks t
+set created_on = (now() at time zone 'Europe/Madrid')::date - 28
+from public.household_members m, auth.users u
+where t.household_id = m.household_id and m.user_id = u.id
+  and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
+```
+
 ## Que una tarea de cada N días se hiciera hace unos días
 
 Apunta que se hizo por última vez hace 10 días. Con Baño (cada 3 días), tocaba hace 7 y sale «Retrasada 7 días». Solo para las de **cada N días**; si la tarea ya se ha marcado después, primero deja las tareas sin hacer (arriba).
@@ -99,4 +113,3 @@ select (select count(*) from deleted_accounts) as deleted_accounts,
   (select count(*) from deleted_households) as deleted_households;
 ```
 
-Las de las tareas retrasadas de fin de semana no necesitan consulta: dependen solo del día. Una tarea de fin de semana sin hacer sale retrasada de lunes a viernes.

@@ -26,14 +26,14 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-30 | Marcar una tarea como hecha | Must have | Hecha | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
 | US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
-| US-33 | Añadir una tarea | Nice to have | Pendiente | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
+| US-33 | Añadir una tarea | Must have | Hecha | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
 | US-34 | Elegir el peso de las partes | Nice to have | Pendiente | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
-| US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Pendiente | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
+| US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 
 ## Conceptos
 
@@ -157,7 +157,7 @@ para que deje de aparecer sin perder su histórico.
 
 *Que su histórico siga viéndose es la US-40 (backlog).*
 
-### US-33 · Añadir una tarea (Nice to have)
+### US-33 · Añadir una tarea (Must have)
 Como usuario,
 quiero añadir una tarea nueva, con su frecuencia y, si quiero, sus partes,
 para que la app incluya otras cosas que tengo que mantener.
@@ -220,7 +220,7 @@ quiero que una tarea recién creada no salga retrasada por una vuelta que empez�
 para que la lista solo me avise de lo que de verdad he dejado sin hacer.
 - Una tarea de fin de semana creada de lunes a viernes empieza el sábado siguiente: hasta entonces dice «Toca: finde del…», sin retraso.
 - Creada en sábado o domingo, toca ese mismo fin de semana.
-- En las de cada 15 días, la primera vuelta es la primera de su calendario que empieza el día en que se crea o después.
+- En las de cada 15 días, la primera vuelta es la primera de su calendario cuyo sábado o domingo es el día en que se crea o después (como en las semanales: creada en el domingo de un finde que toca, toca ese finde).
 - Si alguien se da de alta entre semana, sus tareas por defecto de fin de semana no salen retrasadas.
 
 ### US-50 · Elegir desde qué día toca una tarea de cada N días (Nice to have)
