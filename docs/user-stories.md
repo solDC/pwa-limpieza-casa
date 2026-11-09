@@ -27,7 +27,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-33 | Añadir una tarea | Must have | Hecha | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
-| US-34 | Elegir el peso de las partes | Nice to have | Pendiente | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
+| US-34 | Elegir el peso de las partes | Must have | Hecha | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
@@ -165,7 +165,7 @@ para que la app incluya otras cosas que tengo que mantener.
 - Las partes son opcionales.
 - Si tiene partes, todas cuentan lo mismo: los pesos se reparten a partes iguales (elegirlos es la US-34).
 
-### US-34 · Elegir el peso de las partes (Nice to have)
+### US-34 · Elegir el peso de las partes (Must have)
 Como usuario,
 quiero elegir cuánto cuenta cada parte de una tarea,
 para que el porcentaje parcial refleje el esfuerzo real de cada parte.

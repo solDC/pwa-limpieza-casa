@@ -2,10 +2,15 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { formatDayMonth } from '../../domain/dates'
 import {
+  addPart,
   emptyDraft,
   MAX_PARTS,
   nextWeekends,
+  removePart,
+  renamePart,
+  setPartWeight,
   validateNewTask,
+  weightsTotal,
   type NewTaskDraft,
   type NewTaskErrors,
 } from '../../domain/new-task'
@@ -19,7 +24,8 @@ const frequencyOptions: { kind: Frequency['kind']; label: string }[] = [
   { kind: 'oneOff', label: 'Puntual' },
 ]
 
-// US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes que cuentan lo mismo.
+// US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes.
+// US-34 · Elegir el peso de las partes: si no se cambian, cuentan lo mismo.
 export function NewTaskForm({
   householdId,
   today,
@@ -48,7 +54,10 @@ export function NewTaskForm({
   useEffect(() => nameRef.current?.focus(), [])
 
   function update(changes: Partial<NewTaskDraft>) {
-    const next = { ...draft, ...changes }
+    apply({ ...draft, ...changes })
+  }
+
+  function apply(next: NewTaskDraft) {
     setDraft(next)
     // Si ya se ven los errores, se ponen al día al corregir.
     if (errors) {
@@ -66,19 +75,17 @@ export function NewTaskForm({
     })
   }
 
-  function addPart() {
+  function handleAddPart() {
     setPartKeys([...partKeys, nextPartKey.current++])
-    update({ partNames: [...draft.partNames, ''] })
+    apply(addPart(draft))
   }
 
-  function removePart(index: number) {
+  function handleRemovePart(index: number) {
     setPartKeys(partKeys.filter((_, i) => i !== index))
-    update({ partNames: draft.partNames.filter((_, i) => i !== index) })
+    apply(removePart(draft, index))
   }
 
-  function renamePart(index: number, name: string) {
-    update({ partNames: draft.partNames.map((partName, i) => (i === index ? name : partName)) })
-  }
+  const total = weightsTotal(draft)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -88,7 +95,9 @@ export function NewTaskForm({
       setErrors(result.errors)
       // Lleva al primer campo que falta, para que se vea qué pasa también en el móvil.
       requestAnimationFrame(() =>
-        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
+        formRef.current
+          ?.querySelector<HTMLElement>('[aria-invalid="true"], [data-invalid="true"]')
+          ?.focus(),
       )
       return
     }
@@ -192,11 +201,12 @@ export function NewTaskForm({
       <fieldset className="stack" disabled={saving}>
         <legend>Partes (opcional)</legend>
         {draft.partNames.length > 0 && (
-          <p className="muted">Todas las partes cuentan lo mismo.</p>
+          <p className="muted">Si no cambias los pesos, todas cuentan lo mismo.</p>
         )}
         {draft.partNames.map((partName, index) => {
           const id = `new-task-part-${partKeys[index]}`
           const error = errors?.parts?.[index]
+          const weightError = errors?.partWeights?.[index]
           return (
             <div key={partKeys[index]} className="stack">
               <label htmlFor={id}>Parte {index + 1}</label>
@@ -204,7 +214,7 @@ export function NewTaskForm({
                 <input
                   id={id}
                   value={partName}
-                  onChange={(event) => renamePart(index, event.target.value)}
+                  onChange={(event) => apply(renamePart(draft, index, event.target.value))}
                   aria-invalid={invalid(error)}
                   aria-describedby={error ? `${id}-error` : undefined}
                 />
@@ -212,19 +222,45 @@ export function NewTaskForm({
                   type="button"
                   className="button-secondary"
                   aria-label={`Quitar parte ${index + 1}`}
-                  onClick={() => removePart(index)}
+                  onClick={() => handleRemovePart(index)}
                 >
                   Quitar
                 </button>
               </div>
               <FieldError id={`${id}-error`} message={error} />
+              <div className="weight-row">
+                <label htmlFor={`${id}-weight`}>Peso</label>
+                <input
+                  id={`${id}-weight`}
+                  // Lo que lee VoiceOver: «Peso» solo no diría de qué parte es.
+                  aria-label={`Peso de la parte ${index + 1}`}
+                  inputMode="numeric"
+                  value={draft.partWeights[index]}
+                  onChange={(event) => apply(setPartWeight(draft, index, event.target.value))}
+                  aria-invalid={invalid(weightError)}
+                  aria-describedby={weightError ? `${id}-weight-error` : undefined}
+                />
+                <span aria-hidden="true">%</span>
+              </div>
+              <FieldError id={`${id}-weight-error`} message={weightError} />
             </div>
           )
         })}
+        {draft.partNames.length > 0 && (
+          <p
+            id="new-task-weights-total"
+            className={total === 100 ? 'muted' : 'error'}
+            // No es un campo: se marca aparte para llevar el foco aquí si es lo único que falla.
+            data-invalid={errors?.weightsTotal ? true : undefined}
+            tabIndex={errors?.weightsTotal ? -1 : undefined}
+          >
+            {errors?.weightsTotal ?? `Suman: ${total} %`}
+          </p>
+        )}
         <button
           type="button"
           className="button-secondary"
-          onClick={addPart}
+          onClick={handleAddPart}
           disabled={draft.partNames.length >= MAX_PARTS}
         >
           Añadir parte

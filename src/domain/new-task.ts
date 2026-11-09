@@ -1,4 +1,5 @@
 // US-33 · Añadir una tarea: qué hace falta para guardarla. TypeScript puro.
+// US-34 · Elegir el peso de las partes.
 
 import { addDays, dayOfWeek } from './dates'
 import type { Frequency, LocalDate } from './task'
@@ -19,6 +20,13 @@ export type NewTaskDraft = {
   /** Solo en «fin de semana cada 15 días»: el sábado del primer finde. */
   biweeklyStartOn: LocalDate | null
   partNames: string[]
+  /** El peso de cada parte, en %: lo escrito en su campo. */
+  partWeights: string[]
+  /**
+   * Si se ha cambiado algún peso a mano. Mientras no, al añadir o quitar partes los pesos
+   * se vuelven a repartir a partes iguales; después, ya no, para no perder lo puesto.
+   */
+  weightsEdited: boolean
 }
 
 /** La tarea lista para guardar. */
@@ -35,10 +43,63 @@ export type NewTaskErrors = {
   intervalDays?: string
   biweeklyStartOn?: string
   parts?: (string | undefined)[]
+  partWeights?: (string | undefined)[]
+  weightsTotal?: string
 }
 
 export function emptyDraft(): NewTaskDraft {
-  return { name: '', frequencyKind: null, intervalDays: '', biweeklyStartOn: null, partNames: [] }
+  return {
+    name: '',
+    frequencyKind: null,
+    intervalDays: '',
+    biweeklyStartOn: null,
+    partNames: [],
+    partWeights: [],
+    weightsEdited: false,
+  }
+}
+
+/** Añade una parte sin nombre. Si no se ha cambiado ningún peso, se reparten de nuevo. */
+export function addPart(draft: NewTaskDraft): NewTaskDraft {
+  const partNames = [...draft.partNames, '']
+  const partWeights = draft.weightsEdited
+    ? [...draft.partWeights, '0']
+    : equalWeights(partNames.length).map(String)
+  return { ...draft, partNames, partWeights }
+}
+
+/** Quita una parte. Si no se ha cambiado ningún peso, se reparten de nuevo. */
+export function removePart(draft: NewTaskDraft, index: number): NewTaskDraft {
+  const partNames = draft.partNames.filter((_, i) => i !== index)
+  const partWeights = draft.weightsEdited
+    ? draft.partWeights.filter((_, i) => i !== index)
+    : equalWeights(partNames.length).map(String)
+  return { ...draft, partNames, partWeights }
+}
+
+export function renamePart(draft: NewTaskDraft, index: number, name: string): NewTaskDraft {
+  return { ...draft, partNames: draft.partNames.map((partName, i) => (i === index ? name : partName)) }
+}
+
+/** Cambia el peso de una parte: desde entonces, los pesos ya no se reparten solos. */
+export function setPartWeight(draft: NewTaskDraft, index: number, weight: string): NewTaskDraft {
+  return {
+    ...draft,
+    partWeights: draft.partWeights.map((current, i) => (i === index ? weight : current)),
+    weightsEdited: true,
+  }
+}
+
+/** Lo que suman los pesos escritos, para verlo mientras se escriben (lo que no vale, 0). */
+export function weightsTotal(draft: NewTaskDraft): number {
+  return draft.partWeights.reduce((total, weight) => total + (parseWeight(weight) ?? 0), 0)
+}
+
+/** Un peso válido: un número entero de 1 a 100. Si no, `null`. */
+function parseWeight(text: string): number | null {
+  const trimmed = text.trim()
+  const weight = Number(trimmed)
+  return /^\d+$/.test(trimmed) && weight >= 1 && weight <= 100 ? weight : null
 }
 
 /**
@@ -106,15 +167,28 @@ export function validateNewTask(
   )
   if (partErrors.some(Boolean)) errors.parts = partErrors
 
+  const weights = partNames.map((_, index) => parseWeight(draft.partWeights[index] ?? ''))
+  const weightErrors = weights.map((weight) =>
+    weight === null ? 'Escribe un peso de 1 a 100.' : undefined,
+  )
+  if (weightErrors.some(Boolean)) {
+    errors.partWeights = weightErrors
+  } else {
+    // Solo si todos los pesos valen: si no, la suma no dice nada útil.
+    const total = weightsTotal(draft)
+    if (partNames.length > 0 && total !== 100) {
+      errors.weightsTotal = `Los pesos tienen que sumar 100 % (ahora suman ${total} %).`
+    }
+  }
+
   if (Object.keys(errors).length > 0 || frequency === null) return { ok: false, errors }
 
-  const weights = equalWeights(partNames.length)
   return {
     ok: true,
     task: {
       name,
       frequency,
-      parts: partNames.map((partName, index) => ({ name: partName, weight: weights[index] })),
+      parts: partNames.map((partName, index) => ({ name: partName, weight: weights[index]! })),
     },
   }
 }

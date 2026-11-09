@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  addPart,
   emptyDraft,
   equalWeights,
   MAX_PARTS,
   nextWeekends,
+  removePart,
+  renamePart,
+  setPartWeight,
   validateNewTask,
+  weightsTotal,
   type NewTaskDraft,
 } from '../../../src/domain/new-task'
 
@@ -53,11 +58,13 @@ describe('nextWeekends: los dos fines de semana que se pueden elegir para empeza
 })
 
 describe('validateNewTask: qué hace falta para guardar una tarea', () => {
+  // Con partes y sin pesos escritos, cuentan lo mismo (como si no se hubieran tocado).
   const draft = (changes: Partial<NewTaskDraft>): NewTaskDraft => ({
     ...emptyDraft(),
     name: 'Regar las plantas',
     frequencyKind: 'interval',
     intervalDays: '7',
+    partWeights: equalWeights(changes.partNames?.length ?? 0).map(String),
     ...changes,
   })
 
@@ -174,3 +181,71 @@ describe('validateNewTask: cuenta los caracteres como la base de datos', () => {
     expect(result.ok).toBe(true)
   })
 })
+
+// US-34 · Elegir el peso de las partes (#43)
+describe('los pesos de las partes en el formulario', () => {
+  const withParts = (...names: string[]) =>
+    names.reduce(
+      (draft, name, index) => renamePart(addPart(draft), index, name),
+      { ...emptyDraft(), name: 'Cocina a fondo', frequencyKind: 'oneOff' } as NewTaskDraft,
+    )
+
+  it('mientras no se cambia ningún peso, se reparten a partes iguales al añadir y quitar partes', () => {
+    expect(withParts('Horno').partWeights).toEqual(['100'])
+    expect(withParts('Horno', 'Nevera', 'Campana').partWeights).toEqual(['34', '33', '33'])
+    expect(removePart(withParts('Horno', 'Nevera', 'Campana'), 0)).toMatchObject({
+      partNames: ['Nevera', 'Campana'],
+      partWeights: ['50', '50'],
+    })
+  })
+
+  it('desde que cambio un peso, no se vuelven a repartir: la parte nueva entra con 0 %', () => {
+    const edited = setPartWeight(withParts('Horno', 'Nevera'), 0, '70')
+    expect(edited.partWeights).toEqual(['70', '50'])
+    const withNewPart = addPart(edited)
+    expect(withNewPart.partWeights).toEqual(['70', '50', '0'])
+    expect(removePart(withNewPart, 1).partWeights).toEqual(['70', '0'])
+  })
+
+  it('weightsTotal suma lo escrito (lo que no es un número cuenta como 0)', () => {
+    const draft = setPartWeight(setPartWeight(withParts('Horno', 'Nevera', 'Campana'), 0, '50'), 1, 'treinta')
+    expect(weightsTotal(draft)).toBe(83) // 50 + 0 + 33
+    expect(weightsTotal(emptyDraft())).toBe(0)
+  })
+
+  it('con los pesos que elijo, si suman 100, se guardan así', () => {
+    let draft = withParts('Horno', 'Nevera', 'Campana')
+    draft = setPartWeight(draft, 0, '50')
+    draft = setPartWeight(draft, 1, ' 30 ')
+    draft = setPartWeight(draft, 2, '20')
+    expect(validateNewTask(draft)).toMatchObject({
+      ok: true,
+      task: {
+        parts: [
+          { name: 'Horno', weight: 50 },
+          { name: 'Nevera', weight: 30 },
+          { name: 'Campana', weight: 20 },
+        ],
+      },
+    })
+  })
+
+  it('si no suman 100, no vale: dice cuánto suman', () => {
+    const draft = setPartWeight(withParts('Horno', 'Nevera'), 0, '40')
+    expect(validateNewTask(draft)).toEqual({
+      ok: false,
+      errors: { weightsTotal: 'Los pesos tienen que sumar 100 % (ahora suman 90 %).' },
+    })
+  })
+
+  it('cada peso tiene que ser un número entero de 1 a 100', () => {
+    for (const weight of ['0', '', '101', '12.5', 'mucho', '-10']) {
+      const result = validateNewTask(setPartWeight(withParts('Horno', 'Nevera'), 0, weight))
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.errors.partWeights).toEqual(['Escribe un peso de 1 a 100.', undefined])
+      }
+    }
+  })
+})
+

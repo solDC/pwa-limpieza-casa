@@ -89,7 +89,7 @@ test.describe('US-33 · Añadir una tarea', () => {
     await form(page).getByLabel('Nombre').fill('Cocina a fondo')
     await form(page).getByLabel('Puntual').check()
     await addParts(page, ['Horno', 'Nevera', 'Campana'])
-    await expect(form(page)).toContainText('Todas las partes cuentan lo mismo.')
+    await expect(form(page)).toContainText('Si no cambias los pesos, todas cuentan lo mismo.')
     await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Cocina a fondo')).toContainText('Horno 34 % · Nevera 33 % · Campana 33 %')
