@@ -305,7 +305,7 @@ Cuando un pull request añade archivos en `supabase/migrations/`, se aplican **d
 
    Las migraciones tienen que ser compatibles con la versión de `main` (el pull request lo avisa si no): así producción sigue funcionando entre el `db:push` y la fusión.
 
-Cada comando enlaza primero la CLI con su proyecto y después aplica las migraciones, así que no hay que acordarse de en cuál está enlazada. Pide la contraseña de la base de datos de ese proyecto (Project Settings → Database) y, antes de aplicar, lista las migraciones y pide confirmación (responde `Y`). Para ver qué se aplicaría sin aplicarlo: `npm run db:push:pruebas -- --dry-run`.
+Cada comando enlaza primero la CLI con su proyecto y después aplica las migraciones, así que no hay que acordarse de en cuál está enlazada. `db:push:produccion` pide antes escribir `produccion`, para no aplicarlo en producción por error; y los dos se niegan a seguir si en `supabase/projects.json` los dos ids son iguales. Pide la contraseña de la base de datos de ese proyecto (Project Settings → Database) y, antes de aplicar, lista las migraciones y pide confirmación (responde `Y`). Para ver qué se aplicaría sin aplicarlo: `npm run db:push:pruebas -- --dry-run` (es la única opción extra que admiten).
 
 Si responde «Remote database is up to date» sin listar nada, probablemente estás en otra rama (por ejemplo, `main`), donde esa migración aún no existe.
 
