@@ -34,6 +34,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar el peso de las partes de una tarea | Nice to have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-52 | La app en inglés y en castellano | Nice to have | Pendiente | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
 | US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 
 ## Conceptos
@@ -245,6 +246,17 @@ para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo qu
 - Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
 
 *Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha).*
+
+### US-52 · La app en inglés y en castellano (Nice to have)
+Como usuario que no habla castellano,
+quiero usar la app en inglés,
+para entender qué toca y qué he hecho sin traducir nada.
+- La primera vez, la app sale en el idioma del dispositivo: en castellano si es castellano, y en inglés en cualquier otro caso.
+- Puedo cambiar el idioma desde la app, junto a «Cerrar sesión», y se mantiene al volver a abrirla.
+- Todos los textos de la app salen en el idioma elegido: pantallas, botones, avisos y errores.
+- Las fechas también: «Due: weekend of 14 Nov», «Wed 18 Nov».
+
+*Los emails de entrar, en el idioma del usuario, serían otra historia. Los nombres de las tareas por defecto no se traducen: son datos del hogar, no textos de la app.*
 
 ## Historias anteriores
 
