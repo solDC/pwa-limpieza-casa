@@ -193,6 +193,16 @@ legend {
   min-width: 0;
 }
 
+.weight-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.weight-row input {
+  width: 5rem;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;
