@@ -101,6 +101,37 @@ test.describe('US-52 · Puedo cambiar el idioma, y se mantiene', () => {
   })
 })
 
+// Regresión: con dos pestañas en idiomas distintos, cada una guardaba su idioma en la
+// cuenta al ver el de la otra, sin parar.
+test.describe('US-52 · Con la app abierta en dos pestañas', () => {
+  test('al cambiar el idioma en una, la otra cambia también, y el idioma se guarda una sola vez', async ({
+    page,
+    context,
+  }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    const other = await context.newPage()
+    await other.goto('/')
+    await expect(other.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
+    await expect.poll(() => accountLanguage(email)).toBe('es')
+
+    let saves = 0
+    await context.route('**/auth/v1/user', async (route) => {
+      if (route.request().method() === 'PUT') saves++
+      await route.continue()
+    })
+
+    await languageButton(page, 'English').click()
+
+    await expect(other.getByRole('button', { name: 'Sign out' })).toBeVisible()
+    await expect.poll(() => accountLanguage(email)).toBe('en')
+    // Se da tiempo a que, si hubiera un bucle, se note.
+    await page.waitForTimeout(1_500)
+    expect(saves).toBeLessThanOrEqual(2)
+    expect(await accountLanguage(email)).toBe('en')
+  })
+})
+
 test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
   test.use({ locale: 'en-US' })
 

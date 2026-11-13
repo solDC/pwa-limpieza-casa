@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { ErrorMessage } from './components/ErrorMessage'
 import { UpdateNotice } from './features/app-update/UpdateNotice'
 import { Screen } from './components/Screen'
@@ -24,13 +24,17 @@ function AppWithSession() {
   const { language, t } = useLanguage()
 
   // US-52 · El idioma elegido se guarda también en la cuenta, para que el próximo email
-  // para entrar salga en ese idioma.
-  const accountLanguage = state.status === 'signed-in' ? state.session.language : undefined
+  // para entrar salga en ese idioma. Solo al entrar y al cambiar el idioma aquí: no cada vez
+  // que la cuenta dice otra cosa, porque con la app abierta en dos sitios en idiomas
+  // distintos cada uno pisaría al otro sin parar.
+  const userId = state.status === 'signed-in' ? state.session.userId : null
+  const accountLanguage = useRef<string | null>(null)
+  accountLanguage.current = state.status === 'signed-in' ? state.session.language : null
   useEffect(() => {
-    if (accountLanguage !== undefined && accountLanguage !== language) {
+    if (userId !== null && accountLanguage.current !== language) {
       saveAccountLanguage(language).catch(() => {})
     }
-  }, [accountLanguage, language])
+  }, [userId, language])
 
   if (state.status === 'loading') {
     return (

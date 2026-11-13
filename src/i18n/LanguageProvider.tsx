@@ -21,6 +21,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(initialLanguage)
   const t = messages[language]
 
+  // Si se cambia el idioma en otra pestaña, esta cambia también.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY && LANGUAGES.includes(event.newValue as Language)) {
+        setLanguageState(event.newValue as Language)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   // Para los lectores de pantalla (leen con la voz de ese idioma) y el título de la pestaña.
   useEffect(() => {
     document.documentElement.lang = language
