@@ -243,4 +243,3 @@ test.describe('Versión nueva de la app, en inglés', () => {
     await expect(dialog).toHaveCount(0)
   })
 })
-

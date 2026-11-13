@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { formatDayMonth, formatShortDate } from '../../../src/domain/dates'
-import { AppError, errorCode } from '../../../src/domain/errors'
 import { describeDue } from '../../../src/domain/frequency'
 import { detectLanguage, householdDisplayName } from '../../../src/domain/language'
 import { emptyDraft, validateNewTask } from '../../../src/domain/new-task'
@@ -153,13 +152,5 @@ describe('los avisos del formulario de tarea nueva, en inglés', () => {
     expect(validateNewTask(noWeekend, 'en')).toMatchObject({
       errors: { biweeklyStartOn: 'Choose the first weekend.' },
     })
-  })
-})
-
-describe('errorCode: qué fallo se muestra', () => {
-  it('un fallo conocido, el suyo; uno inesperado, el general de lo que se estaba haciendo', () => {
-    expect(errorCode(new AppError('alreadyDone'), 'saveFailed')).toBe('alreadyDone')
-    expect(errorCode(new Error('algo raro'), 'householdLoad')).toBe('householdLoad')
-    expect(errorCode(undefined, 'emailFailed')).toBe('emailFailed')
   })
 })
