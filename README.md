@@ -261,7 +261,7 @@ En **cada uno de los dos proyectos** de Supabase (el de pruebas se crea en el pa
 
    Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
 3. **Plantillas del email, con el código (US-26), en castellano y en inglés (US-52).** En **Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
-   - **Subject:** `{{ if eq .Data.lang "en" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}` (todo en una línea; Supabase pone el código en lugar de `{{ .Token }}`, y elige el idioma según el guardado en la cuenta)
+   - **Subject:** `{{ if eq .Data.lang "en" }}My House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}` (todo en una línea; Supabase pone el código en lugar de `{{ .Token }}`, y elige el idioma según el guardado en la cuenta)
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
    Si cambias ese archivo, vuelve a pegarlo en las dos plantillas de los dos proyectos: la nube no lo lee del repo.
@@ -333,7 +333,7 @@ En Chrome o Edge, abre la app y pulsa el icono de instalar en la barra de direcc
 
 El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Desplegada en Vercel, que usa HTTPS, se puede instalar también en el móvil.
 
-La app instalada se llama «House Cleaning» en todos los idiomas (solo puede tener un nombre); dentro, «Limpieza de casa» en castellano y «House Cleaning» en inglés.
+La app instalada se llama «My House Cleaning» en todos los idiomas (solo puede tener un nombre); dentro, «Limpieza de casa» en castellano y «My House Cleaning» en inglés.
 
 Cuando se publica una versión nueva, la app lo avisa con una ventana en el centro («Hay una versión nueva de la app.») al volver a ella o, como mucho, en una hora. **Actualizar** carga la nueva; **Más tarde** cierra la ventana, que vuelve a salir la próxima vez que se vuelve a la app. Si se cierra la app del todo, al abrirla ya está la nueva.
 

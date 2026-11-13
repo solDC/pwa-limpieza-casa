@@ -50,9 +50,9 @@ test.describe('US-52 · La primera vez, la app sale en el idioma del dispositivo
 
     test('sale en inglés', async ({ page }) => {
       await page.goto('/')
-      await expect(page.getByRole('heading', { level: 1, name: 'House Cleaning' })).toBeVisible()
+      await expect(page.getByRole('heading', { level: 1, name: 'My House Cleaning' })).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-      await expect(page).toHaveTitle('House Cleaning')
+      await expect(page).toHaveTitle('My House Cleaning')
       await expect(page.locator('html')).toHaveAttribute('lang', 'en')
     })
   })
@@ -81,7 +81,7 @@ test.describe('US-52 · Puedo cambiar el idioma, y se mantiene', () => {
 
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-    await expect(page).toHaveTitle('House Cleaning')
+    await expect(page).toHaveTitle('My House Cleaning')
   })
 
   test('dentro de la app, junto a «Cerrar sesión», y vuelta al castellano', async ({ page }) => {
@@ -157,7 +157,7 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
 
     // El email de una cuenta nueva sale en el idioma de la app.
     const signInEmail = await waitForSignInEmail(email)
-    expect(signInEmail.subject).toBe(`Your House Cleaning code: ${signInEmail.code}`)
+    expect(signInEmail.subject).toBe(`My House Cleaning code: ${signInEmail.code}`)
 
     const wrongCode = signInEmail.code === '000000' ? '111111' : '000000'
     await page.getByLabel('Code from the email').fill(wrongCode)
@@ -286,7 +286,7 @@ test.describe('US-52 · El email para entrar, en el idioma de la cuenta', () => 
     await page.getByRole('button', { name: 'Send me the code' }).click()
     const second = await waitForSignInEmail(email, { after: first })
 
-    expect(second.subject).toBe(`Your House Cleaning code: ${second.code}`)
+    expect(second.subject).toBe(`My House Cleaning code: ${second.code}`)
   })
 
   // Las cuentas creadas antes de esta historia (como la de Sol) no tienen idioma guardado.

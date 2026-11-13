@@ -24,7 +24,6 @@ Primero las hechas y después las pendientes.
 |---|---|---|---|---|
 | US-01 | Entrar con enlace mágico | Must have | Hecha | [#2](https://github.com/solDC/pwa-limpieza-casa/issues/2) |
 | US-02 | Hogar creado automáticamente | Must have | Hecha | [#3](https://github.com/solDC/pwa-limpieza-casa/issues/3) |
-| US-03 | Cerrar sesión | Nice to have | Hecha | [#4](https://github.com/solDC/pwa-limpieza-casa/issues/4) |
 | US-26 | Entrar con código desde la app instalada | Must have | Hecha | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
@@ -38,6 +37,8 @@ Primero las hechas y después las pendientes.
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
+
+Fuera de los milestones, ya hecha: US-03 · Cerrar sesión ([#4](https://github.com/solDC/pwa-limpieza-casa/issues/4), Nice to have).
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -286,7 +287,7 @@ para entender qué toca y qué he hecho sin traducir nada.
 - Las tareas por defecto y sus partes se ven en el idioma elegido («Superficies» / «Surfaces»); las que añado yo, como las escribí.
 - El email para entrar llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app.
 
-*Dentro de la app se llama «House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «House Cleaning».*
+*Dentro de la app se llama «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «My House Cleaning».*
 
 ## Historias anteriores
 

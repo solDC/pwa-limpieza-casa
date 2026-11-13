@@ -261,11 +261,11 @@ otp_expiry = 3600
 # El asunto y el contenido salen en inglés si el idioma guardado en la cuenta es «en»
 # (US-52), y en castellano en cualquier otro caso.
 [auth.email.template.magic_link]
-subject = "{{ if eq .Data.lang \"en\" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
+subject = "{{ if eq .Data.lang \"en\" }}My House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
 content_path = "./supabase/templates/sign-in.html"
 
 [auth.email.template.confirmation]
-subject = "{{ if eq .Data.lang \"en\" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
+subject = "{{ if eq .Data.lang \"en\" }}My House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
 content_path = "./supabase/templates/sign-in.html"
 
 # [auth.email.template.invite]

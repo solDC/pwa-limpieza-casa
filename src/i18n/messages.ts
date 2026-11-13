@@ -111,7 +111,7 @@ const es = {
 export type Messages = typeof es
 
 const en: Messages = {
-  appName: 'House Cleaning',
+  appName: 'My House Cleaning',
   loading: 'Loading…',
   missingConfiguration:
     'The database connection is not set up (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY).',
