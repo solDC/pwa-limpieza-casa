@@ -16,6 +16,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 - **Marcar como hecha** una tarea entera o una parte.
 - **Cambiar cuándo toca:** poner fecha a una puntual, cambiar la próxima vez de una de cada N días o mover una de fin de semana a otro finde.
 - **Añadir** tareas nuevas, y **cancelar** una tarea *(Nice to have)*.
+- **En castellano y en inglés:** la app, las fechas, las tareas por defecto y el email para entrar.
 - **Instalable** como una PWA. Necesita conexión a internet.
 
 ## Backlog (fuera del MVP)
@@ -58,19 +59,24 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 .
 ├── .devcontainer/          Dev container para VS Code (usa el mismo Dockerfile)
 ├── .github/workflows/      Integración continua: pruebas en cada pull request
-├── docs/                   Historias de usuario del MVP
+├── docs/                   Historias de usuario (user-stories.md) y datos para probar a mano (test-data.md)
 ├── public/                 Iconos y favicon de la PWA
 ├── supabase/
 │   ├── config.toml         Configuración de Supabase en local
-│   └── migrations/         Cambios de la base de datos (tablas, reglas de seguridad), en orden
+│   ├── migrations/         Cambios de la base de datos (tablas, reglas de seguridad), en orden
+│   ├── templates/          El email para entrar, en castellano y en inglés
+│   └── projects.json       Los dos proyectos de la nube: pruebas y producción
+├── scripts/                Aplicar las migraciones a la nube (npm run db:push:…)
 ├── src/
 │   ├── domain/             Modelo de tareas, motor de frecuencias y progreso (TypeScript puro)
 │   ├── storage/            Acceso a Supabase
 │   ├── features/
+│   │   ├── auth/           Entrar con el código o el enlace del email, y la sesión
 │   │   ├── home/           Pantalla de Inicio
-│   │   ├── tasks/          Lista, detalle y edición de tareas
-│   │   └── history/        Registro de lo hecho
+│   │   ├── tasks/          «Tus tareas»: la lista, cada tarea y el formulario de tarea nueva
+│   │   └── app-update/     El aviso de que hay una versión nueva de la app
 │   ├── components/         Componentes visuales comunes a varias pantallas
+│   ├── i18n/               Los textos en castellano y en inglés, y el idioma elegido
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── styles.css
@@ -320,6 +326,8 @@ Supabase **pausa los proyectos gratuitos tras 7 días sin uso**. Si un despliegu
 En Chrome o Edge, abre la app y pulsa el icono de instalar en la barra de direcciones.
 
 El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Una vez desplegada en Vercel, que usa HTTPS, se podrá instalar también en el móvil.
+
+La app instalada se llama «House Cleaning» en todos los idiomas (solo puede tener un nombre); dentro, «Limpieza de casa» en castellano y «House Cleaning» en inglés.
 
 Cuando se publica una versión nueva, la app lo avisa con una ventana en el centro («Hay una versión nueva de la app.») al volver a ella o, como mucho, en una hora. **Actualizar** carga la nueva; **Más tarde** cierra la ventana, que vuelve a salir la próxima vez que se vuelve a la app. Si se cierra la app del todo, al abrirla ya está la nueva.
 

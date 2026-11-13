@@ -142,7 +142,7 @@ export function describeDue(
   frequency: Frequency,
   round: Round,
   today: LocalDate,
-  language: Language = 'es',
+  language: Language,
 ): string {
   const text = DUE_TEXTS[language]
   if (round.startsOn === null) return text.noDate

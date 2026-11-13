@@ -34,7 +34,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar el peso de las partes de una tarea | Nice to have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
-| US-52 | La app en inglés y en castellano | Nice to have | Hecha | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
+| US-52 | La app en inglés y en castellano | Must have | Hecha | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
 | US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 
 ## Conceptos
@@ -245,9 +245,9 @@ para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo qu
 - Al guardar, la tarea muestra los pesos nuevos; con «Cancelar», se quedan como estaban.
 - Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
 
-*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha).*
+*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
 
-### US-52 · La app en inglés y en castellano (Nice to have)
+### US-52 · La app en inglés y en castellano (Must have)
 Como usuario que no habla castellano,
 quiero usar la app en inglés,
 para entender qué toca y qué he hecho sin traducir nada.

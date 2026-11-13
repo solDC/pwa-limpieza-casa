@@ -6,7 +6,7 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-33 (añadir una tarea), US-34 (elegir el peso de las partes), US-48 (las tareas nuevas no empiezan con retraso) y US-52 (la app en inglés y en castellano). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-33 (añadir una tarea), US-34 (elegir el peso de las partes), US-48 (las tareas nuevas no empiezan con retraso) y US-52 (la app en inglés y en castellano).
 
 **Nombre de la app:** dentro de la app, «Limpieza de casa» en castellano y «House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas, «House Cleaning» (`name` y `short_name` del manifiesto; el corto es el que propone el iPhone al instalarla, porque la etiqueta `apple-mobile-web-app-title` no le sirve).
 
@@ -26,7 +26,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 src/
 ├── domain/      Modelo de tareas, motor de frecuencias y progreso. TypeScript puro.
 ├── storage/     Acceso a Supabase. Única carpeta que importa @supabase/supabase-js.
-├── features/    Una carpeta por pantalla (home, tasks, history, auth) o por función de toda
+├── features/    Una carpeta por pantalla (home, tasks, auth) o por función de toda
 │                la app (app-update, el aviso de versión nueva). Cada una con sus
 │                componentes propios (SignInScreen.tsx…) y sus hooks (use-session.ts…).
 ├── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
@@ -43,12 +43,12 @@ tests/
 - `domain/` **no importa** React, Supabase, `storage/`, `features/` ni APIs del navegador. Recibe datos y devuelve datos. Así se prueba de forma aislada.
 - `features/` usa `domain/` para la lógica, `storage/` para leer y guardar y `components/` para las piezas visuales comunes. No llama a Supabase directamente.
 - Un componente va en `components/` cuando lo usan **dos o más pantallas**; si solo lo usa una, se queda en su carpeta de `features/`.
-- `storage/` traduce entre las filas de la base de datos (`snake_case`) y los tipos de `domain/` (`camelCase`). Los fallos los lanza como `AppError` con un código (`src/domain/errors.ts`), no con una frase: el texto lo pone la pantalla en el idioma elegido.
+- `storage/` traduce entre las filas de la base de datos (`snake_case`) y los tipos de `domain/` (`camelCase`). Los fallos los lanza como `AppError` con un código (`src/domain/errors.ts`), no con una frase: el texto lo pone la pantalla en el idioma elegido. Para un fallo inesperado, cada pantalla dice cuál es el suyo (`errorCode(error, 'tasksLoad')`).
 
 ### Idiomas (US-52)
 
 - La app está en **castellano e inglés**. La primera vez sale en el idioma del dispositivo (castellano si es castellano; si no, inglés); después, en el que se elija, que se guarda en el dispositivo.
-- **Ningún texto que ve el usuario se escribe directamente en un componente.** Los de las pantallas van en `src/i18n/messages.ts`, en los dos idiomas, y se leen con `useLanguage()`. Los que dependen de la lógica (cuándo toca, frecuencias, fechas, avisos del formulario) los da `src/domain/`, que recibe el idioma como parámetro.
+- **Ningún texto que ve el usuario se escribe directamente en un componente.** Los de las pantallas van en `src/i18n/messages.ts`, en los dos idiomas, y se leen con `useLanguage()`. Los que dependen de la lógica (cuándo toca, frecuencias, fechas, avisos del formulario) los da `src/domain/`, que recibe el idioma como parámetro, siempre obligatorio: sin idioma por defecto, para que no se quede ningún texto en castellano por un olvido.
 - **Las tareas por defecto** y sus partes llevan una clave (`default_key`); `taskDisplayName()` las muestra en el idioma elegido. Las que añade el usuario se ven como las escribió.
 - **El email para entrar** sale en el idioma guardado en la cuenta (`lang` en los datos del usuario de Supabase Auth), que la app pone al día al entrar. La plantilla es una sola, con las dos versiones.
 
@@ -64,7 +64,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo, con su clave `default_key` (migración `…_default_task_keys.sql`, US-52).
 - **Las tareas nuevas** (US-33) se crean con la función `create_task`, que guarda la tarea y sus partes de una vez. La app no puede insertar directamente en `tasks` ni en `task_parts`. Los pesos de las partes de una tarea **suman 100**: lo comprueba la base de datos al final de cada transacción (migración `…_create_tasks.sql`).
 - `tasks` y `task_parts` existen desde la migración `…_tasks.sql` (US-27), y `task_rounds` desde `…_task_rounds.sql` (US-30).
-- **«Hoy» es el día de Madrid**, en la base de datos (`(now() at time zone 'Europe/Madrid')::date`) y en la app (`useToday()` de `src/features/home/use-today.ts`, que se actualiza al volver a la app), aunque el dispositivo esté en otra zona horaria. La app es para la casa de Sol; si algún día hay usuarios en otras zonas, se revisa.
+- **«Hoy» es el día de Madrid**, en la base de datos (`(now() at time zone 'Europe/Madrid')::date`) y en la app (`useToday()` de `src/features/tasks/use-today.ts`, que se actualiza al volver a la app), aunque el dispositivo esté en otra zona horaria. La app es para la casa de Sol; si algún día hay usuarios en otras zonas, se revisa.
 - **El usuario nunca ve horas.** Si alguna vez se muestra una (por ejemplo, de `created_at`), se convierte a la hora de Madrid.
 - **El motor de frecuencias** está en `src/domain/frequency.ts`: `currentRound()` da la vuelta actual o la siguiente de una tarea (desde cuándo toca y hasta cuándo hay plazo), `dueStatus()` si va retrasada (y cuántos días), toca hoy o más adelante, y `describeDue()` el texto de «Toca: …» o «Retrasada…». El orden de la lista (US-29) está en `src/domain/agenda.ts`.
 - Los días se guardan como **fecha local sin hora** (`date` en PostgreSQL, `'YYYY-MM-DD'` en TypeScript), nunca como `Date` con hora. «Hoy», «ayer» y «cada 30 días» son días, y así se evitan errores de zona horaria y cambio de hora.

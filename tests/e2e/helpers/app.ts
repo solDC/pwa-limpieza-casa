@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test'
+import { localDateIn } from '../../../src/domain/dates'
 import { waitForSignInEmail, type SignInEmail } from './mailbox'
 
 // Pasos comunes de las pruebas e2e. Necesitan Supabase en local: usan su buzón de pruebas.
@@ -29,4 +30,22 @@ export function task(page: Page, name: string) {
     .getByRole('list', { name: 'Tus tareas' })
     .getByRole('listitem')
     .filter({ has: page.getByRole('heading', { level: 3, name, exact: true }) })
+}
+
+/** Los nombres de las tareas de «Tus tareas», en el orden en que salen. */
+export function taskNames(page: Page) {
+  return page
+    .getByRole('list', { name: 'Tus tareas' })
+    .getByRole('listitem')
+    .getByRole('heading', { level: 3 })
+}
+
+/** El formulario «Nueva tarea» (US-33). */
+export function newTaskForm(page: Page) {
+  return page.getByRole('form', { name: 'Nueva tarea' })
+}
+
+/** Hoy en Madrid, con el reloj de verdad: el día que apunta la base de datos. */
+export function todayInMadrid(): string {
+  return localDateIn('Europe/Madrid', new Date())
 }

@@ -40,7 +40,7 @@ export type Task = {
 }
 
 /** Texto de la frecuencia para la interfaz. */
-export function describeFrequency(frequency: Frequency, language: Language = 'es'): string {
+export function describeFrequency(frequency: Frequency, language: Language): string {
   const text = FREQUENCY_TEXTS[language]
   switch (frequency.kind) {
     case 'weekendWeekly':

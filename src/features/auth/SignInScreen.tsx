@@ -50,7 +50,7 @@ export function SignInScreen() {
       setCode('')
       setStep({ name: 'sent', email: cleanEmail, error: null, resent: false, busy: null })
     } catch (error) {
-      setStep({ name: 'form', error: errorCode(error) })
+      setStep({ name: 'form', error: errorCode(error, 'emailFailed') })
     }
   }
 
@@ -63,7 +63,7 @@ export function SignInScreen() {
       // Si es correcto, la sesión cambia y la app pasa sola a la pantalla de Inicio.
       await verifyEmailCode(sentTo, code)
     } catch (error) {
-      updateSent(sentTo, { error: errorCode(error), busy: null })
+      updateSent(sentTo, { error: errorCode(error, 'codeServer'), busy: null })
     }
   }
 
@@ -76,7 +76,7 @@ export function SignInScreen() {
       setCode('')
       updateSent(sentTo, { resent: true, busy: null })
     } catch (error) {
-      updateSent(sentTo, { error: errorCode(error), busy: null })
+      updateSent(sentTo, { error: errorCode(error, 'emailFailed'), busy: null })
     }
   }
 

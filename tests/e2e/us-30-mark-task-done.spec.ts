@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { addDays, dayOfWeek, formatDayMonth, formatShortDate, localDateIn } from '../../src/domain/dates'
-import { signIn, task } from './helpers/app'
+import { addDays, dayOfWeek, formatDayMonth, formatShortDate } from '../../src/domain/dates'
+import { signIn, task, todayInMadrid } from './helpers/app'
 import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
@@ -16,8 +16,6 @@ function markDone(page: Page, name: string) {
   return task(page, name).getByRole('button', { name: 'Marcar como hecha' })
 }
 
-const today = () => localDateIn('Europe/Madrid', new Date())
-
 test.describe('US-30 · Marcar una tarea como hecha', () => {
   test('una tarea de fin de semana hecha pasa al finde siguiente, también al volver a entrar', async ({
     page,
@@ -26,16 +24,16 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await signIn(page, email)
     // Creada hace un mes: si fuera de hoy y hoy es entre semana, su primera vuelta sería el
     // sábado siguiente y aún no se podría marcar (US-48).
-    await setAllTasksCreatedOn(email, addDays(today(), -30))
+    await setAllTasksCreatedOn(email, addDays(todayInMadrid(), -30))
     await page.reload()
-    const saturday = addDays(today(), -((dayOfWeek(today()) + 1) % 7))
+    const saturday = addDays(todayInMadrid(), -((dayOfWeek(todayInMadrid()) + 1) % 7))
     // Usa el reloj de verdad: el sábado y el domingo dice «Toca: finde del…» y de lunes a
     // viernes, «Retrasada… (tocaba el finde del…)» (US-29).
-    await expect(task(page, 'Superficies')).toContainText(`finde del ${formatDayMonth(saturday)}`)
+    await expect(task(page, 'Superficies')).toContainText(`finde del ${formatDayMonth(saturday, 'es')}`)
 
     await markDone(page, 'Superficies').click()
 
-    const next = `Toca: finde del ${formatDayMonth(addDays(saturday, 7))}`
+    const next = `Toca: finde del ${formatDayMonth(addDays(saturday, 7), 'es')}`
     await expect(task(page, 'Superficies')).toContainText(next)
     // La vuelta de este finde ya está hecha: hasta el sábado no hay otra que marcar.
     await expect(markDone(page, 'Superficies')).toHaveCount(0)
@@ -52,7 +50,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
 
     await markDone(page, 'Cristales y espejos').click()
 
-    const next = `Toca: ${formatShortDate(addDays(today(), 30))}`
+    const next = `Toca: ${formatShortDate(addDays(todayInMadrid(), 30), 'es')}`
     await expect(task(page, 'Cristales y espejos')).toContainText(next)
     // Ya está hecha hoy: no se puede marcar otra vez el mismo día.
     await expect(markDone(page, 'Cristales y espejos')).toHaveCount(0)
@@ -126,7 +124,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await expect(task(other, 'Baño')).toContainText('Toca: hoy')
 
     await markDone(page, 'Baño').click()
-    const next = `Toca: ${formatShortDate(addDays(today(), 3))}`
+    const next = `Toca: ${formatShortDate(addDays(todayInMadrid(), 3), 'es')}`
     await expect(task(page, 'Baño')).toContainText(next)
 
     await markDone(other, 'Baño').click()
@@ -203,7 +201,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
 
     // Mientras tanto, marca otra tarea.
     await markDone(other, 'Cristales y espejos').click()
-    const cristales = `Toca: ${formatShortDate(addDays(today(), 30))}`
+    const cristales = `Toca: ${formatShortDate(addDays(todayInMadrid(), 30), 'es')}`
     await expect(task(other, 'Cristales y espejos')).toContainText(cristales)
 
     // Primero tiene que verse Baño al día: así se sabe que la recarga ya ha llegado.
@@ -211,7 +209,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     release()
     await reloaded
 
-    await expect(task(other, 'Baño')).toContainText(`Toca: ${formatShortDate(addDays(today(), 3))}`)
+    await expect(task(other, 'Baño')).toContainText(`Toca: ${formatShortDate(addDays(todayInMadrid(), 3), 'es')}`)
     await expect(task(other, 'Cristales y espejos')).toContainText(cristales)
     await expect(markDone(other, 'Cristales y espejos')).toHaveCount(0)
   })
