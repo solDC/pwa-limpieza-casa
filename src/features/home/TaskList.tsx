@@ -105,7 +105,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
   }
 
   return (
-    <section className="stack" aria-labelledby="tasks-heading">
+    <section className="stack tasks" aria-labelledby="tasks-heading">
       <h2 id="tasks-heading">{t.tasks.title}</h2>
 
       {householdId &&

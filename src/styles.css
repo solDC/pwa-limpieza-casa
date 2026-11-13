@@ -140,6 +140,11 @@ button:disabled {
   text-decoration: none;
 }
 
+/* «Tus tareas», separada de la tarjeta del hogar que tiene encima. */
+.tasks {
+  margin-top: 2rem;
+}
+
 /* Lista de tareas (US-27): tarjetas una debajo de otra, sin viñetas. */
 .task-list {
   display: flex;
