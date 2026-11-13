@@ -25,22 +25,23 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
    - **Agente** (`.claude/agents/<nombre>.md`): otro Claude que recibe un encargo, empieza con el contexto limpio, puede tener solo algunas herramientas y devuelve un resumen. Solo merece la pena para **una mirada independiente** (juzgar algo sin los supuestos de quien lo hizo) o para **separar mucho trabajo de lectura** de la conversación. Para buscar en el código ya existen los agentes de Claude Code (`Explore`, `general-purpose`).
    - En la duda, es una skill.
 
-5. **Parte de este catálogo** (1 agente y 7 skills) y marca cuáles existen ya:
+5. **Parte de este catálogo** (2 agentes y 7 skills) y marca cuáles existen ya:
 
    | Nombre | Tipo | Para qué |
    |---|---|---|
    | `write-tests` | Skill | Las pruebas de los tres niveles según lo que haya cambiado: unitarias de `src/domain/`, integración de cada tabla (aislamiento entre hogares) y e2e por historia. También para fallos: primero la prueba que lo reproduce. |
    | `new-migration` | Skill | Cada cambio en la base de datos: migración con `npx supabase migration new`, RLS, políticas, permisos por rol y comentarios en español; usa `write-tests` para la prueba de integración. |
-   | `code-reviewer` | Agente | Revisa la rama frente a `main` con las reglas de `CLAUDE.md`: dependencias entre carpetas, RLS, fechas `'YYYY-MM-DD'`, nombres en inglés y textos en español, una prueba por criterio, documentación al día y CHANGELOG solo con cambios de la app. Solo lee e informa. |
-   | `implement-story` | Skill | El flujo principal: de la historia `US-xx` al código por capas (`domain` → `storage` → `features`). Usa `new-migration` y `write-tests`, y pide revisión a `code-reviewer`. |
+   | `code-reviewer` | Agente | Revisa la rama frente a `main` con las reglas de `CLAUDE.md`: dependencias entre carpetas, RLS, fechas `'YYYY-MM-DD'`, nombres en inglés, textos en los dos idiomas y una prueba por criterio. No revisa la documentación. Solo lee e informa. |
+   | `docs-reviewer` | Agente | Revisa que `README.md`, `CLAUDE.md`, `tests/README.md`, `docs/` y `CHANGELOG.md` cuenten lo mismo que el código de la rama (también los documentos que la rama no ha tocado), y que el CHANGELOG solo lleve cambios de la app. Solo lee e informa. |
+   | `implement-story` | Skill | El flujo principal: de la historia `US-xx` al código por capas (`domain` → `storage` → `features`). Usa `new-migration` y `write-tests`, y pide revisión a `code-reviewer` y a `docs-reviewer`. |
    | `open-pr` | Skill | Pasa `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e`, revisa el CHANGELOG, avisa de migraciones, enseña el resumen a Sol y, con su ok, hace el commit y abre el PR con «Cómo probarlo a mano». |
    | `new-story` | Skill | Convierte una idea de Sol en una historia de `docs/user-stories.md`: pregunta lo que falte, comprueba que no duplica otra y que encaja con «Conceptos», escribe criterios comprobables y espera su ok. |
    | `sync-issues` | Skill | Mantiene los issues de GitHub iguales que `docs/user-stories.md`: crear, actualizar, cerrar como *not planned* o pasar al backlog, con el ok de Sol, y enlazarlos en la tabla. |
    | `release-check` | Skill | Lista para Sol lo que hay que hacer fuera del código antes de fusionar (migraciones en la nube, plantillas del email, variables de Vercel, Redirect URLs, reinstalar la PWA). No ejecuta nada en la nube. |
 
-   Flujo de cada historia: `implement-story` → (`new-migration`, `write-tests`) → `code-reviewer` → resumen y ok de Sol → `open-pr` (con `release-check`). Está también en «Flujo de trabajo de una historia» de `CLAUDE.md`.
+   Flujo de cada historia: `implement-story` → (`new-migration`, `write-tests`) → `code-reviewer` y `docs-reviewer` → resumen y ok de Sol → `open-pr` (con `release-check`). Está también en «Flujo de trabajo de una historia» de `CLAUDE.md`.
 
-   Si Sol pide algo nuevo, comprueba primero si cabe como un paso de una de estas antes de crear otra: es mejor pocas piezas que cubran flujos completos que muchas que se solapan. Un segundo agente solo tendría sentido en casos como estos: probar la app en el navegador como un usuario sin ver el código, o revisar solo la seguridad cuando se pueda compartir el hogar.
+   Si Sol pide algo nuevo, comprueba primero si cabe como un paso de una de estas antes de crear otra: es mejor pocas piezas que cubran flujos completos que muchas que se solapan. Otro agente más solo tendría sentido en casos como estos: probar la app en el navegador como un usuario sin ver el código, o revisar solo la seguridad cuando se pueda compartir el hogar.
 
 6. **Pregunta cuál crear** (con AskUserQuestion si está disponible) y no escribas nada hasta tener la respuesta. Si Sol describe una idea propia, úsala.
 
