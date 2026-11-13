@@ -2,6 +2,8 @@
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
+**La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos).
+
 🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
@@ -244,8 +246,8 @@ En **cada uno de los dos proyectos** de Supabase (el de pruebas se crea en el pa
 
 1. **Authentication → URL Configuration:**
    - **Producción:**
-     - **Site URL:** la dirección de producción de Vercel (por ejemplo, `https://pwa-limpieza-casa.vercel.app`).
-     - **Redirect URLs:** esa misma dirección con `/**` al final. **Sin** las de los despliegues de prueba: así un despliegue de prueba no puede entrar nunca en producción.
+     - **Site URL:** la dirección de producción de Vercel: `https://my-house-cleaning.vercel.app`.
+     - **Redirect URLs:** las direcciones de producción con `/**` al final: `https://my-house-cleaning.vercel.app/**` y la anterior, `https://pwa-limpieza-casa.vercel.app/**`, que sigue funcionando. **Sin** las de los despliegues de prueba: así un despliegue de prueba no puede entrar nunca en producción.
    - **Pruebas:**
      - **Site URL:** la dirección de un despliegue de prueba cualquiera (solo se usa si una dirección no está en la lista de abajo).
      - **Redirect URLs:** la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
