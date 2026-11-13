@@ -14,6 +14,12 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 
 ## Resumen
 
+Las historias se agrupan por *milestone*, como sus issues en GitHub.
+
+### MVP (producto mínimo viable)
+
+Primero las hechas y después las pendientes.
+
 | ID | Historia | Prioridad | Estado | Issue |
 |---|---|---|---|---|
 | US-01 | Entrar con enlace mágico | Must have | Hecha | [#2](https://github.com/solDC/pwa-limpieza-casa/issues/2) |
@@ -24,18 +30,40 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se 
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
 | US-29 | Qué toca | Must have | Hecha | [#38](https://github.com/solDC/pwa-limpieza-casa/issues/38) |
 | US-30 | Marcar una tarea como hecha | Must have | Hecha | [#39](https://github.com/solDC/pwa-limpieza-casa/issues/39) |
-| US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
-| US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-33 | Añadir una tarea | Must have | Hecha | [#42](https://github.com/solDC/pwa-limpieza-casa/issues/42) |
 | US-34 | Elegir el peso de las partes | Must have | Hecha | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
+| US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
+| US-52 | La app en inglés y en castellano | Must have | Hecha | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
+| US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
+
+### MMP (producto mínimo comercializable, v1.0)
+
+Lo que viene después del MVP. Las «Nice to have» están descritas más abajo, en «Tareas»; las de «Backlog», en la sección «Backlog». También está en este milestone el fallo [#79](https://github.com/solDC/pwa-limpieza-casa/issues/79) (el iPhone ya no sugiere el código del email).
+
+| ID | Historia | Prioridad | Estado | Issue |
+|---|---|---|---|---|
+| US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar el peso de las partes de una tarea | Nice to have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
-| US-52 | La app en inglés y en castellano | Must have | Hecha | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
-| US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
+| US-31 | Histórico de cada vuelta | Backlog | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
+| US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
+| US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
+| US-44 | Deshacer una parte marcada como hecha | Backlog | Pendiente | [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63) |
+| US-45 | Recuperar una tarea cancelada | Backlog | Pendiente | [#64](https://github.com/solDC/pwa-limpieza-casa/issues/64) |
+| US-47 | Avisos de error visibles | Backlog | Pendiente | [#67](https://github.com/solDC/pwa-limpieza-casa/issues/67) |
+| US-49 | Saltarse una vuelta | Backlog | Pendiente | [#72](https://github.com/solDC/pwa-limpieza-casa/issues/72) |
+
+### MLP (producto mínimo «adorable»)
+
+Mejoras centradas en la experiencia de uso.
+
+| ID | Historia | Prioridad | Estado | Issue |
+|---|---|---|---|---|
+| US-35 | Épica: Rediseño de la interfaz | Backlog | Pendiente | [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44) |
 
 ## Conceptos
 

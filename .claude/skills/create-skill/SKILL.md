@@ -17,7 +17,7 @@ Ayuda a Sol a **descubrir** skills útiles para este repositorio y a **crearlas*
 2. **Mira qué skills existen ya** y qué agentes, en `.claude/skills/` y `.claude/agents/`, para no duplicarlos. Si una existente casi cubre la necesidad, propón mejorarla en lugar de crear otra.
 3. **Busca flujos repetibles.** Una buena skill cumple al menos una de estas condiciones:
    - Es un proceso de varios pasos que se repite (cada historia, cada migración, cada pull request).
-   - Tiene reglas fáciles de olvidar que están en `CLAUDE.md` (RLS, CHANGELOG en el mismo commit, fechas sin hora, nombres en inglés y textos en español).
+   - Tiene reglas fáciles de olvidar que están en `CLAUDE.md` (RLS, CHANGELOG en el mismo commit, fechas sin hora, nombres en inglés y textos en los dos idiomas).
    - Necesita comandos concretos del proyecto (`npx supabase …`, `npm run test:e2e` contra `preview`).
    - No conviene si es una tarea puntual o si basta con una línea en `CLAUDE.md`.
 4. **Distingue skill de agente:**

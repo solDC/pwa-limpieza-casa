@@ -67,7 +67,8 @@ Por **cada tabla nueva**, como mínimo (usa dos usuarios, por ejemplo `ana` y `b
 - **Al menos una prueba por criterio de aceptación** de `docs/user-stories.md`. Copia el criterio casi literal como nombre de la prueba, para que se vea qué cubre cada una.
 - Se ejecutan contra la versión compilada (puerto 4173), en escritorio y en móvil (`playwright.config.ts`): la prueba debe valer en los dos.
 - Busca elementos como los ve una persona: `getByRole`, `getByLabel`, `getByText`. Nada de clases CSS ni `data-` salvo que no haya otra forma.
-- Inicio de sesión: `uniqueEmail()` y `waitForMagicLink(email)` de `tests/e2e/helpers/mailbox.ts`. Si varias historias necesitan entrar, mueve la función `signIn` de `us-01-sign-in.spec.ts` a un helper en lugar de copiarla.
+- Pasos comunes: `signIn()`, `task()`, `taskNames()`, `newTaskForm()` y `todayInMadrid()` de `tests/e2e/helpers/app.ts`; el buzón de pruebas (`uniqueEmail()`, `waitForSignInEmail()`), en `helpers/mailbox.ts`; y preparar datos, en `helpers/database.ts`. Si un paso se repite en dos archivos, va a un helper en lugar de copiarlo.
+- Idioma: las pruebas usan el navegador en castellano (`locale: 'es-ES'` en `playwright.config.ts`) y buscan los textos en castellano. Para probar algo en inglés, `test.use({ locale: 'en-US' })` en ese `describe`, como en `us-52-language.spec.ts`.
 - Si la prueba depende de la fecha, fija el reloj del navegador con `page.clock` en lugar de depender del día real.
 
 ## 4. Ejecuta

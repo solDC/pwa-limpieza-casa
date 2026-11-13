@@ -4,6 +4,8 @@ Consultas SQL para preparar los datos de una prueba en el **proyecto de pruebas*
 
 > ⚠️ **Solo en el proyecto de pruebas.** Antes de pegar nada, comprueba arriba a la izquierda del panel de Supabase que estás en el proyecto de pruebas, no en el de producción.
 
+> En las consultas, las tareas por defecto van siempre con su nombre en castellano (`'Baño'`), aunque la app esté en inglés: así se guardan en la base de datos. Los textos de ejemplo («Retrasada 5 días») son los de la app en castellano; en inglés se ve «Bathroom» y «Overdue 5 days».
+
 ## Cómo usarlas
 
 1. Entra en la app del despliegue de prueba con una **cuenta de prueba**: tu email con `+prueba` y un número delante de la arroba, por ejemplo `mariasol.dc+prueba1@gmail.com`. Gmail la entrega en tu buzón de siempre, y para la app es un usuario nuevo, con su propio hogar y las 6 tareas sin hacer.

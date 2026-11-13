@@ -46,9 +46,9 @@ De abajo arriba, cada capa probada antes de pasar a la siguiente:
 
 1. **Base de datos** (si hace falta): skill `new-migration`. Incluye su prueba de aislamiento entre hogares.
 2. **`src/domain/`**: tipos y lógica pura (frecuencias, próximas fechas, progreso). Sin React, Supabase ni APIs del navegador. «Hoy» llega como parámetro `'YYYY-MM-DD'`. Escribe las pruebas unitarias con `write-tests`, mejor antes que el código.
-3. **`src/storage/`**: una función por operación, en el archivo de su tabla (`src/storage/tasks.ts`), con `getSupabase()` de `supabase-client.ts`. Traduce filas `snake_case` a tipos de `domain/` en `camelCase` y nunca devuelve filas crudas. Errores con mensajes en español para el usuario (como en `households.ts`).
+3. **`src/storage/`**: una función por operación, en el archivo de su tabla (`src/storage/tasks.ts`), con `getSupabase()` de `supabase-client.ts`. Traduce filas `snake_case` a tipos de `domain/` en `camelCase` y nunca devuelve filas crudas. Los fallos, como `AppError` con un código de `src/domain/errors.ts` (como en `households.ts`), no con una frase: la frase la pone la pantalla en el idioma elegido.
 4. **`src/features/<pantalla>/`**: componentes `PascalCase.tsx` y hooks `use-*.ts`. Usa `domain/` para la lógica y `storage/` para los datos; nunca Supabase directamente.
-   - Textos en español. Formularios con `<label>` y botones con texto, para que se puedan usar (y probar) por su nombre.
+   - Textos en castellano y en inglés, en `src/i18n/messages.ts`, leídos con `useLanguage()`; ninguno escrito directamente en el componente (ver «Idiomas» en `CLAUDE.md`). Los textos que da `domain/` reciben el idioma como parámetro. Formularios con `<label>` y botones con texto, para que se puedan usar (y probar) por su nombre.
    - Pensado primero para el móvil.
    - Estados de carga, error (sin conexión, error de Supabase) y lista vacía.
    - Un componente va a `src/components/` solo si ya lo usan dos pantallas.
