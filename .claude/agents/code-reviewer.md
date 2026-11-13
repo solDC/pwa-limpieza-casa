@@ -65,7 +65,7 @@ Por orden de importancia:
 - Pruebas con `.skip` u `.only`, aserciones débiles o que no comprueban lo que dice su nombre.
 
 **Convenciones**
-- Nombres técnicos en inglés; comentarios y textos que ve el usuario en español (busca textos en inglés en la interfaz).
+- Nombres técnicos en inglés y comentarios en español. Los textos que ve el usuario, en castellano y en inglés: en `src/i18n/messages.ts` o dados por `src/domain/` con el idioma como parámetro. Busca textos escritos directamente en un componente y textos que falten en uno de los dos idiomas.
 - Archivos en `kebab-case`, componentes en `PascalCase.tsx`.
 - Commits con Conventional Commits (tipo en inglés, descripción en español).
 

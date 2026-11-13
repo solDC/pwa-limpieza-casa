@@ -2,7 +2,7 @@
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
-**La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos).
+**La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos. La sesión, el idioma elegido y la app instalada son de cada dirección: en la nueva hay que volver a entrar, y la app instalada desde la anterior sigue en la anterior).
 
 🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
@@ -59,6 +59,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 
 ```
 .
+├── .claude/                Cómo trabaja la IA en el proyecto: skills y agentes revisores
 ├── .devcontainer/          Dev container para VS Code (usa el mismo Dockerfile)
 ├── .github/workflows/      Integración continua: pruebas en cada pull request
 ├── docs/                   Historias de usuario (user-stories.md) y datos para probar a mano (test-data.md)
@@ -98,7 +99,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 └── package.json
 ```
 
-Los nombres técnicos (carpetas, archivos, código) van en inglés; la documentación y los textos de la app, en español.
+Los nombres técnicos (carpetas, archivos, código) van en inglés; la documentación, en español; los textos de la app, en castellano y en inglés.
 
 ## Cómo ejecutarlo
 
@@ -253,7 +254,7 @@ En **cada uno de los dos proyectos** de Supabase (el de pruebas se crea en el pa
      - **Redirect URLs:** la de los despliegues de prueba de Vercel: `https://pwa-limpieza-casa-*-sol-dc.vercel.app/**`.
 2. **Servidor de correo propio (SMTP).** Supabase no deja editar las plantillas del email con su servidor gratuito, que además solo envía unos 2 emails por hora y solo a los miembros del proyecto. En **Authentication → Emails → SMTP Settings**, activa **Enable custom SMTP**. Para la demo basta con Gmail:
    - Crea una **contraseña de aplicación** en tu cuenta de Google (myaccount.google.com → Seguridad → Contraseñas de aplicaciones; hace falta la verificación en dos pasos). Sirve la misma para los dos proyectos.
-   - **Host:** `smtp.gmail.com` · **Port:** `587` · **Username** y **Sender email:** tu dirección de Gmail · **Password:** la contraseña de aplicación · **Sender name:** `Limpieza de casa`.
+   - **Host:** `smtp.gmail.com` · **Port:** `587` · **Username** y **Sender email:** tu dirección de Gmail · **Password:** la contraseña de aplicación · **Sender name:** `My House Cleaning`.
 
    Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
 3. **Plantillas del email, con el código (US-26), en castellano y en inglés (US-52).** En **Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
@@ -327,7 +328,7 @@ Supabase **pausa los proyectos gratuitos tras 7 días sin uso**. Si un despliegu
 
 En Chrome o Edge, abre la app y pulsa el icono de instalar en la barra de direcciones.
 
-El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Una vez desplegada en Vercel, que usa HTTPS, se podrá instalar también en el móvil.
+El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Desplegada en Vercel, que usa HTTPS, se puede instalar también en el móvil.
 
 La app instalada se llama «House Cleaning» en todos los idiomas (solo puede tener un nombre); dentro, «Limpieza de casa» en castellano y «House Cleaning» en inglés.
 

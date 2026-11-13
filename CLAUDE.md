@@ -91,7 +91,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 
 ## Flujo de trabajo de una historia
 
-Cada historia sigue este orden, con las skills y el agente de `.claude/`. Los puntos marcados con ✋ **esperan la confirmación de Sol** antes de seguir.
+Cada historia sigue este orden, con las skills y los agentes de `.claude/`. Los puntos marcados con ✋ **esperan la confirmación de Sol** antes de seguir.
 
 1. **`implement-story`**: leer la historia y sus criterios, y presentar un **plan breve**: qué cambia en la base de datos, en `domain/`, en `storage/` y en las pantallas, qué prueba cubre cada criterio y qué queda fuera. ✋
 2. **Rama** `feature/us-xx-…` desde `main`.
