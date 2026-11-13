@@ -8,7 +8,7 @@ description: Implementa una historia de usuario de este proyecto (US-xx de docs/
 El flujo principal del proyecto. Coordina las otras piezas:
 
 ```
-implement-story → new-migration (si cambia la base de datos) → write-tests → agente code-reviewer → resumen y ok de Sol → open-pr
+implement-story → new-migration (si cambia la base de datos) → write-tests → agentes code-reviewer y docs-reviewer → resumen y ok de Sol → open-pr
 ```
 
 Las reglas están en `CLAUDE.md`; aquí está el orden en que se aplican.
@@ -93,7 +93,7 @@ En el mismo commit que el código:
 
 ## 7. Revisión
 
-Encarga al agente **`code-reviewer`** que revise la rama. Con su informe:
+Encarga dos revisiones de la rama, cada una a su agente y a la vez: **`code-reviewer`** (el código, las pruebas y la base de datos) y **`docs-reviewer`** (la documentación, después de hacer el paso 6). Con sus informes:
 
 - Arregla los bloqueantes y los importantes. Si es un fallo, primero la prueba que lo reproduce (`write-tests`).
 - Las sugerencias, coméntalas con Sol.
@@ -105,7 +105,7 @@ Antes del pull request, enséñale a Sol:
 
 - Qué se ha hecho, criterio por criterio de aceptación, y con qué prueba se cubre cada uno.
 - El resultado de las pruebas y la compilación (paso 5), y las que no se pudieron ejecutar.
-- Qué encontró el `code-reviewer` y qué se arregló; las sugerencias que quedan para que decida.
+- Qué encontró cada revisor (`code-reviewer` y `docs-reviewer`, por separado) y qué se arregló. **Todas** las sugerencias que quedan, una a una y con una recomendación, para que decida: no basta con dejarlas en el pull request.
 - Lo que queda fuera porque pertenece a otra historia.
 
 **No abras el pull request hasta que Sol diga que sí.** Los commits de borrador en la rama de trabajo sí se pueden hacer y subir en cualquier momento (ver «Cómo trabajar con Sol» en `CLAUDE.md`). Con su ok, sigue con la skill `open-pr`, que deja la rama lista y abre el pull request. Esta skill termina aquí.
@@ -116,7 +116,7 @@ Antes del pull request, enséñale a Sol:
 - [ ] Las capas respetan las reglas de dependencias de `CLAUDE.md`.
 - [ ] Los días son `'YYYY-MM-DD'`, nunca `Date` con hora.
 - [ ] `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` pasan, o se ha dicho cuáles no se pudieron ejecutar.
-- [ ] `code-reviewer` no deja bloqueantes ni importantes sin resolver.
+- [ ] Ni `code-reviewer` ni `docs-reviewer` dejan bloqueantes o importantes sin resolver.
 - [ ] CHANGELOG y «Estado» de `CLAUDE.md` actualizados, para ir en el mismo commit que el código.
 - [ ] Sol ha dado su ok al resumen (paso 8) antes de pasar a `open-pr`.
 - [ ] Nada fuera del alcance de la historia.

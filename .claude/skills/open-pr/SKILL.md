@@ -42,7 +42,7 @@ description: Prepara y abre un pull request a main en este proyecto con las comp
    ```
 
    Si alguna falla, no abras el PR: arréglalo antes. Si alguna no se puede ejecutar, ábrelo como **borrador** y dilo en la descripción.
-4. **Revisión:** si el agente `code-reviewer` no ha revisado la versión actual de la rama, encárgaselo ahora. Sin bloqueantes ni importantes pendientes.
+4. **Revisión:** si los agentes `code-reviewer` (código) y `docs-reviewer` (documentación) no han revisado la versión actual de la rama, encárgaselo ahora. Sin bloqueantes ni importantes pendientes.
 5. **CHANGELOG:** `git diff origin/main...HEAD -- CHANGELOG.md` tiene entradas para lo que cambia, en la sección correcta.
 6. **Secretos:** nada de `.env`, claves ni tokens en el diff:
 
@@ -147,7 +147,7 @@ Base `main`, con las herramientas de GitHub de la sesión (`create_pull_request`
 - [ ] Sol ha dado su ok al resumen y a la descripción antes de abrir el pull request.
 - [ ] Rama al día con `main` y subida.
 - [ ] `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e` pasan, o el PR es borrador y dice por qué.
-- [ ] `code-reviewer` sin bloqueantes ni importantes pendientes.
+- [ ] `code-reviewer` y `docs-reviewer` sin bloqueantes ni importantes pendientes.
 - [ ] CHANGELOG actualizado; sin secretos en el diff.
 - [ ] Descripción con `Closes #…`, pruebas, aviso de migración (si hay) y «Cómo probarlo a mano».
 - [ ] El PR no se ha fusionado.
