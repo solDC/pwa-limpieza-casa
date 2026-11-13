@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { addDays, formatShortDate, localDateIn } from '../../src/domain/dates'
-import { signIn, task } from './helpers/app'
+import { addDays, formatShortDate } from '../../src/domain/dates'
+import { signIn, task, todayInMadrid } from './helpers/app'
 import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
@@ -28,8 +28,8 @@ test.describe('US-28 · Frecuencias', () => {
 
     await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
 
-    const inThreeDays = addDays(localDateIn('Europe/Madrid', new Date()), 3)
-    await expect(task(page, 'Baño')).toContainText(`Toca: ${formatShortDate(inThreeDays)}`)
+    const inThreeDays = addDays(todayInMadrid(), 3)
+    await expect(task(page, 'Baño')).toContainText(`Toca: ${formatShortDate(inThreeDays, 'es')}`)
   })
 
   test('las puntuales van sin fecha', async ({ page }) => {

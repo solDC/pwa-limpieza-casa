@@ -57,12 +57,12 @@ const MONTHS: Record<Language, string[]> = {
 }
 
 /** «14 nov» o «14 Nov» */
-export function formatDayMonth(date: LocalDate, language: Language = 'es'): string {
+export function formatDayMonth(date: LocalDate, language: Language): string {
   const [, month, day] = date.split('-').map(Number)
   return `${day} ${MONTHS[language][month - 1]}`
 }
 
 /** «mié 18 nov» o «Wed 18 Nov» */
-export function formatShortDate(date: LocalDate, language: Language = 'es'): string {
+export function formatShortDate(date: LocalDate, language: Language): string {
   return `${WEEKDAYS[language][dayOfWeek(date)]} ${formatDayMonth(date, language)}`
 }

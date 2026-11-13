@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
-import { formatDayMonth, localDateIn } from '../../src/domain/dates'
+import { formatDayMonth } from '../../src/domain/dates'
 import { nextWeekends } from '../../src/domain/new-task'
-import { signIn, task } from './helpers/app'
+import { newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-33 · Añadir una tarea (#42)
@@ -11,28 +11,15 @@ import { uniqueEmail } from './helpers/mailbox'
 // Lo que no se puede guardar se prueba también en tests/unit/domain/new-task.test.ts
 // (el formulario) y tests/integration/create-task.test.ts (la base de datos).
 
-const today = () => localDateIn('Europe/Madrid', new Date())
-
-function form(page: Page) {
-  return page.getByRole('form', { name: 'Nueva tarea' })
-}
-
-function taskNames(page: Page) {
-  return page
-    .getByRole('list', { name: 'Tus tareas' })
-    .getByRole('listitem')
-    .getByRole('heading', { level: 3 })
-}
-
 async function openForm(page: Page) {
   await page.getByRole('button', { name: 'Añadir tarea' }).click()
-  await expect(form(page)).toBeVisible()
+  await expect(newTaskForm(page)).toBeVisible()
 }
 
 async function addParts(page: Page, names: string[]) {
   for (const [index, name] of names.entries()) {
-    await form(page).getByRole('button', { name: 'Añadir parte' }).click()
-    await form(page).getByLabel(`Parte ${index + 1}`, { exact: true }).fill(name)
+    await newTaskForm(page).getByRole('button', { name: 'Añadir parte' }).click()
+    await newTaskForm(page).getByLabel(`Parte ${index + 1}`, { exact: true }).fill(name)
   }
 }
 
@@ -42,19 +29,19 @@ test.describe('US-33 · Añadir una tarea', () => {
     await expect(taskNames(page)).toHaveCount(6)
     await openForm(page)
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page)).toContainText('Escribe el nombre de la tarea.')
-    await expect(form(page)).toContainText('Elige cada cuánto toca.')
+    await expect(newTaskForm(page)).toContainText('Escribe el nombre de la tarea.')
+    await expect(newTaskForm(page)).toContainText('Elige cada cuánto toca.')
 
     // Con nombre pero sin frecuencia, tampoco.
-    await form(page).getByLabel('Nombre').fill('Regar las plantas')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
-    await expect(form(page)).not.toContainText('Escribe el nombre de la tarea.')
-    await expect(form(page)).toContainText('Elige cada cuánto toca.')
+    await newTaskForm(page).getByLabel('Nombre').fill('Regar las plantas')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page)).not.toContainText('Escribe el nombre de la tarea.')
+    await expect(newTaskForm(page)).toContainText('Elige cada cuánto toca.')
 
     // No se ha guardado nada.
-    await form(page).getByRole('button', { name: 'Cancelar' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Cancelar' }).click()
     await expect(taskNames(page)).toHaveCount(6)
     await page.reload()
     await expect(taskNames(page)).toHaveCount(6)
@@ -66,12 +53,12 @@ test.describe('US-33 · Añadir una tarea', () => {
     await signIn(page, uniqueEmail())
     await openForm(page)
 
-    await form(page).getByLabel('Nombre').fill('Regar las plantas')
-    await form(page).getByLabel('Cada N días desde la última vez').check()
-    await form(page).getByLabel('Cada cuántos días').fill('7')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Regar las plantas')
+    await newTaskForm(page).getByLabel('Cada N días desde la última vez').check()
+    await newTaskForm(page).getByLabel('Cada cuántos días').fill('7')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page)).toHaveCount(0)
+    await expect(newTaskForm(page)).toHaveCount(0)
     const added = task(page, 'Regar las plantas')
     await expect(added).toContainText('Cada 7 días desde la última vez')
     await expect(added).toContainText('Toca: hoy')
@@ -86,11 +73,11 @@ test.describe('US-33 · Añadir una tarea', () => {
     await signIn(page, uniqueEmail())
     await openForm(page)
 
-    await form(page).getByLabel('Nombre').fill('Cocina a fondo')
-    await form(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('Cocina a fondo')
+    await newTaskForm(page).getByLabel('Puntual').check()
     await addParts(page, ['Horno', 'Nevera', 'Campana'])
-    await expect(form(page)).toContainText('Si no cambias los pesos, todas cuentan lo mismo.')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page)).toContainText('Si no cambias los pesos, todas cuentan lo mismo.')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Cocina a fondo')).toContainText('Horno 34 % · Nevera 33 % · Campana 33 %')
     await page.reload()
@@ -102,17 +89,17 @@ test.describe('US-33 · Añadir una tarea', () => {
   }) => {
     await signIn(page, uniqueEmail())
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('Terraza')
-    await form(page).getByLabel('Semanal, en fin de semana').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('Terraza')
+    await newTaskForm(page).getByLabel('Semanal, en fin de semana').check()
     await addParts(page, ['Suelo', 'Macetas'])
-    await form(page).getByRole('button', { name: 'Añadir parte' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Añadir parte' }).click()
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
-    await expect(form(page)).toContainText('Escribe el nombre de la parte o quítala.')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page)).toContainText('Escribe el nombre de la parte o quítala.')
 
-    await form(page).getByRole('button', { name: 'Quitar parte 3' }).click()
-    await form(page).getByRole('button', { name: 'Quitar parte 1' }).click()
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Quitar parte 3' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Quitar parte 1' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Terraza')).toContainText('Macetas 100 %')
     await expect(task(page, 'Terraza')).toContainText('Semanal, en fin de semana')
@@ -121,31 +108,31 @@ test.describe('US-33 · Añadir una tarea', () => {
   test('las de cada 15 días empiezan el fin de semana que elijo, de los dos próximos', async ({
     page,
   }) => {
-    const [first, second] = nextWeekends(today())
+    const [first, second] = nextWeekends(todayInMadrid())
     await signIn(page, uniqueEmail())
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('Limpiar el horno')
-    await form(page).getByLabel('Fin de semana cada 15 días').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('Limpiar el horno')
+    await newTaskForm(page).getByLabel('Fin de semana cada 15 días').check()
 
     // Sale elegido el primero.
-    await expect(form(page).getByLabel(`Finde del ${formatDayMonth(first)}`)).toBeChecked()
-    await form(page).getByLabel(`Finde del ${formatDayMonth(second)}`).check()
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page).getByLabel(`Finde del ${formatDayMonth(first, 'es')}`)).toBeChecked()
+    await newTaskForm(page).getByLabel(`Finde del ${formatDayMonth(second, 'es')}`).check()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Limpiar el horno')).toContainText(
-      `Toca: finde del ${formatDayMonth(second)}`,
+      `Toca: finde del ${formatDayMonth(second, 'es')}`,
     )
   })
 
   test('«Cancelar» vuelve a la lista sin guardar nada', async ({ page }) => {
     await signIn(page, uniqueEmail())
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('No la quiero')
-    await form(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('No la quiero')
+    await newTaskForm(page).getByLabel('Puntual').check()
 
-    await form(page).getByRole('button', { name: 'Cancelar' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Cancelar' }).click()
 
-    await expect(form(page)).toHaveCount(0)
+    await expect(newTaskForm(page)).toHaveCount(0)
     await expect(task(page, 'No la quiero')).toHaveCount(0)
     await expect(taskNames(page)).toHaveCount(6)
   })
@@ -156,15 +143,15 @@ test.describe('US-33 · Añadir una tarea', () => {
   }) => {
     await signIn(page, uniqueEmail())
     await openForm(page)
-    await expect(form(page).getByLabel('Nombre')).toBeFocused()
+    await expect(newTaskForm(page).getByLabel('Nombre')).toBeFocused()
 
-    await form(page).getByRole('button', { name: 'Cancelar' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Cancelar' }).click()
     await expect(page.getByRole('button', { name: 'Añadir tarea' })).toBeFocused()
 
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('Regar las plantas')
-    await form(page).getByLabel('Puntual').check()
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Regar las plantas')
+    await newTaskForm(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(page.getByRole('status').filter({ hasText: 'Tarea añadida' })).toHaveText(
       'Tarea añadida: Regar las plantas.',
@@ -178,16 +165,16 @@ test.describe('US-33 · Añadir una tarea', () => {
       route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"Error"}' }),
     )
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('Regar las plantas')
-    await form(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('Regar las plantas')
+    await newTaskForm(page).getByLabel('Puntual').check()
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page).getByRole('alert')).toHaveText(
+    await expect(newTaskForm(page).getByRole('alert')).toHaveText(
       'No se ha podido guardar la tarea. Revisa la conexión e inténtalo de nuevo.',
     )
-    await expect(form(page).getByLabel('Nombre')).toHaveValue('Regar las plantas')
-    await expect(form(page).getByLabel('Puntual')).toBeChecked()
+    await expect(newTaskForm(page).getByLabel('Nombre')).toHaveValue('Regar las plantas')
+    await expect(newTaskForm(page).getByLabel('Puntual')).toBeChecked()
   })
 
   // Para no añadirla dos veces: si se guarda pero la lista no se puede poner al día
@@ -195,15 +182,15 @@ test.describe('US-33 · Añadir una tarea', () => {
   test('si se guarda pero no se puede poner al día la lista, lo dice', async ({ page }) => {
     await signIn(page, uniqueEmail())
     await openForm(page)
-    await form(page).getByLabel('Nombre').fill('Regar las plantas')
-    await form(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByLabel('Nombre').fill('Regar las plantas')
+    await newTaskForm(page).getByLabel('Puntual').check()
     await page.route('**/rest/v1/tasks?*', (route) =>
       route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"Error"}' }),
     )
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page)).toHaveCount(0)
+    await expect(newTaskForm(page)).toHaveCount(0)
     await expect(page.getByRole('alert')).toHaveText(
       'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
     )

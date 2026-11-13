@@ -34,7 +34,10 @@ export class AppError extends Error {
   }
 }
 
-/** El código de un fallo cualquiera: si no es de los conocidos, «no se ha podido guardar». */
-export function errorCode(error: unknown): ErrorCode {
-  return error instanceof AppError ? error.code : 'saveFailed'
+/**
+ * El código de un fallo cualquiera. Si no es de los conocidos (algo inesperado), el de
+ * `fallback`: el fallo general de lo que se estaba haciendo.
+ */
+export function errorCode(error: unknown, fallback: ErrorCode): ErrorCode {
+  return error instanceof AppError ? error.code : fallback
 }

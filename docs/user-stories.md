@@ -245,7 +245,7 @@ para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo qu
 - Al guardar, la tarea muestra los pesos nuevos; con «Cancelar», se quedan como estaban.
 - Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
 
-*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha).*
+*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
 
 ### US-52 · La app en inglés y en castellano (Nice to have)
 Como usuario que no habla castellano,

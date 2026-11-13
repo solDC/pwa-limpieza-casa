@@ -102,7 +102,7 @@ export function NewTaskForm({
       await createTask(householdId, result.task)
       onSaved(result.task.name)
     } catch (error) {
-      setSaveError(errorCode(error))
+      setSaveError(errorCode(error, 'taskSaveFailed'))
       setSaving(false)
     }
   }

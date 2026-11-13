@@ -69,13 +69,13 @@ describe('localDateIn', () => {
 
 describe('formato en español', () => {
   it('día de la semana abreviado, día y mes', () => {
-    expect(formatShortDate('2026-11-18')).toBe('mié 18 nov')
-    expect(formatShortDate('2027-01-02')).toBe('sáb 2 ene')
-    expect(formatShortDate('2026-11-09')).toBe('lun 9 nov')
+    expect(formatShortDate('2026-11-18', 'es')).toBe('mié 18 nov')
+    expect(formatShortDate('2027-01-02', 'es')).toBe('sáb 2 ene')
+    expect(formatShortDate('2026-11-09', 'es')).toBe('lun 9 nov')
   })
 
   it('día y mes', () => {
-    expect(formatDayMonth('2026-11-14')).toBe('14 nov')
-    expect(formatDayMonth('2026-12-05')).toBe('5 dic')
+    expect(formatDayMonth('2026-11-14', 'es')).toBe('14 nov')
+    expect(formatDayMonth('2026-12-05', 'es')).toBe('5 dic')
   })
 })

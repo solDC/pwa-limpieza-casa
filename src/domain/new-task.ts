@@ -154,7 +154,7 @@ const VALIDATION_TEXTS = {
 /** Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`. */
 export function validateNewTask(
   draft: NewTaskDraft,
-  language: Language = 'es',
+  language: Language,
 ): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
   const text = VALIDATION_TEXTS[language]
   const errors: NewTaskErrors = {}

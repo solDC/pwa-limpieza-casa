@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn, task } from './helpers/app'
+import { signIn, task, taskNames } from './helpers/app'
 import { setAllTasksCreatedOn, setTaskCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
@@ -16,13 +16,6 @@ import { uniqueEmail } from './helpers/mailbox'
 async function setToday(page: Page, day: string) {
   await page.clock.setFixedTime(new Date(`${day}T12:00:00+01:00`))
   await page.reload()
-}
-
-function taskNames(page: Page) {
-  return page
-    .getByRole('list', { name: 'Tus tareas' })
-    .getByRole('listitem')
-    .getByRole('heading', { level: 3 })
 }
 
 test.describe('US-29 · Qué toca', () => {
