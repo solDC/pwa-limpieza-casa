@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLanguage } from '../../i18n/language-context'
 import { useAppUpdate } from './use-app-update'
 
 /**
@@ -12,6 +13,7 @@ const UPDATE_TIMEOUT_MS = 10_000
 // se vea. «Más tarde» la cierra sin cortar lo que se esté haciendo, y vuelve a salir la
 // próxima vez que se vuelva a la app.
 export function UpdateNotice() {
+  const { t } = useLanguage()
   const { updateAvailable, update } = useAppUpdate()
   const [updating, setUpdating] = useState(false)
   const [dismissed, setDismissed] = useState(false)
@@ -67,7 +69,7 @@ export function UpdateNotice() {
         else setDismissed(true)
       }}
     >
-      <p id="update-dialog-text">Hay una versión nueva de la app.</p>
+      <p id="update-dialog-text">{t.update.available}</p>
       <div className="update-dialog-actions">
         <button
           type="button"
@@ -75,10 +77,10 @@ export function UpdateNotice() {
           onClick={() => setDismissed(true)}
           disabled={updating}
         >
-          Más tarde
+          {t.update.later}
         </button>
         <button type="button" onClick={() => void startUpdate()} disabled={updating}>
-          {updating ? 'Actualizando…' : 'Actualizar'}
+          {updating ? t.update.updating : t.update.update}
         </button>
       </div>
     </dialog>

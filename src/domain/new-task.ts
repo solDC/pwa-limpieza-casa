@@ -2,6 +2,7 @@
 // US-34 · Elegir el peso de las partes.
 
 import { addDays, dayOfWeek } from './dates'
+import type { Language } from './language'
 import type { Frequency, LocalDate } from './task'
 
 /** Como mucho, para que cada parte cuente algo (los pesos son % enteros). */
@@ -126,19 +127,46 @@ export function nextWeekends(today: LocalDate): [LocalDate, LocalDate] {
   return [first, addDays(first, 7)]
 }
 
+const VALIDATION_TEXTS = {
+  es: {
+    taskNameRequired: 'Escribe el nombre de la tarea.',
+    frequencyRequired: 'Elige cada cuánto toca.',
+    firstWeekendRequired: 'Elige el primer fin de semana.',
+    intervalDays: (max: number) => `Escribe cada cuántos días: de 1 a ${max}.`,
+    partNameRequired: 'Escribe el nombre de la parte o quítala.',
+    weight: 'Escribe un peso de 1 a 100.',
+    weightsTotal: (total: number) => `Los pesos tienen que sumar 100 % (ahora suman ${total} %).`,
+    nameTooLong: (max: number) => `El nombre puede tener como mucho ${max} caracteres.`,
+  },
+  en: {
+    taskNameRequired: 'Enter the name of the task.',
+    frequencyRequired: 'Choose how often it is due.',
+    firstWeekendRequired: 'Choose the first weekend.',
+    intervalDays: (max: number) => `Enter how many days: from 1 to ${max}.`,
+    partNameRequired: 'Enter the name of the part or remove it.',
+    weight: 'Enter a weight from 1 to 100.',
+    weightsTotal: (total: number) =>
+      `The weights must add up to 100 % (now they add up to ${total} %).`,
+    nameTooLong: (max: number) => `The name can have at most ${max} characters.`,
+  },
+} satisfies Record<Language, unknown>
+
+/** Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`. */
 export function validateNewTask(
   draft: NewTaskDraft,
+  language: Language = 'es',
 ): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
+  const text = VALIDATION_TEXTS[language]
   const errors: NewTaskErrors = {}
 
   const name = draft.name.trim()
-  const nameError = nameProblem(name, 'Escribe el nombre de la tarea.')
+  const nameError = nameProblem(name, text.taskNameRequired, text.nameTooLong)
   if (nameError) errors.name = nameError
 
   let frequency: Frequency | null = null
   switch (draft.frequencyKind) {
     case null:
-      errors.frequency = 'Elige cada cuánto toca.'
+      errors.frequency = text.frequencyRequired
       break
     case 'weekendWeekly':
       frequency = { kind: 'weekendWeekly' }
@@ -147,16 +175,16 @@ export function validateNewTask(
       if (draft.biweeklyStartOn) {
         frequency = { kind: 'weekendBiweekly', startOn: draft.biweeklyStartOn }
       } else {
-        errors.biweeklyStartOn = 'Elige el primer fin de semana.'
+        errors.biweeklyStartOn = text.firstWeekendRequired
       }
       break
     case 'interval': {
-      const text = draft.intervalDays.trim()
-      const days = Number(text)
-      if (/^\d+$/.test(text) && days >= 1 && days <= MAX_INTERVAL_DAYS) {
+      const written = draft.intervalDays.trim()
+      const days = Number(written)
+      if (/^\d+$/.test(written) && days >= 1 && days <= MAX_INTERVAL_DAYS) {
         frequency = { kind: 'interval', days }
       } else {
-        errors.intervalDays = `Escribe cada cuántos días: de 1 a ${MAX_INTERVAL_DAYS}.`
+        errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
       }
       break
     }
@@ -167,13 +195,13 @@ export function validateNewTask(
 
   const partNames = draft.partNames.map((partName) => partName.trim())
   const partErrors = partNames.map((partName) =>
-    nameProblem(partName, 'Escribe el nombre de la parte o quítala.'),
+    nameProblem(partName, text.partNameRequired, text.nameTooLong),
   )
   if (partErrors.some(Boolean)) errors.parts = partErrors
 
   const weights = partNames.map((_, index) => parseWeight(draft.partWeights[index] ?? ''))
   const weightErrors = weights.map((weight) =>
-    weight === null ? 'Escribe un peso de 1 a 100.' : undefined,
+    weight === null ? text.weight : undefined,
   )
   if (weightErrors.some(Boolean)) {
     errors.partWeights = weightErrors
@@ -181,7 +209,7 @@ export function validateNewTask(
     // Solo si todos los pesos valen: si no, la suma no dice nada útil.
     const total = weightsTotal(draft)
     if (partNames.length > 0 && total !== 100) {
-      errors.weightsTotal = `Los pesos tienen que sumar 100 % (ahora suman ${total} %).`
+      errors.weightsTotal = text.weightsTotal(total)
     }
   }
 
@@ -197,11 +225,13 @@ export function validateNewTask(
   }
 }
 
-function nameProblem(name: string, ifEmpty: string): string | undefined {
+function nameProblem(
+  name: string,
+  ifEmpty: string,
+  ifTooLong: (max: number) => string,
+): string | undefined {
   if (name === '') return ifEmpty
   // Cuenta caracteres como la base de datos (un emoji es uno, no dos).
-  if ([...name].length > MAX_NAME_LENGTH) {
-    return `El nombre puede tener como mucho ${MAX_NAME_LENGTH} caracteres.`
-  }
+  if ([...name].length > MAX_NAME_LENGTH) return ifTooLong(MAX_NAME_LENGTH)
   return undefined
 }

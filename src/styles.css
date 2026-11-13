@@ -128,6 +128,23 @@ button:disabled {
   margin-top: 2rem;
 }
 
+/* Cambiar el idioma (US-52): los dos idiomas, uno al lado del otro; el elegido, sin subrayar. */
+.language-switch {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.language-switch .button-link[aria-pressed='true'] {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* «Tus tareas», separada de la tarjeta del hogar que tiene encima. */
+.tasks {
+  margin-top: 2rem;
+}
+
 /* Lista de tareas (US-27): tarjetas una debajo de otra, sin viñetas. */
 .task-list {
   display: flex;

@@ -13,13 +13,14 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Limpieza de casa',
+        // El nombre de la app instalada es uno solo para todos los idiomas (US-52): en inglés.
+        // Dentro de la app se llama «Limpieza de casa» en castellano.
+        name: 'House Cleaning',
         // El que propone el iPhone al instalarla: completo, para no tener que escribirlo. (La
-        // etiqueta apple-mobile-web-app-title no sirve: el iPhone usa este.) En Android sale
-        // cortado bajo el icono.
-        short_name: 'Limpieza de casa',
-        description: 'Organiza las tareas de mantenimiento del hogar',
-        lang: 'es',
+        // etiqueta apple-mobile-web-app-title no sirve: el iPhone usa este.)
+        short_name: 'House Cleaning',
+        description: 'Organise household cleaning tasks',
+        lang: 'en',
         start_url: '/',
         display: 'standalone',
         theme_color: '#5E7F64',

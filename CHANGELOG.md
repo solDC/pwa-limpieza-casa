@@ -7,6 +7,12 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-52 · La app en inglés y en castellano** (#85). La primera vez sale en el idioma del dispositivo (castellano si es castellano; si no, inglés) y se puede cambiar en la pantalla de entrar y junto a «Cerrar sesión»; el idioma elegido se guarda en el dispositivo.
+  - Salen en el idioma elegido todos los textos, los errores y las fechas («Due: weekend of 14 Nov», «Overdue 3 days (was due Mon 9 Nov)»).
+  - **Las tareas por defecto** y sus partes también («Superficies» / «Surfaces»), en las cuentas nuevas y en las que ya existían: en la base de datos llevan una clave (`default_key`, migración nueva) y la app pone el nombre. Las tareas que añade el usuario se ven como las escribió. El hogar «Mi casa» se ve como «My home».
+  - **El email para entrar** llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app. Es una sola plantilla con las dos versiones, que hay que volver a pegar en Supabase, con su asunto nuevo. Una cuenta que ya existía lo recibe en castellano hasta que entra con la app en inglés.
+  - **El nombre:** dentro de la app, «Limpieza de casa» en castellano y «House Cleaning» en inglés. La app instalada solo puede tener un nombre para todos los idiomas, y pasa a ser «House Cleaning».
+  - Por dentro: los textos de las pantallas están en `src/i18n/`, sin librerías; los fallos al guardar son códigos y la pantalla pone la frase.
 - **US-34 · Elegir el peso de las partes** (#43, ahora Must have). Al añadir una tarea con partes, cada parte tiene su campo «Peso» en %, y debajo se ve cuánto suman. Si no se cambian, se reparten a partes iguales, como antes.
   - Mientras no se ha cambiado ningún peso, al añadir o quitar una parte se vuelven a repartir a partes iguales. Desde que se cambia uno, ya no: la parte nueva entra con 0 % y los demás se quedan como estaban, para no perder lo puesto.
   - Si se quitan todas las partes, los pesos vuelven a repartirse solos. El peso se puede escribir con el símbolo («50 %»). VoiceOver anuncia cómo cambia la suma mientras se corrige.

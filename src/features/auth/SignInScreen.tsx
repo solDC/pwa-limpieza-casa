@@ -1,16 +1,20 @@
 import { useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
+import { LanguageSwitch } from '../../components/LanguageSwitch'
 import { Screen } from '../../components/Screen'
+import { errorCode, type ErrorCode } from '../../domain/errors'
+import { useLanguage } from '../../i18n/language-context'
 import { sendMagicLink, takeSignInErrorFromUrl, verifyEmailCode } from '../../storage/auth'
 
 type Step =
-  | { name: 'form'; error: string | null }
+  | { name: 'form'; error: ErrorCode | null }
   | { name: 'sending' }
   | {
       name: 'sent'
       email: string
-      error: string | null
-      notice: string | null
+      error: ErrorCode | null
+      /** Si se ha reenviado el email. */
+      resent: boolean
       // Mientras se comprueba el código o se reenvía el email, los botones se desactivan.
       busy: 'checking' | 'resending' | null
     }
@@ -24,6 +28,7 @@ const maxCodeLength = 10
 // US-26 · Entrar con el código del email: sirve en cualquier dispositivo, también en la app
 // instalada del iPhone, donde el enlace no funciona.
 export function SignInScreen() {
+  const { language, t } = useLanguage()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [step, setStep] = useState<Step>(() => ({ name: 'form', error: takeSignInErrorFromUrl() }))
@@ -41,11 +46,11 @@ export function SignInScreen() {
     const cleanEmail = email.trim()
     setStep({ name: 'sending' })
     try {
-      await sendMagicLink(cleanEmail)
+      await sendMagicLink(cleanEmail, language)
       setCode('')
-      setStep({ name: 'sent', email: cleanEmail, error: null, notice: null, busy: null })
+      setStep({ name: 'sent', email: cleanEmail, error: null, resent: false, busy: null })
     } catch (error) {
-      setStep({ name: 'form', error: (error as Error).message })
+      setStep({ name: 'form', error: errorCode(error) })
     }
   }
 
@@ -53,25 +58,25 @@ export function SignInScreen() {
     event.preventDefault()
     if (step.name !== 'sent') return
     const sentTo = step.email
-    updateSent(sentTo, { error: null, notice: null, busy: 'checking' })
+    updateSent(sentTo, { error: null, resent: false, busy: 'checking' })
     try {
       // Si es correcto, la sesión cambia y la app pasa sola a la pantalla de Inicio.
       await verifyEmailCode(sentTo, code)
     } catch (error) {
-      updateSent(sentTo, { error: (error as Error).message, busy: null })
+      updateSent(sentTo, { error: errorCode(error), busy: null })
     }
   }
 
   async function handleResend() {
     if (step.name !== 'sent') return
     const sentTo = step.email
-    updateSent(sentTo, { error: null, notice: null, busy: 'resending' })
+    updateSent(sentTo, { error: null, resent: false, busy: 'resending' })
     try {
-      await sendMagicLink(sentTo)
+      await sendMagicLink(sentTo, language)
       setCode('')
-      updateSent(sentTo, { notice: `Te hemos enviado otro email a ${sentTo}.`, busy: null })
+      updateSent(sentTo, { resent: true, busy: null })
     } catch (error) {
-      updateSent(sentTo, { error: (error as Error).message, busy: null })
+      updateSent(sentTo, { error: errorCode(error), busy: null })
     }
   }
 
@@ -79,14 +84,15 @@ export function SignInScreen() {
     <Screen>
       {step.name === 'sent' ? (
         <section className="card" aria-live="polite">
-          <h2>Revisa tu correo</h2>
+          <h2>{t.signIn.checkEmail}</h2>
           <p>
-            Te hemos enviado un email a <strong>{step.email}</strong> con un código. Escríbelo aquí
-            para entrar.
+            {t.signIn.sentBefore}
+            <strong>{step.email}</strong>
+            {t.signIn.sentAfter}
           </p>
 
           <form className="stack" onSubmit={handleCodeSubmit}>
-            <label htmlFor="code">Código del email</label>
+            <label htmlFor="code">{t.signIn.code}</label>
             <input
               id="code"
               type="text"
@@ -104,22 +110,18 @@ export function SignInScreen() {
               disabled={step.busy !== null}
             />
             <button type="submit" disabled={step.busy !== null}>
-              {step.busy === 'checking' ? 'Comprobando…' : 'Entrar con el código'}
+              {step.busy === 'checking' ? t.signIn.checking : t.signIn.enter}
             </button>
-            {step.error && (
-              <ErrorMessage>{step.error}</ErrorMessage>
-            )}
-            {step.notice && (
+            {step.error && <ErrorMessage>{t.errors[step.error]}</ErrorMessage>}
+            {step.resent && (
               <p className="notice" role="status">
-                {step.notice}
+                {t.signIn.resent(step.email)}
               </p>
             )}
           </form>
 
-          <p className="muted">También puedes pulsar el enlace del email.</p>
-          <p className="muted">
-            Si no ves el email en unos minutos, mira en la carpeta de spam o pide otro.
-          </p>
+          <p className="muted">{t.signIn.linkToo}</p>
+          <p className="muted">{t.signIn.notArrived}</p>
           <div className="stack">
             <button
               type="button"
@@ -127,7 +129,7 @@ export function SignInScreen() {
               onClick={handleResend}
               disabled={step.busy !== null}
             >
-              {step.busy === 'resending' ? 'Enviando…' : 'Reenviar email'}
+              {step.busy === 'resending' ? t.signIn.sending : t.signIn.resend}
             </button>
             <button
               type="button"
@@ -135,37 +137,39 @@ export function SignInScreen() {
               onClick={() => setStep({ name: 'form', error: null })}
               disabled={step.busy !== null}
             >
-              <span aria-hidden="true">← </span>Volver
+              <span aria-hidden="true">← </span>
+              {t.signIn.back}
             </button>
           </div>
         </section>
       ) : (
         <form className="card" onSubmit={handleSubmit}>
-          <h2>Entrar</h2>
-          <p>Escribe tu email y te enviaremos un código para entrar. Sin contraseñas.</p>
+          <h2>{t.signIn.title}</h2>
+          <p>{t.signIn.intro}</p>
 
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t.signIn.email}</label>
           <input
             id="email"
             type="email"
             required
             autoComplete="email"
             inputMode="email"
-            placeholder="tu@email.com"
+            placeholder={t.signIn.emailPlaceholder}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             disabled={step.name === 'sending'}
           />
 
           <button type="submit" disabled={step.name === 'sending'}>
-            {step.name === 'sending' ? 'Enviando…' : 'Enviarme el código'}
+            {step.name === 'sending' ? t.signIn.sending : t.signIn.send}
           </button>
 
           {step.name === 'form' && step.error && (
-            <ErrorMessage>{step.error}</ErrorMessage>
+            <ErrorMessage>{t.errors[step.error]}</ErrorMessage>
           )}
         </form>
       )}
+      <LanguageSwitch />
     </Screen>
   )
 }

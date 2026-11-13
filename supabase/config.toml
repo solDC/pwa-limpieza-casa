@@ -258,12 +258,14 @@ otp_expiry = 3600
 # Las dos plantillas usan el mismo archivo: «magic_link» es el email de quien ya tiene cuenta
 # y «confirmation», el primero de un usuario nuevo (si la confirmación está activada).
 # En la nube hay que pegar el mismo contenido en Authentication → Email Templates.
+# El asunto y el contenido salen en inglés si el idioma guardado en la cuenta es «en»
+# (US-52), y en castellano en cualquier otro caso.
 [auth.email.template.magic_link]
-subject = "Tu acceso a Limpieza de casa: {{ .Token }}"
+subject = "{{ if eq .Data.lang \"en\" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
 content_path = "./supabase/templates/sign-in.html"
 
 [auth.email.template.confirmation]
-subject = "Tu acceso a Limpieza de casa: {{ .Token }}"
+subject = "{{ if eq .Data.lang \"en\" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}"
 content_path = "./supabase/templates/sign-in.html"
 
 # [auth.email.template.invite]

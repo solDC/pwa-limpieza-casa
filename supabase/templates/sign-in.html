@@ -1,14 +1,29 @@
 <!--
-  Email para entrar en Limpieza de casa (US-01 y US-26).
+  Email para entrar en Limpieza de casa / House Cleaning (US-01, US-26 y US-52).
   Se usa para «Magic Link» y para «Confirm signup» (el primer email de un usuario nuevo).
   El código va primero: sirve en cualquier dispositivo (también en la app instalada del
   iPhone, que no recibe la sesión del enlace porque iOS lo abre en Safari) y no abre otra
   ventana. El enlace es un atajo: solo deja dentro del dispositivo donde se pulsa.
   El asunto también lleva el código, para verlo en la notificación sin abrir el email.
 
+  Sale en inglés si el idioma guardado en la cuenta es «en» (lo guarda la app, US-52), y
+  en castellano en cualquier otro caso.
+
   En local lo usa supabase/config.toml. En la nube hay que pegarlo en
   Supabase → Authentication → Email Templates (en las dos plantillas), con su asunto.
 -->
+{{ if eq .Data.lang "en" }}
+<h2>Your code to sign in to House Cleaning</h2>
+
+<p>Enter this code in the app:</p>
+<p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">{{ .Token }}</p>
+
+<p>Or, if you prefer, tap this link to sign in from this device:</p>
+<p><a href="{{ .ConfirmationURL }}">Sign in to House Cleaning</a></p>
+
+<p>The code and the link expire in one hour and can only be used once.<br>
+If you did not ask to sign in, ignore this email.</p>
+{{ else }}
 <h2>Tu código para entrar a Limpieza de casa</h2>
 
 <p>Escribe este código en la app:</p>
@@ -19,3 +34,4 @@
 
 <p>El código y el enlace caducan en una hora y solo sirven una vez.<br>
 Si no has pedido entrar, ignora este email.</p>
+{{ end }}
