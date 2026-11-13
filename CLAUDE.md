@@ -99,8 +99,8 @@ Cada historia sigue este orden, con las skills y el agente de `.claude/`. Los pu
 4. **`write-tests`**: las pruebas de cada criterio, **antes** del código, y comprobar que fallan.
 5. **El código**, por capas: `domain/`, luego `storage/`, luego `features/`.
 6. **Comprobar:** `npm test`, `npm run test:integration`, `npm run build` y `npm run test:e2e`.
-7. **Agente `code-reviewer`**: revisa la rama. Se arreglan los bloqueantes y los importantes; las sugerencias se comentan con Sol.
-8. **Resumen para Sol** de lo hecho y de lo que encontró el revisor. ✋
+7. **Dos revisiones independientes de la rama**, con dos agentes: **`code-reviewer`** (el código, las pruebas y la base de datos) y **`docs-reviewer`** (que la documentación cuente lo mismo que el código). Se arreglan los bloqueantes y los importantes de los dos; las sugerencias se comentan con Sol.
+8. **Resumen para Sol** de lo hecho y de lo que encontró cada revisor, por separado. ✋
 9. **`open-pr`**: commit, subir la rama y abrir el pull request con «Cómo probarlo a mano». Usa **`release-check`** para la sección «⚠️ Antes de fusionar»: lo que Sol tiene que hacer en Supabase o Vercel.
 10. **Sol** lo prueba a mano y lo fusiona. Claude nunca fusiona.
 
