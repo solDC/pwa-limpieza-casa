@@ -44,4 +44,6 @@ docker compose exec app npm run test:e2e
 
 (Con Docker Compose, Supabase local debe estar arrancado en tu ordenador.)
 
+**Idioma:** las pruebas e2e usan el navegador en castellano (`locale: 'es-ES'` en `playwright.config.ts`), y buscan los textos en castellano. Para probar algo en inglés, `test.use({ locale: 'en-US' })` en ese `describe`, como en `e2e/us-52-language.spec.ts`. Los pasos comunes (entrar, encontrar una tarea o el formulario) están en `e2e/helpers/app.ts`.
+
 Las pruebas e2e compilan la app y la sirven en http://localhost:4173 (la versión compilada, la más parecida a Vercel). La excepción es `e2e/app-update.spec.ts` (versión nueva de la app): sirve `dist/` con su propio servidor, en un puerto libre, para poder simular un despliegue nuevo. Si en local ya tenías `npm run preview` arrancado, `dist/` no se vuelve a compilar: páralo antes. Si una falla, `npx playwright show-report` abre un informe con capturas y una traza paso a paso.

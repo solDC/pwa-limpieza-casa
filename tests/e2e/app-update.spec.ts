@@ -225,3 +225,21 @@ test.describe('Versión nueva de la app (#76)', () => {
     await expect(notice(page)).toHaveCount(0)
   })
 })
+
+// US-52 · El aviso también sale en el idioma elegido.
+test.describe('Versión nueva de la app, en inglés', () => {
+  test.use({ locale: 'en-US' })
+
+  test('el aviso y sus botones salen en inglés', async ({ page }) => {
+    await page.goto(baseUrl)
+    await page.evaluate(() => navigator.serviceWorker.ready)
+    version = 'versión 2'
+    await returnToApp(page)
+
+    const dialog = page.getByRole('dialog', { name: 'There is a new version of the app.' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Update' })).toBeVisible()
+    await dialog.getByRole('button', { name: 'Later' }).click()
+    await expect(dialog).toHaveCount(0)
+  })
+})

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn, task } from './helpers/app'
+import { newTaskForm, signIn, task } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-34 · Elegir el peso de las partes (#43)
@@ -9,22 +9,18 @@ import { uniqueEmail } from './helpers/mailbox'
 // tests/unit/domain/new-task.test.ts, y que la base de datos exige que sumen 100, en
 // tests/integration/create-task.test.ts.
 
-function form(page: Page) {
-  return page.getByRole('form', { name: 'Nueva tarea' })
-}
-
 function weight(page: Page, part: number) {
-  return form(page).getByLabel(`Peso de la parte ${part}`, { exact: true })
+  return newTaskForm(page).getByLabel(`Peso de la parte ${part}`, { exact: true })
 }
 
 /** Abre «Nueva tarea» con una tarea puntual y esas partes, sin tocar los pesos. */
 async function newTaskWithParts(page: Page, name: string, parts: string[]) {
   await page.getByRole('button', { name: 'Añadir tarea' }).click()
-  await form(page).getByLabel('Nombre').fill(name)
-  await form(page).getByLabel('Puntual').check()
+  await newTaskForm(page).getByLabel('Nombre').fill(name)
+  await newTaskForm(page).getByLabel('Puntual').check()
   for (const [index, part] of parts.entries()) {
-    await form(page).getByRole('button', { name: 'Añadir parte' }).click()
-    await form(page).getByLabel(`Parte ${index + 1}`, { exact: true }).fill(part)
+    await newTaskForm(page).getByRole('button', { name: 'Añadir parte' }).click()
+    await newTaskForm(page).getByLabel(`Parte ${index + 1}`, { exact: true }).fill(part)
   }
 }
 
@@ -36,8 +32,8 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 1).fill('50')
     await weight(page, 2).fill('30')
     await weight(page, 3).fill('20')
-    await expect(form(page)).toContainText('Suman: 100 %')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page)).toContainText('Suman: 100 %')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 30 % · Campana 20 %')
     await page.reload()
@@ -53,10 +49,10 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await expect(weight(page, 2)).toHaveValue('33')
     await expect(weight(page, 3)).toHaveValue('33')
 
-    await form(page).getByRole('button', { name: 'Quitar parte 3' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Quitar parte 3' }).click()
     await expect(weight(page, 1)).toHaveValue('50')
     await expect(weight(page, 2)).toHaveValue('50')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
     await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 50 %')
   })
@@ -69,7 +65,7 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 1).fill('70')
     await weight(page, 2).fill('30')
 
-    await form(page).getByRole('button', { name: 'Añadir parte' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Añadir parte' }).click()
 
     await expect(weight(page, 1)).toHaveValue('70')
     await expect(weight(page, 2)).toHaveValue('30')
@@ -82,11 +78,11 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 1).fill('50')
     await weight(page, 2).fill('30')
     await weight(page, 3).fill('10')
-    await expect(form(page)).toContainText('Suman: 90 %')
+    await expect(newTaskForm(page)).toContainText('Suman: 90 %')
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    const totalError = form(page).getByText('Los pesos tienen que sumar 100 % (ahora suman 90 %).')
+    const totalError = newTaskForm(page).getByText('Los pesos tienen que sumar 100 % (ahora suman 90 %).')
     await expect(totalError).toBeVisible()
     // Es lo único que falla: el cursor va al aviso, para que se lea (también con VoiceOver).
     await expect(totalError).toBeFocused()
@@ -94,8 +90,8 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
 
     // Al corregirlo, ya se puede guardar.
     await weight(page, 3).fill('20')
-    await expect(form(page)).toContainText('Suman: 100 %')
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(newTaskForm(page)).toContainText('Suman: 100 %')
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
     await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 30 % · Campana 20 %')
   })
 
@@ -105,9 +101,9 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 1).fill('100')
     await weight(page, 2).fill('0')
 
-    await form(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(form(page)).toContainText('Escribe un peso de 1 a 100.')
+    await expect(newTaskForm(page)).toContainText('Escribe un peso de 1 a 100.')
     await expect(weight(page, 2)).toBeFocused()
     await expect(task(page, 'Cocina a fondo')).toHaveCount(0)
   })

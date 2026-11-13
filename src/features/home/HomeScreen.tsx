@@ -7,16 +7,15 @@ import { householdDisplayName } from '../../domain/language'
 import { useLanguage } from '../../i18n/language-context'
 import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
-import { TaskList } from './TaskList'
+import { TaskList } from '../tasks/TaskList'
 
 type HouseholdState =
   | { status: 'loading' }
   | { status: 'loaded'; household: Household | null }
   | { status: 'error'; error: ErrorCode }
 
-// Pantalla provisional de Inicio: confirma que has entrado (US-01), muestra tu hogar (US-02)
-// y sus tareas (US-27), y deja cerrar la sesión (US-03).
-// Se sustituirá por «Qué toca» (US-29) y las demás.
+// Pantalla de Inicio: dice con qué email has entrado (US-01), muestra tu hogar (US-02) y
+// sus tareas (src/features/tasks/), y deja cerrar la sesión (US-03) y cambiar el idioma (US-52).
 export function HomeScreen({ session }: { session: Session }) {
   const { language, t } = useLanguage()
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
@@ -30,7 +29,7 @@ export function HomeScreen({ session }: { session: Session }) {
       // Si va bien, la sesión cambia y la app pasa sola a la pantalla de entrar.
       await signOut()
     } catch (error) {
-      setSignOutError(errorCode(error))
+      setSignOutError(errorCode(error, 'signOutFailed'))
       setSigningOut(false)
     }
   }
@@ -39,7 +38,7 @@ export function HomeScreen({ session }: { session: Session }) {
     let active = true
     getMyHousehold()
       .then((household) => active && setState({ status: 'loaded', household }))
-      .catch((error: unknown) => active && setState({ status: 'error', error: errorCode(error) }))
+      .catch((error: unknown) => active && setState({ status: 'error', error: errorCode(error, 'householdLoad') }))
     return () => {
       active = false
     }

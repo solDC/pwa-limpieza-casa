@@ -151,44 +151,44 @@ describe('describeDue: el texto de «Toca:»', () => {
 
   it('las de fin de semana dicen de qué finde son', () => {
     const round = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
-    expect(describeDue(weekly, round, '2026-11-12')).toBe('Toca: finde del 14 nov')
-    expect(describeDue(weekly, round, '2026-11-14')).toBe('Toca: finde del 14 nov')
-    expect(describeDue(weekly, round, '2026-11-15')).toBe('Toca: finde del 14 nov')
+    expect(describeDue(weekly, round, '2026-11-12', 'es')).toBe('Toca: finde del 14 nov')
+    expect(describeDue(weekly, round, '2026-11-14', 'es')).toBe('Toca: finde del 14 nov')
+    expect(describeDue(weekly, round, '2026-11-15', 'es')).toBe('Toca: finde del 14 nov')
   })
 
   it('hoy y mañana', () => {
-    expect(describeDue(bathroom, { startsOn: '2026-11-08', dueBy: null }, '2026-11-08')).toBe('Toca: hoy')
-    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-08')).toBe('Toca: mañana')
+    expect(describeDue(bathroom, { startsOn: '2026-11-08', dueBy: null }, '2026-11-08', 'es')).toBe('Toca: hoy')
+    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-08', 'es')).toBe('Toca: mañana')
   })
 
   it('otro día futuro, con el día de la semana', () => {
-    expect(describeDue(bathroom, { startsOn: '2026-11-18', dueBy: null }, '2026-11-08')).toBe(
+    expect(describeDue(bathroom, { startsOn: '2026-11-18', dueBy: null }, '2026-11-08', 'es')).toBe(
       'Toca: mié 18 nov',
     )
   })
 
   it('sin fecha', () => {
-    expect(describeDue({ kind: 'oneOff' }, { startsOn: null, dueBy: null }, '2026-11-08')).toBe(
+    expect(describeDue({ kind: 'oneOff' }, { startsOn: null, dueBy: null }, '2026-11-08', 'es')).toBe(
       'Sin fecha',
     )
   })
 
   // US-29 · Qué toca (#38)
   it('si va con retraso, cuántos días y cuándo tocaba', () => {
-    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-12')).toBe(
+    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-12', 'es')).toBe(
       'Retrasada 3 días (tocaba el lun 9 nov)',
     )
-    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-10')).toBe(
+    expect(describeDue(bathroom, { startsOn: '2026-11-09', dueBy: null }, '2026-11-10', 'es')).toBe(
       'Retrasada 1 día (tocaba el lun 9 nov)',
     )
   })
 
   it('las de fin de semana, entre semana, con retraso desde el lunes', () => {
     const round = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
-    expect(describeDue(weekly, round, '2026-11-16')).toBe(
+    expect(describeDue(weekly, round, '2026-11-16', 'es')).toBe(
       'Retrasada 1 día (tocaba el finde del 14 nov)',
     )
-    expect(describeDue(weekly, round, '2026-11-20')).toBe(
+    expect(describeDue(weekly, round, '2026-11-20', 'es')).toBe(
       'Retrasada 5 días (tocaba el finde del 14 nov)',
     )
   })
@@ -267,7 +267,7 @@ describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
       const first = roundOf(weekly, day, day)
       expect(first).toEqual({ startsOn: '2026-11-21', dueBy: '2026-11-27' })
       expect(dueStatus(weekly, first, day)).toEqual({ status: 'upcoming' })
-      expect(describeDue(weekly, first, day)).toBe('Toca: finde del 21 nov')
+      expect(describeDue(weekly, first, day, 'es')).toBe('Toca: finde del 21 nov')
     }
   })
 
