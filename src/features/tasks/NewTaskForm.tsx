@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { formatDayMonth } from '../../domain/dates'
+import { errorCode, type ErrorCode } from '../../domain/errors'
 import {
   addPart,
   emptyDraft,
@@ -12,17 +13,12 @@ import {
   validateNewTask,
   weightsTotal,
   type NewTaskDraft,
-  type NewTaskErrors,
 } from '../../domain/new-task'
 import type { Frequency, LocalDate } from '../../domain/task'
+import { useLanguage } from '../../i18n/language-context'
 import { createTask } from '../../storage/tasks'
 
-const frequencyOptions: { kind: Frequency['kind']; label: string }[] = [
-  { kind: 'weekendWeekly', label: 'Semanal, en fin de semana' },
-  { kind: 'weekendBiweekly', label: 'Fin de semana cada 15 días' },
-  { kind: 'interval', label: 'Cada N días desde la última vez' },
-  { kind: 'oneOff', label: 'Puntual' },
-]
+const frequencyKinds: Frequency['kind'][] = ['weekendWeekly', 'weekendBiweekly', 'interval', 'oneOff']
 
 // US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes.
 // US-34 · Elegir el peso de las partes: si no se cambian, cuentan lo mismo.
@@ -38,14 +34,18 @@ export function NewTaskForm({
   onSaved: (name: string) => void
   onCancel: () => void
 }) {
+  const { language, t } = useLanguage()
   const [draft, setDraft] = useState<NewTaskDraft>(emptyDraft)
   // Una clave por parte, para que React no confunda los campos al quitar una.
   const [partKeys, setPartKeys] = useState<number[]>([])
   const nextPartKey = useRef(0)
-  // Los errores de cada campo salen al intentar guardar, no mientras se escribe.
-  const [errors, setErrors] = useState<NewTaskErrors | null>(null)
+  // Los errores de cada campo salen al intentar guardar, no mientras se escribe. Después
+  // se ponen al día solos al corregir (y al cambiar de idioma): se calculan cada vez.
+  const [showErrors, setShowErrors] = useState(false)
+  const validation = validateNewTask(draft, language)
+  const errors = showErrors && !validation.ok ? validation.errors : null
   const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
   const weekends = nextWeekends(today)
@@ -59,11 +59,6 @@ export function NewTaskForm({
 
   function apply(next: NewTaskDraft) {
     setDraft(next)
-    // Si ya se ven los errores, se ponen al día al corregir.
-    if (errors) {
-      const result = validateNewTask(next)
-      setErrors(result.ok ? null : result.errors)
-    }
   }
 
   function chooseFrequency(kind: Frequency['kind']) {
@@ -90,9 +85,9 @@ export function NewTaskForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSaveError(null)
-    const result = validateNewTask(draft)
+    const result = validation
     if (!result.ok) {
-      setErrors(result.errors)
+      setShowErrors(true)
       // Lleva al primer campo que falta, para que se vea qué pasa también en el móvil.
       requestAnimationFrame(() =>
         formRef.current
@@ -101,13 +96,13 @@ export function NewTaskForm({
       )
       return
     }
-    setErrors(null)
+    setShowErrors(false)
     setSaving(true)
     try {
       await createTask(householdId, result.task)
       onSaved(result.task.name)
     } catch (error) {
-      setSaveError((error as Error).message)
+      setSaveError(errorCode(error))
       setSaving(false)
     }
   }
@@ -123,9 +118,9 @@ export function NewTaskForm({
       onSubmit={handleSubmit}
       noValidate
     >
-      <h3 id="new-task-heading">Nueva tarea</h3>
+      <h3 id="new-task-heading">{t.newTask.title}</h3>
 
-      <label htmlFor="new-task-name">Nombre</label>
+      <label htmlFor="new-task-name">{t.newTask.name}</label>
       <input
         id="new-task-name"
         ref={nameRef}
@@ -144,8 +139,8 @@ export function NewTaskForm({
         tabIndex={errors?.frequency ? -1 : undefined}
         disabled={saving}
       >
-        <legend>Cada cuánto toca</legend>
-        {frequencyOptions.map(({ kind, label }) => (
+        <legend>{t.newTask.frequency}</legend>
+        {frequencyKinds.map((kind) => (
           <label key={kind} className="choice">
             <input
               type="radio"
@@ -153,7 +148,7 @@ export function NewTaskForm({
               checked={draft.frequencyKind === kind}
               onChange={() => chooseFrequency(kind)}
             />
-            {label}
+            {t.newTask[kind]}
           </label>
         ))}
         <FieldError id="new-task-frequency-error" message={errors?.frequency} />
@@ -161,7 +156,7 @@ export function NewTaskForm({
 
       {draft.frequencyKind === 'interval' && (
         <>
-          <label htmlFor="new-task-interval-days">Cada cuántos días</label>
+          <label htmlFor="new-task-interval-days">{t.newTask.intervalDays}</label>
           <input
             id="new-task-interval-days"
             inputMode="numeric"
@@ -182,7 +177,7 @@ export function NewTaskForm({
           aria-describedby={errors?.biweeklyStartOn ? 'new-task-biweekly-error' : undefined}
           disabled={saving}
         >
-          <legend>Primer fin de semana</legend>
+          <legend>{t.newTask.firstWeekend}</legend>
           {weekends.map((saturday) => (
             <label key={saturday} className="choice">
               <input
@@ -191,7 +186,7 @@ export function NewTaskForm({
                 checked={draft.biweeklyStartOn === saturday}
                 onChange={() => update({ biweeklyStartOn: saturday })}
               />
-              Finde del {formatDayMonth(saturday)}
+              {t.newTask.weekendOf(formatDayMonth(saturday, language))}
             </label>
           ))}
           <FieldError id="new-task-biweekly-error" message={errors?.biweeklyStartOn} />
@@ -199,9 +194,9 @@ export function NewTaskForm({
       )}
 
       <fieldset className="stack" disabled={saving}>
-        <legend>Partes (opcional)</legend>
+        <legend>{t.newTask.parts}</legend>
         {draft.partNames.length > 0 && (
-          <p className="muted">Si no cambias los pesos, todas cuentan lo mismo.</p>
+          <p className="muted">{t.newTask.equalWeights}</p>
         )}
         {draft.partNames.map((partName, index) => {
           const id = `new-task-part-${partKeys[index]}`
@@ -209,7 +204,7 @@ export function NewTaskForm({
           const weightError = errors?.partWeights?.[index]
           return (
             <div key={partKeys[index]} className="stack">
-              <label htmlFor={id}>Parte {index + 1}</label>
+              <label htmlFor={id}>{t.newTask.part(index + 1)}</label>
               <div className="part-row">
                 <input
                   id={id}
@@ -221,19 +216,19 @@ export function NewTaskForm({
                 <button
                   type="button"
                   className="button-secondary"
-                  aria-label={`Quitar parte ${index + 1}`}
+                  aria-label={t.newTask.removePart(index + 1)}
                   onClick={() => handleRemovePart(index)}
                 >
-                  Quitar
+                  {t.newTask.remove}
                 </button>
               </div>
               <FieldError id={`${id}-error`} message={error} />
               <div className="weight-row">
-                <label htmlFor={`${id}-weight`}>Peso</label>
+                <label htmlFor={`${id}-weight`}>{t.newTask.weight}</label>
                 <input
                   id={`${id}-weight`}
                   // Lo que lee VoiceOver: «Peso» solo no diría de qué parte es.
-                  aria-label={`Peso de la parte ${index + 1}`}
+                  aria-label={t.newTask.weightOfPart(index + 1)}
                   inputMode="numeric"
                   value={draft.partWeights[index]}
                   onChange={(event) => apply(setPartWeight(draft, index, event.target.value))}
@@ -256,7 +251,7 @@ export function NewTaskForm({
             data-invalid={errors?.weightsTotal ? true : undefined}
             tabIndex={errors?.weightsTotal ? -1 : undefined}
           >
-            {errors?.weightsTotal ?? `Suman: ${total} %`}
+            {errors?.weightsTotal ?? t.newTask.total(total)}
           </p>
         )}
         <button
@@ -265,18 +260,18 @@ export function NewTaskForm({
           onClick={handleAddPart}
           disabled={draft.partNames.length >= MAX_PARTS}
         >
-          Añadir parte
+          {t.newTask.addPart}
         </button>
       </fieldset>
 
-      {saveError && <ErrorMessage>{saveError}</ErrorMessage>}
+      {saveError && <ErrorMessage>{t.errors[saveError]}</ErrorMessage>}
 
       <div className="form-actions">
         <button type="button" className="button-secondary" onClick={onCancel} disabled={saving}>
-          Cancelar
+          {t.newTask.cancel}
         </button>
         <button type="submit" disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar tarea'}
+          {saving ? t.newTask.saving : t.newTask.save}
         </button>
       </div>
     </form>

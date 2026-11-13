@@ -2,6 +2,7 @@
 // Los cálculos se hacen con «días desde 1970» en UTC, sin horas: así no les afectan
 // las zonas horarias ni el cambio de hora.
 
+import type { Language } from './language'
 import type { LocalDate } from './task'
 
 const MS_PER_DAY = 86_400_000
@@ -45,16 +46,23 @@ export function localDateIn(timeZone: string, now: Date): LocalDate {
   return `${part('year')}-${part('month')}-${part('day')}`
 }
 
-const WEEKDAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
-
-/** «14 nov» */
-export function formatDayMonth(date: LocalDate): string {
-  const [, month, day] = date.split('-').map(Number)
-  return `${day} ${MONTHS[month - 1]}`
+// Escritos aquí y no con Intl: así no dependen del navegador ni del dispositivo.
+const WEEKDAYS: Record<Language, string[]> = {
+  es: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+}
+const MONTHS: Record<Language, string[]> = {
+  es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 }
 
-/** «mié 18 nov» */
-export function formatShortDate(date: LocalDate): string {
-  return `${WEEKDAYS[dayOfWeek(date)]} ${formatDayMonth(date)}`
+/** «14 nov» o «14 Nov» */
+export function formatDayMonth(date: LocalDate, language: Language = 'es'): string {
+  const [, month, day] = date.split('-').map(Number)
+  return `${day} ${MONTHS[language][month - 1]}`
+}
+
+/** «mié 18 nov» o «Wed 18 Nov» */
+export function formatShortDate(date: LocalDate, language: Language = 'es'): string {
+  return `${WEEKDAYS[language][dayOfWeek(date)]} ${formatDayMonth(date, language)}`
 }

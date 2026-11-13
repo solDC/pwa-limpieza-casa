@@ -2,7 +2,7 @@
 
 Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del hogar. Muestra lo que toca hoy, lo que se ha retrasado y cuánto llevas de cada tarea. Se instala en el móvil o en el ordenador, y cada usuario tiene su cuenta con sus datos guardados en la nube.
 
-🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34 y US-48). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
@@ -248,8 +248,8 @@ En **cada uno de los dos proyectos** de Supabase (el de pruebas se crea en el pa
    - **Host:** `smtp.gmail.com` · **Port:** `587` · **Username** y **Sender email:** tu dirección de Gmail · **Password:** la contraseña de aplicación · **Sender name:** `Limpieza de casa`.
 
    Esa contraseña solo va en el formulario de Supabase: nunca en el repo ni en `.env`. Para un uso real, mejor un servicio de email (Resend, Brevo…) con un dominio propio.
-3. **Plantillas del email, en español y con el código (US-26).** En **Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
-   - **Subject:** `Tu acceso a Limpieza de casa: {{ .Token }}` (Supabase pone el código en lugar de `{{ .Token }}`)
+3. **Plantillas del email, con el código (US-26), en castellano y en inglés (US-52).** En **Authentication → Emails → Templates**, en las dos plantillas **Confirm signup** y **Magic Link**:
+   - **Subject:** `{{ if eq .Data.lang "en" }}Your House Cleaning code: {{ .Token }}{{ else }}Tu acceso a Limpieza de casa: {{ .Token }}{{ end }}` (todo en una línea; Supabase pone el código en lugar de `{{ .Token }}`, y elige el idioma según el guardado en la cuenta)
    - **Body:** el contenido de `supabase/templates/sign-in.html` (puedes dejar fuera el comentario del principio, `<!-- … -->`).
 
    Si cambias ese archivo, vuelve a pegarlo en las dos plantillas de los dos proyectos: la nube no lo lee del repo.

@@ -6,9 +6,9 @@ Contexto para la IA que trabaja en este repositorio. Léelo antes de cambiar nad
 
 PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se ha retrasado y cuánto llevas de cada tarea. El detalle del producto y del modelo de tareas está en el `README.md`; el alcance del MVP, en `docs/user-stories.md` (historias con prioridad Must have / Nice to have).
 
-**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-33 (añadir una tarea), US-34 (elegir el peso de las partes) y US-48 (las tareas nuevas no empiezan con retraso). La pantalla de Inicio es provisional.
+**Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-33 (añadir una tarea), US-34 (elegir el peso de las partes), US-48 (las tareas nuevas no empiezan con retraso) y US-52 (la app en inglés y en castellano). La pantalla de Inicio es provisional.
 
-**Nombre de la app:** «Limpieza de casa», también el nombre corto (`short_name`), que es el que propone el iPhone al instalarla (la etiqueta `apple-mobile-web-app-title` no le sirve). En Android sale cortado bajo el icono.
+**Nombre de la app:** dentro de la app, «Limpieza de casa» en castellano y «House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas, «House Cleaning» (`name` y `short_name` del manifiesto; el corto es el que propone el iPhone al instalarla, porque la etiqueta `apple-mobile-web-app-title` no le sirve).
 
 ## Arquitectura
 
@@ -29,7 +29,8 @@ src/
 ├── features/    Una carpeta por pantalla (home, tasks, history, auth) o por función de toda
 │                la app (app-update, el aviso de versión nueva). Cada una con sus
 │                componentes propios (SignInScreen.tsx…) y sus hooks (use-session.ts…).
-└── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
+├── components/  Componentes visuales comunes a varias pantallas (botones, tarjetas, avisos).
+└── i18n/        Los textos de las pantallas en castellano y en inglés, y el idioma elegido.
 
 tests/
 ├── unit/        Vitest. Lógica pura de src/domain/. Misma ruta que el código.
@@ -42,7 +43,14 @@ tests/
 - `domain/` **no importa** React, Supabase, `storage/`, `features/` ni APIs del navegador. Recibe datos y devuelve datos. Así se prueba de forma aislada.
 - `features/` usa `domain/` para la lógica, `storage/` para leer y guardar y `components/` para las piezas visuales comunes. No llama a Supabase directamente.
 - Un componente va en `components/` cuando lo usan **dos o más pantallas**; si solo lo usa una, se queda en su carpeta de `features/`.
-- `storage/` traduce entre las filas de la base de datos (`snake_case`) y los tipos de `domain/` (`camelCase`).
+- `storage/` traduce entre las filas de la base de datos (`snake_case`) y los tipos de `domain/` (`camelCase`). Los fallos los lanza como `AppError` con un código (`src/domain/errors.ts`), no con una frase: el texto lo pone la pantalla en el idioma elegido.
+
+### Idiomas (US-52)
+
+- La app está en **castellano e inglés**. La primera vez sale en el idioma del dispositivo (castellano si es castellano; si no, inglés); después, en el que se elija, que se guarda en el dispositivo.
+- **Ningún texto que ve el usuario se escribe directamente en un componente.** Los de las pantallas van en `src/i18n/messages.ts`, en los dos idiomas, y se leen con `useLanguage()`. Los que dependen de la lógica (cuándo toca, frecuencias, fechas, avisos del formulario) los da `src/domain/`, que recibe el idioma como parámetro.
+- **Las tareas por defecto** y sus partes llevan una clave (`default_key`); `taskDisplayName()` las muestra en el idioma elegido. Las que añade el usuario se ven como las escribió.
+- **El email para entrar** sale en el idioma guardado en la cuenta (`lang` en los datos del usuario de Supabase Auth), que la app pone al día al entrar. La plantilla es una sola, con las dos versiones.
 
 ### Modelo de datos
 
@@ -53,7 +61,7 @@ Los conceptos (tarea, partes, vuelta, frecuencias) están en «Conceptos» de `d
 - `task_parts`: las partes, cada una con su **peso** en %; los de una tarea suman 100.
 - `task_rounds`: las **vueltas** terminadas. Cada una tiene cuándo empieza (vacío en las puntuales), cuándo se acaba el plazo (vacío en las de «cada N días» y las puntuales) y el día en que se completó, que pone siempre la base de datos. Las vueltas que nadie marca no tienen fila. Las partes hechas en cada vuelta (US-39) se guardarán con el día en que se hicieron.
 - **El estado de una vuelta** (completada, parcial con su %, no completada) **se calcula en `src/domain/`**, no se guarda: así el cierre de la vuelta (el sábado, para las de fin de semana) no necesita ningún proceso automático.
-- Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo.
+- Las tareas por defecto (US-27) las crea la base de datos al crear el hogar, como el hogar mismo, con su clave `default_key` (migración `…_default_task_keys.sql`, US-52).
 - **Las tareas nuevas** (US-33) se crean con la función `create_task`, que guarda la tarea y sus partes de una vez. La app no puede insertar directamente en `tasks` ni en `task_parts`. Los pesos de las partes de una tarea **suman 100**: lo comprueba la base de datos al final de cada transacción (migración `…_create_tasks.sql`).
 - `tasks` y `task_parts` existen desde la migración `…_tasks.sql` (US-27), y `task_rounds` desde `…_task_rounds.sql` (US-30).
 - **«Hoy» es el día de Madrid**, en la base de datos (`(now() at time zone 'Europe/Madrid')::date`) y en la app (`useToday()` de `src/features/home/use-today.ts`, que se actualiza al volver a la app), aunque el dispositivo esté en otra zona horaria. La app es para la casa de Sol; si algún día hay usuarios en otras zonas, se revisa.
@@ -107,7 +115,7 @@ Para un cambio pequeño fuera de una historia, como un texto o un arreglo, el mi
 ## Convenciones
 
 - **Nombres técnicos en inglés:** carpetas, archivos, variables, funciones, tipos, tablas, columnas y variables CSS. Carpetas y archivos que no son componentes, en `kebab-case` (`task-form`, `api-client`). Componentes React en `PascalCase.tsx`.
-- **En español:** la documentación (README, CHANGELOG, este archivo), los comentarios y todos los textos que ve el usuario.
+- **En español:** la documentación (README, CHANGELOG, este archivo) y los comentarios. Los textos que ve el usuario, en castellano y en inglés (ver «Idiomas»).
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) con el tipo en inglés y la descripción en español: `feat: marcar una parte como hecha`, `fix: …`, `docs: …`, `refactor: …`, `chore: …`, `test: …`.
 
 ## Pruebas

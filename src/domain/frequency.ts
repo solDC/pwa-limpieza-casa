@@ -2,6 +2,7 @@
 // Las reglas están en «Conceptos» de docs/user-stories.md.
 
 import { addDays, daysBetween, dayOfWeek, formatDayMonth, formatShortDate } from './dates'
+import type { Language } from './language'
 import type { Frequency, LocalDate, Task } from './task'
 
 /**
@@ -137,20 +138,50 @@ export function dueStatus(frequency: Frequency, round: Round, today: LocalDate):
  * Cuándo toca, en texto: «Toca: finde del 14 nov», «Toca: hoy», «Toca: mañana»,
  * «Toca: mié 18 nov», «Retrasada 3 días (tocaba el lun 9 nov)» o «Sin fecha».
  */
-export function describeDue(frequency: Frequency, round: Round, today: LocalDate): string {
-  if (round.startsOn === null) return 'Sin fecha'
+export function describeDue(
+  frequency: Frequency,
+  round: Round,
+  today: LocalDate,
+  language: Language = 'es',
+): string {
+  const text = DUE_TEXTS[language]
+  if (round.startsOn === null) return text.noDate
   const due = dueStatus(frequency, round, today)
+  const weekend = isWeekend(frequency)
   if (due.status === 'overdue') {
-    const days = due.days === 1 ? '1 día' : `${due.days} días`
-    return `Retrasada ${days} (tocaba el ${describeDate(frequency, round.startsOn, today)})`
+    const date = weekend
+      ? text.theWeekendOf(formatDayMonth(round.startsOn, language))
+      : formatShortDate(round.startsOn, language)
+    return text.overdue(due.days, date, weekend)
   }
-  return `Toca: ${describeDate(frequency, round.startsOn, today)}`
+  if (weekend) return text.due(text.weekendOf(formatDayMonth(round.startsOn, language)))
+  const days = daysBetween(today, round.startsOn)
+  if (days === 0) return text.due(text.today)
+  if (days === 1) return text.due(text.tomorrow)
+  return text.due(formatShortDate(round.startsOn, language))
 }
 
-function describeDate(frequency: Frequency, startsOn: LocalDate, today: LocalDate): string {
-  if (isWeekend(frequency)) return `finde del ${formatDayMonth(startsOn)}`
-  const days = daysBetween(today, startsOn)
-  if (days === 0) return 'hoy'
-  if (days === 1) return 'mañana'
-  return formatShortDate(startsOn)
-}
+// En inglés: «Due: weekend of 14 Nov», «Due: today», «Due: Wed 18 Nov»,
+// «Overdue 3 days (was due Mon 9 Nov)», «Overdue 1 day (was due the weekend of 14 Nov)».
+const DUE_TEXTS = {
+  es: {
+    noDate: 'Sin fecha',
+    today: 'hoy',
+    tomorrow: 'mañana',
+    weekendOf: (date: string) => `finde del ${date}`,
+    theWeekendOf: (date: string) => `finde del ${date}`,
+    due: (when: string) => `Toca: ${when}`,
+    overdue: (days: number, date: string, _weekend: boolean) =>
+      `Retrasada ${days === 1 ? '1 día' : `${days} días`} (tocaba el ${date})`,
+  },
+  en: {
+    noDate: 'No date',
+    today: 'today',
+    tomorrow: 'tomorrow',
+    weekendOf: (date: string) => `weekend of ${date}`,
+    theWeekendOf: (date: string) => `the weekend of ${date}`,
+    due: (when: string) => `Due: ${when}`,
+    overdue: (days: number, date: string, _weekend: boolean) =>
+      `Overdue ${days === 1 ? '1 day' : `${days} days`} (was due ${date})`,
+  },
+} satisfies Record<Language, unknown>

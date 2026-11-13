@@ -1,3 +1,4 @@
+import { AppError } from '../domain/errors'
 import type { Round } from '../domain/frequency'
 import type { NewTask } from '../domain/new-task'
 import type { Frequency, LocalDate, Task } from '../domain/task'
@@ -10,12 +11,13 @@ type TaskRow = {
   id: string
   household_id: string
   name: string
+  default_key: string | null
   frequency: 'weekend_weekly' | 'weekend_biweekly' | 'interval' | 'one_off'
   interval_days: number | null
   biweekly_start_on: string | null
   created_on: string
   cancelled_on: string | null
-  task_parts: { id: string; name: string; weight: number; position: number }[]
+  task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
   // Solo la última vuelta terminada.
   task_rounds: { completed_on: string }[]
 }
@@ -25,21 +27,21 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, frequency, interval_days, biweekly_start_on, created_on, cancelled_on, task_parts (id, name, weight, position), task_rounds (completed_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on)',
     )
     .is('cancelled_on', null)
     .order('position')
     .order('position', { referencedTable: 'task_parts' })
     .order('completed_on', { referencedTable: 'task_rounds', ascending: false })
     .limit(1, { referencedTable: 'task_rounds' })
-  if (error) throw new Error('No se han podido cargar tus tareas.')
+  if (error) throw new AppError('tasksLoad')
   return (data as TaskRow[]).map(toTask)
 }
 
 /** La tarea ya estaba marcada como hecha (por ejemplo, desde otro dispositivo). */
-export class AlreadyDoneError extends Error {
+export class AlreadyDoneError extends AppError {
   constructor() {
-    super('Ya estaba marcada como hecha.')
+    super('alreadyDone')
     this.name = 'AlreadyDoneError'
   }
 }
@@ -64,12 +66,8 @@ export async function completeTask(task: Task, round: Round): Promise<LocalDate>
   // 23505: ya hay una vuelta igual, o una del mismo día.
   if (error?.code === '23505') throw new AlreadyDoneError()
   // 23514: la vuelta no incluye el día de hoy, porque la fecha del dispositivo va mal.
-  if (error?.code === '23514') {
-    throw new Error(
-      'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
-    )
-  }
-  if (error) throw new Error('No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.')
+  if (error?.code === '23514') throw new AppError('deviceDate')
+  if (error) throw new AppError('saveFailed')
   return (data as { completed_on: string }).completed_on
 }
 
@@ -88,9 +86,7 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
     part_names: task.parts.map((part) => part.name),
     part_weights: task.parts.map((part) => part.weight),
   })
-  if (error) {
-    throw new Error('No se ha podido guardar la tarea. Revisa la conexión e inténtalo de nuevo.')
-  }
+  if (error) throw new AppError('taskSaveFailed')
 }
 
 function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
@@ -111,8 +107,14 @@ function toTask(row: TaskRow): Task {
     id: row.id,
     householdId: row.household_id,
     name: row.name,
+    defaultKey: row.default_key,
     frequency: toFrequency(row),
-    parts: row.task_parts.map(({ id, name, weight }) => ({ id, name, weight })),
+    parts: row.task_parts.map((part) => ({
+      id: part.id,
+      name: part.name,
+      defaultKey: part.default_key,
+      weight: part.weight,
+    })),
     createdOn: row.created_on,
     cancelledOn: row.cancelled_on,
     lastCompletedOn: row.task_rounds[0]?.completed_on ?? null,

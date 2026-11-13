@@ -44,3 +44,32 @@ export async function setAllTasksCreatedOn(email: string, createdOn: string) {
     await db.end()
   }
 }
+
+/** El idioma guardado en la cuenta de ese usuario (US-52), o `null` si no tiene. */
+export async function accountLanguage(email: string): Promise<string | null> {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rows } = await db.query(
+      `select raw_user_meta_data->>'lang' as lang from auth.users where email = $1`,
+      [email],
+    )
+    return rows[0]?.lang ?? null
+  } finally {
+    await db.end()
+  }
+}
+
+/** Quita el idioma guardado en la cuenta: como las cuentas creadas antes de la US-52. */
+export async function removeAccountLanguage(email: string) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    await db.query(
+      `update auth.users set raw_user_meta_data = raw_user_meta_data - 'lang' where email = $1`,
+      [email],
+    )
+  } finally {
+    await db.end()
+  }
+}

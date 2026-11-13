@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { agenda } from '../../domain/agenda'
+import { errorCode, type ErrorCode } from '../../domain/errors'
 import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
-import { describeFrequency, type LocalDate, type Task } from '../../domain/task'
+import {
+  describeFrequency,
+  partDisplayName,
+  taskDisplayName,
+  type LocalDate,
+  type Task,
+} from '../../domain/task'
+import { useLanguage } from '../../i18n/language-context'
 import { AlreadyDoneError, completeTask, listTasks } from '../../storage/tasks'
 import { NewTaskForm } from '../tasks/NewTaskForm'
 import { useToday } from './use-today'
@@ -10,7 +18,7 @@ import { useToday } from './use-today'
 type TasksState =
   | { status: 'loading' }
   | { status: 'loaded'; tasks: Task[] }
-  | { status: 'error'; message: string }
+  | { status: 'error'; error: ErrorCode }
 
 // US-27 · Mis tareas por defecto: las tareas del hogar, con su frecuencia y sus partes.
 // US-28 · Frecuencias: cuándo toca cada una («Toca: …»).
@@ -21,12 +29,13 @@ type TasksState =
 // US-33 · Añadir una tarea: «Añadir tarea» abre el formulario encima de la lista.
 // `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
 export function TaskList({ householdId }: { householdId?: string }) {
+  const { t } = useLanguage()
   const [state, setState] = useState<TasksState>({ status: 'loading' })
   const [adding, setAdding] = useState(false)
   // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
-  const [reloadError, setReloadError] = useState<string | null>(null)
-  // Lo que anuncian los lectores de pantalla al guardar una tarea (región `status`).
-  const [announcement, setAnnouncement] = useState('')
+  const [reloadFailed, setReloadFailed] = useState(false)
+  // El nombre de la tarea recién añadida: lo anuncian los lectores de pantalla (región `status`).
+  const [addedName, setAddedName] = useState<string | null>(null)
   // Al cerrar el formulario, el foco vuelve a «Añadir tarea» en lugar de perderse.
   const addButtonRef = useRef<HTMLButtonElement>(null)
   const focusAddButton = useRef(false)
@@ -65,9 +74,9 @@ export function TaskList({ householdId }: { householdId?: string }) {
         if (localChanges.current !== changesAtStart) return load({ keepOnError: true, onKeptError })
         setState({ status: 'loaded', tasks })
       })
-      .catch((error: Error) => {
+      .catch((error: unknown) => {
         if (!isCurrent()) return
-        if (!keepOnError) setState({ status: 'error', message: error.message })
+        if (!keepOnError) setState({ status: 'error', error: errorCode(error) })
         else onKeptError?.()
       })
   }
@@ -97,7 +106,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
 
   return (
     <section className="stack" aria-labelledby="tasks-heading">
-      <h2 id="tasks-heading">Tus tareas</h2>
+      <h2 id="tasks-heading">{t.tasks.title}</h2>
 
       {householdId &&
         (adding ? (
@@ -106,18 +115,12 @@ export function TaskList({ householdId }: { householdId?: string }) {
             today={today}
             onSaved={(name) => {
               closeForm()
-              setAnnouncement(`Tarea añadida: ${name}.`)
-              setReloadError(null)
+              setAddedName(name)
+              setReloadFailed(false)
               // La tarea nueva sale en la lista, en su sitio según lo que toca. Si no se
               // puede poner al día, se dice, para que no se añada otra vez.
               localChanges.current++
-              load({
-                keepOnError: true,
-                onKeptError: () =>
-                  setReloadError(
-                    'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
-                  ),
-              })
+              load({ keepOnError: true, onKeptError: () => setReloadFailed(true) })
             }}
             onCancel={closeForm}
           />
@@ -127,23 +130,23 @@ export function TaskList({ householdId }: { householdId?: string }) {
             type="button"
             className="button-secondary"
             onClick={() => {
-              setAnnouncement('')
+              setAddedName(null)
               setAdding(true)
             }}
           >
-            Añadir tarea
+            {t.tasks.add}
           </button>
         ))}
       {/* Siempre en la página: los lectores de pantalla solo leen lo que cambia dentro. */}
       <p role="status" className="muted">
-        {announcement}
+        {addedName !== null && t.tasks.added(addedName)}
       </p>
 
-      {reloadError && <ErrorMessage>{reloadError}</ErrorMessage>}
-      {state.status === 'loading' && <p className="muted">Cargando tus tareas…</p>}
-      {state.status === 'error' && <ErrorMessage>{state.message}</ErrorMessage>}
+      {reloadFailed && <ErrorMessage>{t.tasks.savedButNotReloaded}</ErrorMessage>}
+      {state.status === 'loading' && <p className="muted">{t.tasks.loading}</p>}
+      {state.status === 'error' && <ErrorMessage>{t.errors[state.error]}</ErrorMessage>}
       {state.status === 'loaded' && (
-        <ul className="task-list" aria-label="Tus tareas">
+        <ul className="task-list" aria-label={t.tasks.title}>
           {agenda(state.tasks, today).map(({ task, round }) => (
             <TaskItem
               key={task.id}
@@ -175,8 +178,9 @@ function TaskItem({
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
+  const { language, t } = useLanguage()
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorCode | null>(null)
   async function handleComplete() {
     setSaving(true)
     setError(null)
@@ -184,7 +188,7 @@ function TaskItem({
       // Solo se muestra como hecha cuando la base de datos lo ha guardado.
       onCompleted(task.id, await completeTask(task, round))
     } catch (saveError) {
-      setError((saveError as Error).message)
+      setError(errorCode(saveError))
       if (saveError instanceof AlreadyDoneError) onStale()
     } finally {
       setSaving(false)
@@ -193,20 +197,22 @@ function TaskItem({
 
   return (
     <li className="card">
-      <h3>{task.name}</h3>
-      <p className="muted">{describeFrequency(task.frequency)}</p>
-      <p className="due">{describeDue(task.frequency, round, today)}</p>
+      <h3>{taskDisplayName(task, language)}</h3>
+      <p className="muted">{describeFrequency(task.frequency, language)}</p>
+      <p className="due">{describeDue(task.frequency, round, today, language)}</p>
       {task.parts.length > 0 && (
-        <p>{task.parts.map((part) => `${part.name} ${part.weight} %`).join(' · ')}</p>
+        <p>
+          {task.parts
+            .map((part) => `${partDisplayName(part, language)} ${part.weight} %`)
+            .join(' · ')}
+        </p>
       )}
       {canMarkDone(task, round, today) && (
         <button type="button" onClick={handleComplete} disabled={saving}>
-          {saving ? 'Guardando…' : 'Marcar como hecha'}
+          {saving ? t.tasks.saving : t.tasks.markDone}
         </button>
       )}
-      {error && (
-        <ErrorMessage>{error}</ErrorMessage>
-      )}
+      {error && <ErrorMessage>{t.errors[error]}</ErrorMessage>}
     </li>
   )
 }

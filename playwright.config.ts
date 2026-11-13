@@ -19,6 +19,9 @@ export default defineConfig({
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${port}`,
+    // La app sale en el idioma del navegador (US-52). Las pruebas de cada historia buscan
+    // los textos en castellano; las del inglés lo cambian con test.use({ locale: 'en-US' }).
+    locale: 'es-ES',
     // Si una prueba falla, guarda una traza para ver paso a paso qué pasó.
     trace: 'retain-on-failure',
   },
