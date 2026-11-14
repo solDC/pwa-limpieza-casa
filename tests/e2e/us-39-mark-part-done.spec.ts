@@ -104,8 +104,10 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await expect(surfaces).toContainText(nextWeekend())
     await expect(surfaces.getByRole('button')).toHaveCount(0)
     await expect(surfaces).not.toContainText('Llevas')
-    // Lo dice (también a los lectores de pantalla), y las partes del finde siguiente salen sin hacer.
-    await expect(surfaces).toContainText('Tarea hecha.')
+    // No dice que esté hecha: la tarjeta ya es la del finde siguiente, con sus partes sin hacer.
+    // Los lectores de pantalla dicen cuándo vuelve a tocar.
+    await expect(surfaces).not.toContainText('Tarea hecha')
+    await expect(surfaces.getByText(nextWeekend())).toHaveAttribute('aria-live', 'polite')
     await expect(taskParts(surfaces)).toHaveText(['Cocina 50 %', 'Salón 25 %', 'Dormitorio 25 %'])
 
     await page.reload()

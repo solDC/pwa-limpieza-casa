@@ -41,8 +41,6 @@ export function TaskItem({
   const [savingTarget, setSavingTarget] = useState<string | null>(null)
   const saving = savingTarget !== null
   const [error, setError] = useState<ErrorCode | null>(null)
-  // El día en que se ha terminado la vuelta desde esta tarjeta marcando partes: ese día lo dice.
-  const [roundDoneOn, setRoundDoneOn] = useState<LocalDate | null>(null)
 
   // Solo se muestra como hecho lo que la base de datos ha guardado.
   async function save(target: string, action: () => Promise<void>) {
@@ -62,9 +60,7 @@ export function TaskItem({
     save('task', async () => onCompleted(task.id, await completeTask(task, round)))
   const handlePartsDone = (target: string, partIds: string[]) =>
     save(target, async () => {
-      const wereTheLast = partIds.length === progress.remaining.length
       onPartsDone(task.id, round, partIds, await completeParts(task, round, partIds))
-      if (wereTheLast) setRoundDoneOn(today)
       focusNext.current = true
     })
 
@@ -88,13 +84,18 @@ export function TaskItem({
     <li className="card" ref={card}>
       <h3 tabIndex={-1}>{taskDisplayName(task, language)}</h3>
       <p className="muted">{describeFrequency(task.frequency, language)}</p>
-      <p className="due">{describeDue(task.frequency, round, today, language)}</p>
+      {/* Con `aria-live`, al marcar la última parte los lectores de pantalla dicen cuándo
+          vuelve a tocar la tarea: la tarjeta ya es la de la vuelta siguiente. */}
+      <p className="due" aria-live={hasParts ? 'polite' : undefined}>
+        {describeDue(task.frequency, round, today, language)}
+      </p>
       {hasParts && (
         <>
           {/* Con `aria-live`, los lectores de pantalla dicen el progreso nuevo al marcar una
-              parte y, al marcar la última, que la tarea ha quedado hecha. */}
+              parte. Cuando la vuelta no se puede marcar (ya está hecha o aún no ha empezado),
+              no sale: las partes que se ven son las de la vuelta siguiente, sin hacer. */}
           <p aria-live="polite" className="progress">
-            {canMark ? t.tasks.progress(progress.percent) : roundDoneOn === today && t.tasks.roundDone}
+            {canMark && t.tasks.progress(progress.percent)}
           </p>
           {/* `role="list"`: sin viñetas, VoiceOver deja de tratarla como una lista. */}
           <ul role="list" className="parts" aria-label={t.tasks.parts}>
