@@ -61,12 +61,11 @@ create index task_part_completions_task_id_created_at_idx
 -- El peso lo copia la base de datos, y las partes de una tarea se marcan de una en una
 -- ---------------------------------------------------------------------------
 
--- Con «security definer» para que encuentre siempre la parte: si es de otro hogar o de otra
--- tarea, la fila se rechaza después, por las reglas RLS o por las claves de la tabla.
+-- Se ejecuta con los permisos de quien marca la parte, que ve las partes de su hogar. Una
+-- parte de otro hogar no la ve: se queda sin peso y la fila se rechaza.
 create function public.set_task_part_completion_weight()
 returns trigger
 language plpgsql
-security definer
 set search_path = ''
 as $$
 begin

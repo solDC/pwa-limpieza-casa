@@ -242,12 +242,23 @@ describe('US-39 · solo veo y apunto partes hechas de mi hogar (RLS)', () => {
       asUser(db, ana, (query) =>
         query(insertPart, [mine.household, theirs.task, theirs.parts['Cocina'], null, null]),
       ),
-    ).rejects.toThrow(/task_part_completions_task_fkey/)
-    // Ni una parte de otra tarea en una tarea mía.
+    ).rejects.toThrow(/null value in column "weight"/)
+    // Ni una parte de otro hogar en una tarea mía: no la veo, así que no tiene peso que copiar.
     await expect(
       asUser(db, ana, (query) =>
         query(insertPart, [mine.household, mine.task, theirs.parts['Cocina'], null, null]),
       ),
+    ).rejects.toThrow(/null value in column "weight"/)
+  })
+
+  it('una parte hecha solo puede ser de una parte de esa misma tarea', async () => {
+    const { household, parts } = await surfacesOf(ana)
+    const { rows } = await db.query(
+      `select id from public.tasks where household_id = $1 and name = 'Baño'`,
+      [household],
+    )
+    await expect(
+      asUser(db, ana, (query) => query(insertPart, [household, rows[0].id, parts['Cocina'], null, null])),
     ).rejects.toThrow(/task_part_completions_part_fkey/)
   })
 

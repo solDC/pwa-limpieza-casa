@@ -73,3 +73,39 @@ export async function removeAccountLanguage(email: string) {
     await db.end()
   }
 }
+
+/**
+ * Apunta esas partes como hechas en los `weekends` fines de semana anteriores al actual
+ * (US-39), cada una el sábado de su vuelta: vueltas antiguas que se quedaron a medias.
+ */
+export async function addPastPartCompletions(
+  email: string,
+  taskName: string,
+  partNames: string[],
+  weekends: number,
+) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `insert into public.task_part_completions (household_id, task_id, part_id, starts_on, due_by, completed_on)
+       select t.household_id, t.id, p.id, s.saturday, s.saturday + 6, s.saturday
+       from public.tasks t
+       join public.household_members m on m.household_id = t.household_id
+       join auth.users u on u.id = m.user_id
+       join public.task_parts p on p.task_id = t.id and p.name = any($3::text[])
+       cross join lateral (
+         select d - ((extract(dow from d)::int + 1) % 7) - 7 * week as saturday
+         from (select (now() at time zone 'Europe/Madrid')::date as d) as madrid,
+              generate_series(1, $4::int) as week
+       ) as s
+       where u.email = $1 and t.name = $2`,
+      [email, taskName, partNames, weekends],
+    )
+    if (rowCount !== partNames.length * weekends) {
+      throw new Error(`No se han podido apuntar las partes de «${taskName}» de ${email}`)
+    }
+  } finally {
+    await db.end()
+  }
+}

@@ -65,6 +65,15 @@ Mejoras centradas en la experiencia de uso.
 |---|---|---|---|---|
 | US-35 | Épica: Rediseño de la interfaz | Backlog | Pendiente | [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44) |
 
+### Multicasa (v2.0)
+
+Tener más de una casa. Están descritas en la sección «Backlog».
+
+| ID | Historia | Prioridad | Estado | Issue |
+|---|---|---|---|---|
+| US-36 | Tener varias casas y cambiar entre ellas | Backlog | Pendiente | [#50](https://github.com/solDC/pwa-limpieza-casa/issues/50) |
+| US-37 | Archivar una casa | Backlog | Pendiente | [#51](https://github.com/solDC/pwa-limpieza-casa/issues/51) |
+
 ## Conceptos
 
 - **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %.
@@ -176,7 +185,7 @@ para avanzar poco a poco y que la app sepa cuánto llevo.
 - Al marcar todas las partes, la vuelta queda completada.
 - Si falla el guardado, la app lo dice y no muestra la parte como hecha.
 
-*Depende de la US-30. Las tareas con partes se marcan enteras con «Marcar todo como hecho», que marca las partes que faltan. Una vuelta que se queda a medias no se arrastra: la siguiente empieza con todo por hacer. Deshacer una parte es la US-44.*
+*Depende de la US-30. Cada parte tiene su botón «Marcar»; hecha, el botón pasa a «Hecha», desactivado (será el de deshacer). Las tareas con partes se marcan enteras con «Marcar todo como hecho», que marca las partes que faltan. Una vuelta que se queda a medias no se arrastra: la siguiente empieza con todo por hacer. Deshacer una parte es la US-44.*
 
 ### US-32 · Cancelar una tarea (Nice to have)
 Como usuario,

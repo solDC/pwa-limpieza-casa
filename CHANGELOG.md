@@ -7,8 +7,8 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
-- **US-39 · Marcar una parte como hecha** (#57). En una tarea con partes, cada parte tiene su botón «Hecha», y la tarjeta dice cuánto se lleva de la vuelta: la suma de los pesos de las partes hechas («Llevas 50 %»). Las partes hechas se ven con ✓ y «hecha». Así se puede avanzar poco a poco, por ejemplo la cocina el sábado y el resto el domingo.
-  - Al marcar la última parte, la vuelta queda completada y la tarea muestra cuándo vuelve a tocar (las puntuales desaparecen), igual que al marcar una tarea entera.
+- **US-39 · Marcar una parte como hecha** (#57). En una tarea con partes, cada parte tiene su botón «Marcar», y la tarjeta dice cuánto se lleva de la vuelta: la suma de los pesos de las partes hechas («Llevas 50 %»). Una parte hecha cambia su botón por «Hecha», desactivado: será el de deshacerla cuando llegue esa historia (US-44). Así se puede avanzar poco a poco, por ejemplo la cocina el sábado y el resto el domingo.
+  - Al marcar la última parte, la vuelta queda completada y la tarea muestra cuándo vuelve a tocar (las puntuales desaparecen), igual que al marcar una tarea entera; la tarjeta dice «Tarea hecha.», también a los lectores de pantalla.
   - **«Marcar todo como hecho»** marca de una vez las partes que faltan. Sustituye a «Marcar como hecha» en las tareas con partes; las que no tienen partes siguen igual. Con una sola parte por hacer no sale, porque su botón ya lo marca todo.
   - Las partes solo se pueden marcar cuando la vuelta se puede marcar: en las de fin de semana, desde su sábado. Si falla el guardado, la app lo dice y no muestra la parte como hecha; si ya se había marcado en otro dispositivo, lo dice y pone la tarjeta al día.
   - Al marcar una parte, el foco pasa a la siguiente por hacer (o al nombre de la tarea, si era la última), para seguir con el teclado o con VoiceOver. Si dos móviles marcan a la vez las últimas partes, la base de datos las apunta de una en una, para que la vuelta quede terminada.

@@ -77,7 +77,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
       {state.status === 'loading' && <p className="muted">{t.tasks.loading}</p>}
       {state.status === 'error' && <ErrorMessage>{t.errors[state.error]}</ErrorMessage>}
       {state.status === 'loaded' && (
-        <ul className="task-list" aria-label={t.tasks.title}>
+        <ul role="list" className="task-list" aria-label={t.tasks.title}>
           {agenda(state.tasks, today).map(({ task, round }) => (
             <TaskItem
               key={task.id}

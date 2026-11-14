@@ -14,8 +14,9 @@ import { useLanguage } from '../../i18n/language-context'
 import { AlreadyDoneError, completeParts, completeTask } from '../../storage/tasks'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
-// para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón, lo que se
-// lleva de la vuelta y «Marcar todo como hecho» (US-39).
+// para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón («Marcar» o,
+// si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
+// vuelta y «Marcar todo como hecho» (US-39).
 export function TaskItem({
   task,
   round,
@@ -35,12 +36,17 @@ export function TaskItem({
   onStale: () => void
 }) {
   const { language, t } = useLanguage()
-  const [saving, setSaving] = useState(false)
+  // Qué se está guardando: la tarea entera, todas las partes que faltan o una parte (su id).
+  // El «Guardando…» sale en el botón pulsado; mientras, los demás no se pueden pulsar.
+  const [savingTarget, setSavingTarget] = useState<string | null>(null)
+  const saving = savingTarget !== null
   const [error, setError] = useState<ErrorCode | null>(null)
+  // El día en que se ha terminado la vuelta desde esta tarjeta marcando partes: ese día lo dice.
+  const [roundDoneOn, setRoundDoneOn] = useState<LocalDate | null>(null)
 
   // Solo se muestra como hecho lo que la base de datos ha guardado.
-  async function save(action: () => Promise<void>) {
-    setSaving(true)
+  async function save(target: string, action: () => Promise<void>) {
+    setSavingTarget(target)
     setError(null)
     try {
       await action()
@@ -48,15 +54,17 @@ export function TaskItem({
       setError(errorCode(saveError, 'saveFailed'))
       if (saveError instanceof AlreadyDoneError) onStale()
     } finally {
-      setSaving(false)
+      setSavingTarget(null)
     }
   }
 
   const handleComplete = () =>
-    save(async () => onCompleted(task.id, await completeTask(task, round)))
-  const handlePartsDone = (partIds: string[]) =>
-    save(async () => {
+    save('task', async () => onCompleted(task.id, await completeTask(task, round)))
+  const handlePartsDone = (target: string, partIds: string[]) =>
+    save(target, async () => {
+      const wereTheLast = partIds.length === progress.remaining.length
       onPartsDone(task.id, round, partIds, await completeParts(task, round, partIds))
+      if (wereTheLast) setRoundDoneOn(today)
       focusNext.current = true
     })
 
@@ -68,7 +76,7 @@ export function TaskItem({
   useEffect(() => {
     if (!focusNext.current || saving) return
     focusNext.current = false
-    const next = card.current?.querySelector<HTMLElement>('.parts button') ?? card.current?.querySelector('h3')
+    const next = card.current?.querySelector<HTMLElement>('.parts button:not(:disabled)') ?? card.current?.querySelector('h3')
     next?.focus()
   }, [saving, task.partCompletions])
 
@@ -83,28 +91,34 @@ export function TaskItem({
       <p className="due">{describeDue(task.frequency, round, today, language)}</p>
       {hasParts && (
         <>
-          {/* Con `aria-live`, los lectores de pantalla dicen el progreso nuevo al marcar una parte. */}
+          {/* Con `aria-live`, los lectores de pantalla dicen el progreso nuevo al marcar una
+              parte y, al marcar la última, que la tarea ha quedado hecha. */}
           <p aria-live="polite" className="progress">
-            {canMark && t.tasks.progress(progress.percent)}
+            {canMark ? t.tasks.progress(progress.percent) : roundDoneOn === today && t.tasks.roundDone}
           </p>
-          <ul className="parts" aria-label={t.tasks.parts}>
+          {/* `role="list"`: sin viñetas, VoiceOver deja de tratarla como una lista. */}
+          <ul role="list" className="parts" aria-label={t.tasks.parts}>
             {progress.parts.map(({ part, done }) => {
               const name = partDisplayName(part, language)
               return (
                 <li key={part.id} className={done ? 'part-done' : undefined}>
                   <span>
-                    {done && <span aria-hidden="true">✓ </span>}
-                    {name} {part.weight} %{done && ` · ${t.tasks.partDone}`}
+                    {name} {part.weight} %
                   </span>
+                  {done && (
+                    <button type="button" className="button-secondary" disabled>
+                      {t.tasks.partDone}
+                    </button>
+                  )}
                   {canMark && !done && (
                     <button
                       type="button"
                       className="button-secondary"
                       aria-label={t.tasks.markPartLabel(name)}
-                      onClick={() => handlePartsDone([part.id])}
+                      onClick={() => handlePartsDone(part.id, [part.id])}
                       disabled={saving}
                     >
-                      {t.tasks.markPart}
+                      {savingTarget === part.id ? t.tasks.saving : t.tasks.markPart}
                     </button>
                   )}
                 </li>
@@ -115,10 +129,10 @@ export function TaskItem({
           {canMark && progress.remaining.length > 1 && (
             <button
               type="button"
-              onClick={() => handlePartsDone(progress.remaining.map((part) => part.id))}
+              onClick={() => handlePartsDone('all', progress.remaining.map((part) => part.id))}
               disabled={saving}
             >
-              {saving ? t.tasks.saving : t.tasks.markAll}
+              {savingTarget === 'all' ? t.tasks.saving : t.tasks.markAll}
             </button>
           )}
         </>

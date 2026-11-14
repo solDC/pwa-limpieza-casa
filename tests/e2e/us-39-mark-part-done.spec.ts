@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth, formatShortDate } from '../../src/domain/dates'
 import { newTaskForm, signIn, task, taskParts, todayInMadrid } from './helpers/app'
-import { setAllTasksCreatedOn } from './helpers/database'
+import { addPastPartCompletions, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-39 · Marcar una parte como hecha (#57)
@@ -15,6 +15,13 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
 function markPart(page: Page, taskName: string, part: string) {
   return task(page, taskName).getByRole('button', { name: `Marcar ${part} como hecha` })
+}
+
+/** El botón desactivado «Hecha» de una parte ya hecha. */
+function doneMark(page: Page, taskName: string, part: string) {
+  return taskParts(task(page, taskName))
+    .filter({ hasText: part })
+    .getByRole('button', { name: 'Hecha', exact: true, disabled: true })
 }
 
 function markAll(page: Page, taskName: string) {
@@ -67,18 +74,17 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await markPart(page, 'Superficies', 'Cocina').click()
 
     await expect(surfaces).toContainText('Llevas 50 %')
-    await expect(taskParts(surfaces)).toContainText([
-      'Cocina 50 % · hecha',
-      'Salón 25 %',
-      'Dormitorio 25 %',
-    ])
-    // La parte hecha ya no se puede marcar; las otras, sí.
+    await expect(taskParts(surfaces)).toContainText(['Cocina 50 %', 'Salón 25 %', 'Dormitorio 25 %'])
+    // La parte hecha lo dice con un botón desactivado, «Hecha» (será el de deshacer, US-44),
+    // y ya no se puede marcar; las otras, sí, con «Marcar».
+    await expect(doneMark(page, 'Superficies', 'Cocina')).toBeDisabled()
     await expect(markPart(page, 'Superficies', 'Cocina')).toHaveCount(0)
-    await expect(markPart(page, 'Superficies', 'Salón')).toBeVisible()
+    await expect(markPart(page, 'Superficies', 'Salón')).toHaveText('Marcar')
+    await expect(doneMark(page, 'Superficies', 'Salón')).toHaveCount(0)
 
     await page.reload()
     await expect(surfaces).toContainText('Llevas 50 %')
-    await expect(taskParts(surfaces).first()).toContainText('Cocina 50 % · hecha')
+    await expect(doneMark(page, 'Superficies', 'Cocina')).toBeDisabled()
 
     await markPart(page, 'Superficies', 'Dormitorio').click()
     await expect(surfaces).toContainText('Llevas 75 %')
@@ -98,8 +104,9 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await expect(surfaces).toContainText(nextWeekend())
     await expect(surfaces.getByRole('button')).toHaveCount(0)
     await expect(surfaces).not.toContainText('Llevas')
-    await expect(taskParts(surfaces)).toContainText(['Cocina 50 %', 'Salón 25 %', 'Dormitorio 25 %'])
-    await expect(surfaces).not.toContainText('hecha')
+    // Lo dice (también a los lectores de pantalla), y las partes del finde siguiente salen sin hacer.
+    await expect(surfaces).toContainText('Tarea hecha.')
+    await expect(taskParts(surfaces)).toHaveText(['Cocina 50 %', 'Salón 25 %', 'Dormitorio 25 %'])
 
     await page.reload()
     await expect(surfaces).toContainText(nextWeekend())
@@ -207,7 +214,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
       'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.',
     )
     await expect(surfaces).toContainText('Llevas 0 %')
-    await expect(surfaces).not.toContainText('hecha')
+    await expect(doneMark(page, 'Superficies', 'Cocina')).toHaveCount(0)
     await expect(markPart(page, 'Superficies', 'Cocina')).toBeEnabled()
 
     await page.unroute('**/rest/v1/task_part_completions*')
@@ -257,6 +264,50 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await expect(markPart(other, 'Superficies', 'Cocina')).toHaveCount(0)
   })
 
+  // La vuelta la calcula el móvil con su reloj; el día lo pone la base de datos.
+  test('si la fecha del dispositivo no es la de hoy, la app lo dice y no marca la parte', async ({ page }) => {
+    const email = uniqueEmail()
+    await page.clock.setFixedTime(new Date('2026-10-31T12:00:00+01:00')) // un sábado pasado
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, '2026-10-01')
+    await page.reload()
+    const surfaces = task(page, 'Superficies')
+    await expect(surfaces).toContainText('Toca: finde del 31 oct')
+
+    await markPart(page, 'Superficies', 'Cocina').click()
+
+    await expect(surfaces.getByRole('alert')).toHaveText(
+      'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
+    )
+    await expect(surfaces).toContainText('Llevas 0 %')
+  })
+
+  // Regresión posible: la app lee solo las últimas partes hechas de cada tarea. Con muchas
+  // de vueltas antiguas, las de la vuelta en curso tienen que seguir llegando.
+  test('con muchas partes hechas en vueltas antiguas, las de esta vuelta se siguen viendo al volver a entrar', async ({
+    page,
+  }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await setAllTasksCreatedOn(email, addDays(todayInMadrid(), -120))
+    // Once findes a medias: Cocina y Salón hechas, Dormitorio no (22 partes hechas).
+    await addPastPartCompletions(email, 'Superficies', ['Cocina', 'Salón'], 11)
+    await page.reload()
+    const surfaces = task(page, 'Superficies')
+    await expect(surfaces).toContainText('Llevas 0 %')
+
+    await markPart(page, 'Superficies', 'Dormitorio').click()
+    await expect(surfaces).toContainText('Llevas 25 %')
+    await markPart(page, 'Superficies', 'Cocina').click()
+    await expect(surfaces).toContainText('Llevas 75 %')
+
+    await page.reload()
+    await expect(surfaces).toContainText('Llevas 75 %')
+    await expect(doneMark(page, 'Superficies', 'Cocina')).toBeDisabled()
+    await expect(doneMark(page, 'Superficies', 'Dormitorio')).toBeDisabled()
+    await expect(markPart(page, 'Superficies', 'Salón')).toBeEnabled()
+  })
+
   test.describe('en inglés', () => {
     test.use({ locale: 'en-US' })
 
@@ -278,11 +329,11 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
       await surfaces.getByRole('button', { name: 'Mark Kitchen as done' }).click()
 
       await expect(surfaces).toContainText('50 % done')
-      await expect(taskParts(surfaces)).toContainText([
-        'Kitchen 50 % · done',
-        'Living room 25 %',
-        'Bedroom 25 %',
-      ])
+      await expect(taskParts(surfaces)).toContainText(['Kitchen 50 %', 'Living room 25 %', 'Bedroom 25 %'])
+      await expect(
+        taskParts(surfaces).first().getByRole('button', { name: 'Done', exact: true, disabled: true }),
+      ).toBeVisible()
+      await expect(surfaces.getByRole('button', { name: 'Mark Living room as done' })).toHaveText('Mark')
       await expect(surfaces.getByRole('button', { name: 'Mark all as done' })).toBeVisible()
     })
   })
