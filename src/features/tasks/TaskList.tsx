@@ -13,7 +13,7 @@ import { useToday } from './use-today'
 // `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
 export function TaskList({ householdId }: { householdId?: string }) {
   const { t } = useLanguage()
-  const { state, markCompleted, refresh, reloadAfterAdding } = useTasks()
+  const { state, markCompleted, markPartsDone, refresh, reloadAfterAdding } = useTasks()
   const today = useToday()
   const [adding, setAdding] = useState(false)
   // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
@@ -85,6 +85,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
               round={round}
               today={today}
               onCompleted={markCompleted}
+              onPartsDone={markPartsDone}
               onStale={refresh}
             />
           ))}

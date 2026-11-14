@@ -25,6 +25,12 @@ export type TaskPart = {
   weight: number
 }
 
+/** Una parte hecha, y en qué vuelta: desde cuándo tocaba (`null` en las puntuales). */
+export type PartCompletion = {
+  partId: string
+  startsOn: LocalDate | null
+}
+
 export type Task = {
   id: string
   householdId: string
@@ -37,6 +43,8 @@ export type Task = {
   cancelledOn: LocalDate | null
   /** Día en que se terminó la última vuelta (`null` si nunca). */
   lastCompletedOn: LocalDate | null
+  /** Las últimas partes hechas (US-39): las de la vuelta en curso están siempre. */
+  partCompletions: PartCompletion[]
 }
 
 /** Texto de la frecuencia para la interfaz. */

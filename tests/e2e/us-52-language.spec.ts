@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn, task } from './helpers/app'
+import { dayOfWeek } from '../../src/domain/dates'
+import { signIn, task, taskParts, todayInMadrid } from './helpers/app'
 import {
   accountLanguage,
   removeAccountLanguage,
@@ -181,20 +182,15 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
         .getByRole('listitem')
         .getByRole('heading', { level: 3 }),
     ).toHaveText(
-      [
-        'Bathroom',
-        'Windows and mirrors',
-        'Scrub the floor',
-        'Clean the grout',
-        'Surfaces',
-        'Vacuum Cati’s things',
-      ],
+      // Con el reloj de verdad: el sábado y el domingo, «Surfaces» toca hoy y va la primera;
+      // de lunes a viernes, toca el finde siguiente y va detrás de las puntuales (US-29).
+      [0, 6].includes(dayOfWeek(todayInMadrid()))
+        ? ['Surfaces', 'Bathroom', 'Windows and mirrors', 'Scrub the floor', 'Clean the grout', 'Vacuum Cati’s things']
+        : ['Bathroom', 'Windows and mirrors', 'Scrub the floor', 'Clean the grout', 'Surfaces', 'Vacuum Cati’s things'],
       { ignoreCase: false, useInnerText: true },
     )
     await expect(englishTask(page, 'Surfaces')).toContainText('Weekly, at the weekend')
-    await expect(englishTask(page, 'Surfaces')).toContainText(
-      'Kitchen 50 % · Living room 25 % · Bedroom 25 %',
-    )
+    await expect(taskParts(englishTask(page, 'Surfaces'))).toContainText(['Kitchen 50 %', 'Living room 25 %', 'Bedroom 25 %'])
     await expect(englishTask(page, 'Bathroom')).toContainText('Every 3 days since the last time')
     await expect(englishTask(page, 'Bathroom')).toContainText('Due: today')
     await expect(englishTask(page, 'Scrub the floor')).toContainText('One-off')
@@ -235,11 +231,11 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
     await expect(page.getByRole('status')).toHaveText('Task added: Deep-clean the kitchen.')
     const added = englishTask(page, 'Deep-clean the kitchen')
     await expect(added).toContainText('Every 7 days since the last time')
-    await expect(added).toContainText('Oven 60 % · Fridge 40 %')
+    await expect(taskParts(added)).toContainText(['Oven 60 %', 'Fridge 40 %'])
 
     // En castellano, la tarea que he escrito yo sigue igual; las de por defecto cambian.
     await languageButton(page, 'Español').click()
-    await expect(task(page, 'Deep-clean the kitchen')).toContainText('Oven 60 % · Fridge 40 %')
+    await expect(taskParts(task(page, 'Deep-clean the kitchen'))).toContainText(['Oven 60 %', 'Fridge 40 %'])
     await expect(task(page, 'Baño')).toBeVisible()
   })
 

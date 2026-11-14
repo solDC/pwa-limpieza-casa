@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { errorCode, type ErrorCode } from '../../domain/errors'
+import type { Round } from '../../domain/frequency'
+import { withPartsDone } from '../../domain/progress'
 import type { LocalDate, Task } from '../../domain/task'
 import { listTasks } from '../../storage/tasks'
 
@@ -11,6 +13,8 @@ export type TasksState =
 /**
  * Las tareas del hogar, y cómo ponerlas al día:
  * - `markCompleted`: una tarea se ha marcado como hecha (ya guardada).
+ * - `markPartsDone`: se han marcado partes de una tarea (ya guardadas); si eran las que
+ *   faltaban, la vuelta queda terminada.
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -56,23 +60,30 @@ export function useTasks() {
     // Solo al abrir la lista. `load` solo usa refs y setState, que no cambian.
   }, [])
 
-  function markCompleted(taskId: string, completedOn: LocalDate) {
+  function changeTask(taskId: string, change: (task: Task) => Task) {
     localChanges.current++
     setState((current) =>
       current.status === 'loaded'
         ? {
             status: 'loaded',
-            tasks: current.tasks.map((task) =>
-              task.id === taskId ? { ...task, lastCompletedOn: completedOn } : task,
-            ),
+            tasks: current.tasks.map((task) => (task.id === taskId ? change(task) : task)),
           }
         : current,
     )
   }
 
+  function markCompleted(taskId: string, completedOn: LocalDate) {
+    changeTask(taskId, (task) => ({ ...task, lastCompletedOn: completedOn }))
+  }
+
+  function markPartsDone(taskId: string, round: Round, partIds: string[], completedOn: LocalDate) {
+    changeTask(taskId, (task) => withPartsDone(task, round, partIds, completedOn))
+  }
+
   return {
     state,
     markCompleted,
+    markPartsDone,
     refresh: () => load({ keepOnError: true }),
     reloadAfterAdding(onFailed: () => void) {
       localChanges.current++

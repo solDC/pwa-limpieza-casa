@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { newTaskForm, signIn, task } from './helpers/app'
+import { newTaskForm, signIn, task, taskParts } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-34 · Elegir el peso de las partes (#43)
@@ -35,9 +35,9 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await expect(newTaskForm(page)).toContainText('Suman: 100 %')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 30 % · Campana 20 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
     await page.reload()
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 30 % · Campana 20 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
   })
 
   test('si no cambio los pesos, se reparten a partes iguales, también al añadir y quitar partes', async ({
@@ -54,7 +54,7 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await expect(weight(page, 2)).toHaveValue('50')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 50 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 50 %'])
   })
 
   test('desde que cambio un peso, una parte nueva entra con 0 % y los demás se quedan como los dejé', async ({
@@ -92,7 +92,7 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 3).fill('20')
     await expect(newTaskForm(page)).toContainText('Suman: 100 %')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 50 % · Nevera 30 % · Campana 20 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
   })
 
   test('cada parte tiene que contar de 1 a 100 %', async ({ page }) => {

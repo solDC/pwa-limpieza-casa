@@ -4,7 +4,7 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 **La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos. La sesión, el idioma elegido y la app instalada son de cada dirección: en la nueva hay que volver a entrar, y la app instalada desde la anterior sigue en la anterior).
 
-🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-39, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
