@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
@@ -55,15 +55,30 @@ export function TaskItem({
   const handleComplete = () =>
     save(async () => onCompleted(task.id, await completeTask(task, round)))
   const handlePartsDone = (partIds: string[]) =>
-    save(async () => onPartsDone(task.id, round, partIds, await completeParts(task, round, partIds)))
+    save(async () => {
+      onPartsDone(task.id, round, partIds, await completeParts(task, round, partIds))
+      focusNext.current = true
+    })
+
+  // Al marcar una parte, su botón desaparece. Para que el foco no se pierda (teclado y
+  // lectores de pantalla), pasa a la primera parte por hacer o, si ya no queda ninguna, al
+  // nombre de la tarea.
+  const card = useRef<HTMLLIElement>(null)
+  const focusNext = useRef(false)
+  useEffect(() => {
+    if (!focusNext.current || saving) return
+    focusNext.current = false
+    const next = card.current?.querySelector<HTMLElement>('.parts button') ?? card.current?.querySelector('h3')
+    next?.focus()
+  }, [saving, task.partCompletions])
 
   const canMark = canMarkDone(task, round, today)
   const hasParts = task.parts.length > 0
   const progress = roundProgress(task, round)
 
   return (
-    <li className="card">
-      <h3>{taskDisplayName(task, language)}</h3>
+    <li className="card" ref={card}>
+      <h3 tabIndex={-1}>{taskDisplayName(task, language)}</h3>
       <p className="muted">{describeFrequency(task.frequency, language)}</p>
       <p className="due">{describeDue(task.frequency, round, today, language)}</p>
       {hasParts && (

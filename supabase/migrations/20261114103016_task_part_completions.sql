@@ -58,7 +58,7 @@ create index task_part_completions_task_id_created_at_idx
   on public.task_part_completions (task_id, created_at desc);
 
 -- ---------------------------------------------------------------------------
--- El peso lo copia la base de datos
+-- El peso lo copia la base de datos, y las partes de una tarea se marcan de una en una
 -- ---------------------------------------------------------------------------
 
 -- Con «security definer» para que encuentre siempre la parte: si es de otro hogar o de otra
@@ -70,6 +70,11 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- Si dos móviles marcan a la vez las dos últimas partes de una tarea, ninguno vería la
+  -- parte del otro (aún sin confirmar) y la vuelta se quedaría sin terminar, con todas las
+  -- partes hechas. Con este cerrojo, por tarea y hasta el final de la transacción, el
+  -- segundo espera al primero y ya ve su parte.
+  perform pg_advisory_xact_lock(hashtextextended(new.task_id::text, 0));
   new.weight := (select p.weight from public.task_parts p where p.id = new.part_id);
   return new;
 end;

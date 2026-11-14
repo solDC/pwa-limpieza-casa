@@ -119,6 +119,22 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await expect(surfaces).toContainText(nextWeekend())
   })
 
+  // Al marcar una parte, su botón desaparece: el foco no se pierde (teclado y VoiceOver).
+  test('al marcar una parte, el foco pasa a la siguiente por hacer y, al terminar, al nombre de la tarea', async ({
+    page,
+  }) => {
+    await signInWithSurfaces(page)
+
+    await markPart(page, 'Superficies', 'Cocina').click()
+    await expect(markPart(page, 'Superficies', 'Salón')).toBeFocused()
+    await markPart(page, 'Superficies', 'Dormitorio').click()
+    await expect(markPart(page, 'Superficies', 'Salón')).toBeFocused()
+    await markPart(page, 'Superficies', 'Salón').click()
+
+    await expect(task(page, 'Superficies')).toContainText(nextWeekend())
+    await expect(page.getByRole('heading', { level: 3, name: 'Superficies' })).toBeFocused()
+  })
+
   test('con una sola parte por hacer, basta su botón: no hay «Marcar todo como hecho»', async ({
     page,
   }) => {

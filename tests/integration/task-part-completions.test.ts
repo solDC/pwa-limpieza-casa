@@ -162,7 +162,7 @@ describe('US-39 · marcar una parte como hecha', () => {
   })
 
   it('si la tarea ya se ha hecho hoy, no se termina otra vuelta el mismo día: no se guarda la parte', async () => {
-    const { household, task, parts } = await surfacesOf(ana)
+    const { household, task } = await surfacesOf(ana)
     await expect(
       asUser(db, ana, async (query: Query) => {
         // Como una de «cada N días» con partes: una vuelta hecha hoy y, después, la siguiente.
@@ -177,7 +177,35 @@ describe('US-39 · marcar una parte como hecha', () => {
         )
       }),
     ).rejects.toThrow(/task_rounds_task_id_completed_on_key/)
-    expect(Object.keys(parts)).toHaveLength(3)
+  })
+})
+
+// Regresión: cada móvil comprobaba si estaban todas las partes sin ver la del otro, aún sin
+// confirmar, y la vuelta se quedaba sin terminar con todas las partes hechas.
+describe('US-39 · dos dispositivos marcan a la vez las últimas partes', () => {
+  it('la vuelta queda terminada', async () => {
+    const { household, task, parts } = await surfacesOf(bruno)
+    const round = await thisWeekend()
+    const other = connect()
+    await other.connect()
+    try {
+      await db.query('begin')
+      await db.query(insertPart, [household, task, parts['Cocina'], round.starts_on, round.due_by])
+      await db.query(insertPart, [household, task, parts['Salón'], round.starts_on, round.due_by])
+      // El segundo dispositivo marca la última mientras el primero aún no ha confirmado.
+      const last = other.query(insertPart, [household, task, parts['Dormitorio'], round.starts_on, round.due_by])
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      await db.query('commit')
+      await last
+
+      const rounds = await db.query(roundsOf, [task])
+      expect(rounds.rows).toEqual([{ starts_on: round.starts_on, completed_on: round.today }])
+    } finally {
+      await db.query('rollback')
+      await db.query('delete from public.task_rounds where task_id = $1', [task])
+      await db.query('delete from public.task_part_completions where task_id = $1', [task])
+      await other.end()
+    }
   })
 })
 
