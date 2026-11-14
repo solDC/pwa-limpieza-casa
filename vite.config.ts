@@ -15,10 +15,10 @@ export default defineConfig({
       manifest: {
         // El nombre de la app instalada es uno solo para todos los idiomas (US-52): en inglés.
         // Dentro de la app se llama «Limpieza de casa» en castellano.
-        name: 'House Cleaning',
+        name: 'My House Cleaning',
         // El que propone el iPhone al instalarla: completo, para no tener que escribirlo. (La
         // etiqueta apple-mobile-web-app-title no sirve: el iPhone usa este.)
-        short_name: 'House Cleaning',
+        short_name: 'My House Cleaning',
         description: 'Organise household cleaning tasks',
         lang: 'en',
         start_url: '/',

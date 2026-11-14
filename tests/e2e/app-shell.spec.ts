@@ -20,8 +20,8 @@ test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ pa
   expect(manifest).toMatchObject({
     // Uno solo para todos los idiomas (US-52). El corto es el que propone el iPhone al
     // instalarla: completo, para no tener que escribirlo.
-    name: 'House Cleaning',
-    short_name: 'House Cleaning',
+    name: 'My House Cleaning',
+    short_name: 'My House Cleaning',
     lang: 'en',
     display: 'standalone',
   })
