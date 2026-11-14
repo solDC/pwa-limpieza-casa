@@ -52,6 +52,13 @@ const es = {
       'La tarea se ha guardado, pero no se ha podido poner al día la lista. Vuelve a cargar la página para verla.',
     markDone: 'Marcar como hecha',
     saving: 'Guardando…',
+    parts: 'Partes',
+    progress: (percent: number) => `Llevas ${percent} %`,
+    partDone: 'Hecha',
+    markPart: 'Marcar',
+    roundDone: 'Tarea hecha.',
+    markPartLabel: (name: string) => `Marcar ${name} como hecha`,
+    markAll: 'Marcar todo como hecho',
   },
 
   newTask: {
@@ -158,6 +165,13 @@ const en: Messages = {
       'The task has been saved, but the list could not be updated. Reload the page to see it.',
     markDone: 'Mark as done',
     saving: 'Saving…',
+    parts: 'Parts',
+    progress: (percent: number) => `${percent} % done`,
+    partDone: 'Done',
+    markPart: 'Mark',
+    roundDone: 'Task done.',
+    markPartLabel: (name: string) => `Mark ${name} as done`,
+    markAll: 'Mark all as done',
   },
 
   newTask: {

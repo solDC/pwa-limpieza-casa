@@ -4,7 +4,7 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 **La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos. La sesión, el idioma elegido y la app instalada son de cada dirección: en la nueva hay que volver a entrar, y la app instalada desde la anterior sigue en la anterior).
 
-🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, y puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-39, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
@@ -17,16 +17,17 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 - **Qué toca:** lo que toca hoy y lo retrasado, con su progreso.
 - **Marcar como hecha** una tarea entera o una parte.
 - **Cambiar cuándo toca:** poner fecha a una puntual, cambiar la próxima vez de una de cada N días o mover una de fin de semana a otro finde.
-- **Añadir** tareas nuevas, con sus partes y el peso de cada una.
+- **Añadir** tareas nuevas, con sus partes y el peso de cada una, eligiendo desde qué día tocan las de cada N días, y **cambiar el peso** de las partes después.
 - **En castellano y en inglés:** la app, las fechas, las tareas por defecto y el email para entrar.
 - **Instalable** como una PWA. Necesita conexión a internet.
 
 ## Después del MVP
 
-Las historias se agrupan por *milestone* (MVP, MMP y MLP), en [`docs/user-stories.md`](docs/user-stories.md) y en los issues de GitHub.
+Las historias se agrupan por *milestone* (MVP, MMP, MLP y Multicasa), en [`docs/user-stories.md`](docs/user-stories.md) y en los issues de GitHub.
 
-- **MMP (v1.0):** cancelar una tarea, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, cambiar el peso de las partes, avisos de error más visibles y el histórico.
+- **MMP (v1.0):** cancelar una tarea, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, avisos de error más visibles y el histórico.
 - **MLP:** el rediseño de la interfaz.
+- **Multicasa (v2.0):** tener varias casas y cambiar entre ellas.
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario. Está descrito en la sección «Visión» de [`docs/user-stories.md`](docs/user-stories.md).
 - **Uso sin conexión,** con sincronización al recuperar la conexión.
 - El detalle de las historias aplazadas está en la sección «Backlog» de [`docs/user-stories.md`](docs/user-stories.md).

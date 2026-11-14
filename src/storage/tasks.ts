@@ -1,6 +1,6 @@
 import { AppError } from '../domain/errors'
 import type { Round } from '../domain/frequency'
-import type { NewTask } from '../domain/new-task'
+import { MAX_PARTS, type NewTask } from '../domain/new-task'
 import type { Frequency, LocalDate, Task } from '../domain/task'
 import { getSupabase } from './supabase-client'
 
@@ -20,6 +20,8 @@ type TaskRow = {
   task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
   // Solo la última vuelta terminada.
   task_rounds: { completed_on: string }[]
+  // Las últimas partes hechas: como mucho, tantas como partes puede tener una tarea.
+  task_part_completions: { part_id: string; starts_on: string | null }[]
 }
 
 /** Tareas no canceladas del hogar, en orden y con sus partes. */
@@ -27,13 +29,16 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     .order('position')
     .order('position', { referencedTable: 'task_parts' })
     .order('completed_on', { referencedTable: 'task_rounds', ascending: false })
     .limit(1, { referencedTable: 'task_rounds' })
+    // Las partes hechas de la vuelta en curso son siempre las más recientes de la tarea.
+    .order('created_at', { referencedTable: 'task_part_completions', ascending: false })
+    .limit(MAX_PARTS, { referencedTable: 'task_part_completions' })
   if (error) throw new AppError('tasksLoad')
   return (data as TaskRow[]).map(toTask)
 }
@@ -69,6 +74,33 @@ export async function completeTask(task: Task, round: Round): Promise<LocalDate>
   if (error?.code === '23514') throw new AppError('deviceDate')
   if (error) throw new AppError('saveFailed')
   return (data as { completed_on: string }).completed_on
+}
+
+/**
+ * Marca como hechas esas partes en la vuelta de una tarea (US-39), todas o ninguna. La base
+ * de datos apunta el día (hoy en Madrid) y el peso de cada parte y, si ya están todas, la
+ * vuelta como terminada. Devuelve ese día.
+ * Si alguna ya estaba hecha, lanza `AlreadyDoneError`, para que la pantalla se ponga al día.
+ */
+export async function completeParts(task: Task, round: Round, partIds: string[]): Promise<LocalDate> {
+  const { data, error } = await getSupabase()
+    .from('task_part_completions')
+    .insert(
+      partIds.map((partId) => ({
+        household_id: task.householdId,
+        task_id: task.id,
+        part_id: partId,
+        starts_on: round.startsOn,
+        due_by: round.dueBy,
+      })),
+    )
+    .select('completed_on')
+  // Los mismos códigos que en `completeTask`: 23505, la parte ya estaba hecha en esta vuelta
+  // (o la tarea ya se ha terminado hoy); 23514, la fecha del dispositivo va mal.
+  if (error?.code === '23505') throw new AlreadyDoneError()
+  if (error?.code === '23514') throw new AppError('deviceDate')
+  if (error || !data?.length) throw new AppError('saveFailed')
+  return (data as { completed_on: string }[])[0].completed_on
 }
 
 /**
@@ -118,6 +150,10 @@ function toTask(row: TaskRow): Task {
     createdOn: row.created_on,
     cancelledOn: row.cancelled_on,
     lastCompletedOn: row.task_rounds[0]?.completed_on ?? null,
+    partCompletions: row.task_part_completions.map((completion) => ({
+      partId: completion.part_id,
+      startsOn: completion.starts_on,
+    })),
   }
 }
 

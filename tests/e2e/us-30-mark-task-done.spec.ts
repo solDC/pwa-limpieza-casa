@@ -12,8 +12,12 @@ import { uniqueEmail } from './helpers/mailbox'
 // usan el reloj de verdad, sin fijarlo, y calculan las fechas esperadas a partir de hoy.
 // Que la app no pueda elegir ese día se prueba en tests/integration/task-rounds.test.ts.
 
+// Las tareas con partes (como Superficies) se marcan enteras con «Marcar todo como hecho»
+// (US-39, tests/e2e/us-39-mark-part-done.spec.ts).
 function markDone(page: Page, name: string) {
-  return task(page, name).getByRole('button', { name: 'Marcar como hecha' })
+  return task(page, name).getByRole('button', {
+    name: name === 'Superficies' ? 'Marcar todo como hecho' : 'Marcar como hecha',
+  })
 }
 
 test.describe('US-30 · Marcar una tarea como hecha', () => {

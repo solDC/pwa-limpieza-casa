@@ -39,6 +39,12 @@ delete from public.task_rounds r
 using public.household_members m, auth.users u
 where r.household_id = m.household_id and m.user_id = u.id
   and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
+
+-- Y las partes marcadas (US-39).
+delete from public.task_part_completions c
+using public.household_members m, auth.users u
+where c.household_id = m.household_id and m.user_id = u.id
+  and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
 ```
 
 ## Que una tarea se creara hace unos días
