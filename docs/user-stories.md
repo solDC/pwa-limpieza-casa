@@ -49,6 +49,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 |---|---|---|---|---|
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
+| US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-31 | Histórico de cada vuelta | Backlog | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
@@ -296,6 +297,18 @@ para entender qué toca y qué he hecho sin traducir nada.
 - El email para entrar llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app.
 
 *Dentro de la app se llama «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «My House Cleaning».*
+
+### US-53 · Cambiar cada cuánto toca una tarea (Must have)
+Como usuario,
+quiero cambiar la frecuencia de una tarea que ya existe (por ejemplo, de cada N días a semanal en fin de semana, de semanal a cada 15 días, o de cada 7 días a cada 10),
+para adaptarla cuando cambia cómo la hago.
+- En «Tus tareas», cada tarea tiene «Cambiar frecuencia», con las cuatro frecuencias y lo que pide cada una, como al crearla (US-33): los días en las de cada N días y el primer finde en las de cada 15 días. También sirve para cambiar solo el número de días.
+- Al guardar, la tarea muestra la frecuencia nueva y cuándo toca con ella; con «Cancelar», se queda como estaba.
+- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima se cuenta desde la última vez que se hizo, o desde hoy si nunca se ha hecho; si ese día ya ha pasado, toca hoy.
+- Si la vuelta en curso estaba a medias, sus partes hechas no pasan a la vuelta nueva, que empieza con todas por hacer.
+- Las vueltas ya terminadas se conservan.
+
+*Depende de la US-30. Cambiar el nombre o las partes de la tarea no entra aquí; cambiar solo el número de días se podría separar en otra historia si esta resulta grande.*
 
 ## Historias anteriores
 
