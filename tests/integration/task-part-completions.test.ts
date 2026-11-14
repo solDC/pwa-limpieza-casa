@@ -209,6 +209,37 @@ describe('US-39 · dos dispositivos marcan a la vez las últimas partes', () => 
   })
 })
 
+// Las vueltas pasadas conservan sus partes hechas: quitar una parte será archivarla, no
+// borrarla (ver «Conceptos» en docs/user-stories.md).
+describe('US-39 · las partes hechas no se pierden', () => {
+  it('no se puede borrar una parte que se ha hecho alguna vez, ni como administrador', async () => {
+    const { household, task, parts } = await surfacesOf(ana)
+    await db.query('begin')
+    try {
+      await db.query(insertPart, [household, task, parts['Cocina'], null, null])
+      await expect(
+        db.query('delete from public.task_parts where id = $1', [parts['Cocina']]),
+      ).rejects.toThrow(/task_part_completions_part_fkey/)
+    } finally {
+      await db.query('rollback')
+    }
+  })
+
+  it('al borrar una cuenta, se borra todo su hogar, también las partes hechas', async () => {
+    const carla = await createUser(db)
+    const { household, task, parts } = await surfacesOf(carla)
+    await db.query(insertPart, [household, task, parts['Cocina'], null, null])
+
+    await deleteUsers(db, [carla])
+
+    const { rows } = await db.query(
+      'select count(*)::int as left from public.task_part_completions where household_id = $1',
+      [household],
+    )
+    expect(rows[0].left).toBe(0)
+  })
+})
+
 describe('US-39 · solo veo y apunto partes hechas de mi hogar (RLS)', () => {
   it('un usuario solo ve las partes hechas de su hogar', async () => {
     const anaTask = await surfacesOf(ana)
