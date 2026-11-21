@@ -122,7 +122,7 @@ export function canMarkDone(
 
 /**
  * Cómo está una vuelta hoy (US-29): retrasada (con cuántos días), toca hoy, pendiente sin
- * fecha (las puntuales, que nunca van con retraso) o toca más adelante.
+ * fecha (las puntuales sin fecha, que nunca van con retraso) o toca más adelante.
  */
 export type Due =
   | { status: 'overdue'; days: number }

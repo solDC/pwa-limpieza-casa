@@ -84,7 +84,7 @@ describe('dueStatus: las de cada N días', () => {
   })
 })
 
-describe('dueStatus: las puntuales', () => {
+describe('dueStatus: las puntuales sin fecha', () => {
   it('nunca van con retraso', () => {
     expect(dueStatus(oneOff, { startsOn: null, dueBy: null }, '2030-01-01')).toEqual({
       status: 'pending',

@@ -164,8 +164,8 @@ quiero ver en el Inicio qué toca y qué está retrasado,
 para saber qué hacer sin buscar.
 - Las tareas retrasadas dicen cuántos días de retraso llevan («Retrasada 3 días»; con 1, «Retrasada 1 día»).
 - Las de fin de semana tocan el sábado y el domingo. Si no se han hecho, de lunes a viernes salen como retrasadas, contando desde el lunes (el lunes, 1 día), y el sábado empieza la vuelta nueva.
-- En las de cada N días, el retraso se cuenta desde el día siguiente al que tocaban. Las puntuales nunca van con retraso.
-- En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales y al final las que tocan más adelante, por fecha.
+- En las de cada N días, el retraso se cuenta desde el día siguiente al que tocaban. Las puntuales sin fecha nunca van con retraso; las que tienen fecha, como las de cada N días (US-38).
+- En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales sin fecha y al final las que tocan más adelante (también las puntuales con fecha), por fecha.
 
 *El progreso de las tareas con partes («Llevas 50 %») es de la US-39, que es la que deja marcarlas.*
 
