@@ -429,13 +429,13 @@ para volver a hacerla sin crearla de nuevo.
 Como usuario de la app en el móvil,
 quiero que los errores al guardar salgan en un aviso que se vea bien,
 para darme cuenta de que algo no se ha guardado.
-- Si no se puede guardar una tarea, aparece un aviso flotante con el nombre de la tarea y el motivo, visible aunque haya bajado en la lista.
+- Si no se puede guardar una tarea o sus partes (con «Marcar» o con «Marcar todo como hecho»), aparece un aviso flotante con el nombre de la tarea, el de la parte si es solo una, y el motivo, visible aunque haya bajado en la lista.
 - El aviso se queda en pantalla hasta que lo cierro con «Cerrar».
-- Si la tarea ya estaba hecha en otro dispositivo y desaparece de la lista (una puntual), el aviso se ve igual.
-- Si al marcar una tarea acaba de cambiar el día (por ejemplo, el viernes justo a medianoche), el aviso dice que ha cambiado el día, no que la fecha del dispositivo esté mal, y la lista se pone al día con el día nuevo.
+- Si la tarea o la parte ya estaba hecha en otro dispositivo y la tarea desaparece de la lista (una puntual), el aviso se ve igual.
+- Si al marcar una tarea o una parte acaba de cambiar el día (por ejemplo, el viernes justo a medianoche), el aviso dice que ha cambiado el día, no que la fecha del dispositivo esté mal, y la lista se pone al día con el día nuevo.
 - Si no se puede guardar porque la sesión ha caducado, el aviso dice que vuelva a entrar, no que revise la conexión.
 
-*Depende de la US-30. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
+*Depende de la US-30 y de la US-39. Solo para errores: cuando se guarda bien, ya cambia la tarea en la lista.*
 
 *El aviso de versión nueva de la app (#76) ya es una ventana en el centro de la pantalla, con el fondo oscurecido. En esta historia se convierte en un componente común (`src/components/`), que reutilizan los avisos de error con lo que piden los criterios de arriba.*
 
