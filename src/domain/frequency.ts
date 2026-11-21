@@ -70,6 +70,8 @@ function saturdayOnOrBefore(day: LocalDate): LocalDate {
  * US-48 · El sábado de la primera vuelta de una tarea de fin de semana: el primer finde de
  * su calendario cuyo sábado o domingo es el día en que se creó o después. Así, una tarea
  * creada entre semana no empieza con retraso por un finde que ya había pasado.
+ * US-42 · En una semanal movida a otro finde, ese finde, si es posterior (en las de cada 15
+ * días, moverla cambia el primer finde de su calendario, `startOn`).
  */
 function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
   // El último sábado que aún vale: el de la víspera, si se crea en domingo.
@@ -80,7 +82,9 @@ function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
     return addDays(startOn, Math.ceil(daysBetween(startOn, earliest) / 14) * 14)
   }
   const saturday = saturdayOnOrBefore(task.createdOn)
-  return saturday >= earliest ? saturday : addDays(saturday, 7)
+  const first = saturday >= earliest ? saturday : addDays(saturday, 7)
+  const startOn = task.frequency.kind === 'weekendWeekly' ? task.frequency.startOn : null
+  return startOn !== null && startOn > first ? startOn : first
 }
 
 /** La vuelta, o la que empieza el sábado `first` si es anterior a ese día. */
@@ -96,6 +100,38 @@ function weekendRound(saturday: LocalDate, every: number, lastCompletedOn: Local
     lastCompletedOn !== null && lastCompletedOn >= saturday && lastCompletedOn <= dueBy
   const startsOn = doneInThisRound ? addDays(saturday, every) : saturday
   return { startsOn, dueBy: addDays(startsOn, WEEKEND_ROUND_DAYS - 1) }
+}
+
+/** Cuántos findes se ofrecen al mover una tarea de fin de semana (US-42). */
+const MOVE_WEEKEND_OPTIONS = 8
+
+/**
+ * US-42 · Los findes (sus sábados) a los que se puede mover una tarea de fin de semana: los
+ * próximos, desde el actual (el de hoy, si es sábado o domingo; si no, el siguiente), sin
+ * el de la vuelta que se muestra ni los que ya están hechos.
+ */
+export function moveWeekendOptions(
+  task: Pick<Task, 'lastCompletedOn'>,
+  round: Round,
+  today: LocalDate,
+): LocalDate[] {
+  const thisWeekend = saturdayOnOrBefore(today)
+  const first = addDays(today, -1) <= thisWeekend ? thisWeekend : addDays(thisWeekend, 7)
+  const { lastCompletedOn } = task
+  const options: LocalDate[] = []
+  for (let saturday = first; options.length < MOVE_WEEKEND_OPTIONS; saturday = addDays(saturday, 7)) {
+    const done =
+      lastCompletedOn !== null &&
+      lastCompletedOn >= saturday &&
+      lastCompletedOn <= addDays(saturday, WEEKEND_ROUND_DAYS - 1)
+    if (saturday !== round.startsOn && !done) options.push(saturday)
+  }
+  return options
+}
+
+/** US-42 · El nombre de un finde por su sábado: «finde del 28 nov», «weekend of 28 Nov». */
+export function describeWeekend(saturday: LocalDate, language: Language): string {
+  return DUE_TEXTS[language].weekendOf(formatDayMonth(saturday, language))
 }
 
 /**

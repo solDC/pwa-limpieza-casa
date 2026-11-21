@@ -3,7 +3,7 @@ import { describeFrequency } from '../../../src/domain/task'
 
 describe('describeFrequency', () => {
   it('semanal, en fin de semana', () => {
-    expect(describeFrequency({ kind: 'weekendWeekly' }, 'es')).toBe('Semanal, en fin de semana')
+    expect(describeFrequency({ kind: 'weekendWeekly', startOn: null }, 'es')).toBe('Semanal, en fin de semana')
   })
 
   it('fin de semana cada 15 días', () => {

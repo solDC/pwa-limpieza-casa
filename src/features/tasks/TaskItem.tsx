@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { errorCode, type ErrorCode } from '../../domain/errors'
-import { canMarkDone, describeDue, dueDate, type Round } from '../../domain/frequency'
+import {
+  canMarkDone,
+  describeDue,
+  dueDate,
+  isWeekend,
+  moveWeekendOptions,
+  type Round,
+} from '../../domain/frequency'
 import { dueOnError, earliestNextDueOn, nextDueOnError } from '../../domain/new-task'
 import { roundProgress } from '../../domain/progress'
 import {
@@ -20,12 +27,14 @@ import {
   setTaskNextDueOn,
 } from '../../storage/tasks'
 import { DueOnForm } from './DueOnForm'
+import { MoveWeekendForm } from './MoveWeekendForm'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
 // para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón («Marcar» o,
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
 // vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
-// (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41).
+// (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41). Las de
+// fin de semana, «Mover a otro finde» (US-42).
 export function TaskItem({
   task,
   round,
@@ -33,6 +42,7 @@ export function TaskItem({
   onCompleted,
   onPartsDone,
   onDueOnChanged,
+  onMovedWeekend,
   onStale,
 }: {
   task: Task
@@ -47,6 +57,8 @@ export function TaskItem({
    * próxima vez una de cada N días (ya guardada).
    */
   onDueOnChanged: (taskId: string, dueOn: LocalDate | null) => void
+  /** Se ha movido una tarea de fin de semana al finde de ese sábado (ya guardado). */
+  onMovedWeekend: (taskId: string, saturday: LocalDate) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
@@ -91,7 +103,8 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
-  // US-38 y US-41 · El formulario de la fecha. Al cerrarlo, el foco vuelve a su botón.
+  // US-38, US-41 y US-42 · El formulario de la fecha o del finde. Al cerrarlo, el foco
+  // vuelve a su botón.
   const [editingDueOn, setEditingDueOn] = useState(false)
   const dueOnButton = useRef<HTMLButtonElement>(null)
   const focusDueOnButton = useRef(false)
@@ -211,6 +224,30 @@ export function TaskItem({
             disabled={saving}
           >
             {hasNoDate ? t.tasks.setDueOn : t.tasks.changeDueOn}
+          </button>
+        ))}
+      {isWeekend(frequency) &&
+        (editingDueOn ? (
+          <MoveWeekendForm
+            taskId={task.id}
+            taskName={name}
+            options={moveWeekendOptions(task, round, today)}
+            onSaved={(saturday) => onMovedWeekend(task.id, saturday)}
+            onClose={() => {
+              focusDueOnButton.current = true
+              setEditingDueOn(false)
+            }}
+          />
+        ) : (
+          <button
+            ref={dueOnButton}
+            type="button"
+            className="button-secondary"
+            aria-label={t.tasks.moveWeekendLabel(name)}
+            onClick={() => setEditingDueOn(true)}
+            disabled={saving}
+          >
+            {t.tasks.moveWeekend}
           </button>
         ))}
     </li>

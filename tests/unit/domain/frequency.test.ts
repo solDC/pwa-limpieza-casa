@@ -3,9 +3,11 @@ import {
   canMarkDone,
   currentRound,
   describeDue,
+  describeWeekend,
   dueDate,
   dueStatus,
   isWeekend,
+  moveWeekendOptions,
 } from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
 
@@ -16,7 +18,7 @@ const round = (frequency: Frequency, lastCompletedOn: string | null, today: stri
   currentRound({ frequency, createdOn, lastCompletedOn }, today)
 
 describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el viernes', () => {
-  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
 
   it('el sábado y el domingo toca la vuelta de ese finde, con plazo hasta el viernes', () => {
     expect(round(weekly, null, '2026-11-14')).toEqual({ startsOn: '2026-11-14', dueBy: '2026-11-20' })
@@ -64,6 +66,99 @@ describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el vie
     expect(
       currentRound({ frequency: weekly, createdOn: '2026-01-01', lastCompletedOn: null }, '2026-03-29'),
     ).toEqual({ startsOn: '2026-03-28', dueBy: '2026-04-03' })
+  })
+})
+
+describe('US-42 · una semanal movida a otro finde', () => {
+  // Creada el domingo 8 nov: su primer finde es el del 7-8 nov.
+  const movedTo = (startOn: string): Frequency => ({ kind: 'weekendWeekly', startOn })
+
+  it('hasta el finde elegido, toca ese finde, sin retraso, y no se puede marcar', () => {
+    // Miércoles 18: sin mover, la vuelta del 14 va con retraso.
+    expect(round(movedTo('2026-11-28'), null, '2026-11-18')).toEqual({
+      startsOn: '2026-11-28',
+      dueBy: '2026-12-04',
+    })
+    const moved = round(movedTo('2026-11-28'), null, '2026-11-18')!
+    expect(dueStatus(movedTo('2026-11-28'), moved, '2026-11-18')).toEqual({ status: 'upcoming' })
+    expect(describeDue(movedTo('2026-11-28'), moved, '2026-11-18', 'es')).toBe('Toca: finde del 28 nov')
+    expect(canMarkDone({ frequency: movedTo('2026-11-28'), lastCompletedOn: null }, moved, '2026-11-18')).toBe(false)
+  })
+
+  it('ese finde toca, y si no se hace, va con retraso como siempre', () => {
+    expect(round(movedTo('2026-11-28'), null, '2026-11-28')).toEqual({ startsOn: '2026-11-28', dueBy: '2026-12-04' })
+    expect(round(movedTo('2026-11-28'), null, '2026-12-01')).toEqual({ startsOn: '2026-11-28', dueBy: '2026-12-04' })
+  })
+
+  it('después de hacerla, vuelve a tocar cada finde', () => {
+    expect(round(movedTo('2026-11-28'), '2026-11-29', '2026-11-30')).toEqual({
+      startsOn: '2026-12-05',
+      dueBy: '2026-12-11',
+    })
+    expect(round(movedTo('2026-11-28'), '2026-11-29', '2026-12-12')).toEqual({
+      startsOn: '2026-12-12',
+      dueBy: '2026-12-18',
+    })
+  })
+
+  it('un finde anterior al primero de la tarea no la adelanta (US-48)', () => {
+    const createdThursday = currentRound(
+      { frequency: movedTo('2026-11-07'), createdOn: '2026-11-12', lastCompletedOn: null },
+      '2026-11-12',
+    )
+    expect(createdThursday).toEqual({ startsOn: '2026-11-14', dueBy: '2026-11-20' })
+  })
+})
+
+describe('US-42 · una de cada 15 días movida a otro finde', () => {
+  it('todo el calendario empieza en el finde nuevo: las siguientes, cada 15 días desde él', () => {
+    // Empezaba el 5 dic; se mueve al 12 dic.
+    const moved: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-12' }
+    expect(round(moved, null, '2026-11-25')).toEqual({ startsOn: '2026-12-12', dueBy: '2026-12-18' })
+    expect(round(moved, '2026-12-13', '2026-12-14')).toEqual({ startsOn: '2026-12-26', dueBy: '2027-01-01' })
+    expect(round(moved, '2026-12-27', '2027-01-04')).toEqual({ startsOn: '2027-01-09', dueBy: '2027-01-15' })
+  })
+})
+
+describe('US-42 · los findes a los que se puede mover una tarea', () => {
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
+  const options = (today: string, lastCompletedOn: string | null = null) => {
+    const task = { frequency: weekly, createdOn, lastCompletedOn }
+    return moveWeekendOptions(task, currentRound(task, today)!, today)
+  }
+
+  it('los 8 próximos, desde el siguiente entre semana', () => {
+    // Miércoles 18 nov: la vuelta del 14 va con retraso; se puede mover del 21 en adelante.
+    expect(options('2026-11-18')).toEqual([
+      '2026-11-21', '2026-11-28', '2026-12-05', '2026-12-12',
+      '2026-12-19', '2026-12-26', '2027-01-02', '2027-01-09',
+    ])
+  })
+
+  it('en sábado o domingo, desde el actual, sin el que ya se muestra', () => {
+    // Domingo 15: se muestra la vuelta del 14, así que empieza en el 21.
+    expect(options('2026-11-15')[0]).toBe('2026-11-21')
+    expect(options('2026-11-15')).toHaveLength(8)
+  })
+
+  it('sin los findes que ya están hechos', () => {
+    // Hecha el sábado 21: se muestra el finde del 28; el del 21 tampoco sale.
+    const done = options('2026-11-21', '2026-11-21')
+    expect(done[0]).toBe('2026-12-05')
+    expect(done).not.toContain('2026-11-21')
+    expect(done).not.toContain('2026-11-28')
+  })
+
+  it('una movida más adelante se puede traer de vuelta a un finde anterior', () => {
+    const task = { frequency: { kind: 'weekendWeekly', startOn: '2026-12-19' } as Frequency, createdOn, lastCompletedOn: null }
+    const shown = currentRound(task, '2026-11-18')!
+    expect(shown.startsOn).toBe('2026-12-19')
+    expect(moveWeekendOptions(task, shown, '2026-11-18').slice(0, 2)).toEqual(['2026-11-21', '2026-11-28'])
+  })
+
+  it('el nombre de cada finde', () => {
+    expect(describeWeekend('2026-11-28', 'es')).toBe('finde del 28 nov')
+    expect(describeWeekend('2026-11-28', 'en')).toBe('weekend of 28 Nov')
   })
 })
 
@@ -223,7 +318,7 @@ describe('puntual con fecha', () => {
 })
 
 describe('describeDue: el texto de «Toca:»', () => {
-  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
   const bathroom: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
 
   it('las de fin de semana dicen de qué finde son', () => {
@@ -273,7 +368,7 @@ describe('describeDue: el texto de «Toca:»', () => {
 
 // US-30 · Marcar una tarea como hecha (#39)
 describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', () => {
-  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
   const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
   const interval: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
   const oneOff: Frequency = { kind: 'oneOff', dueOn: null }
@@ -321,7 +416,7 @@ describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', 
 
 describe('isWeekend: si una frecuencia es de fin de semana', () => {
   it('lo son la semanal y la de cada 15 días', () => {
-    expect(isWeekend({ kind: 'weekendWeekly' })).toBe(true)
+    expect(isWeekend({ kind: 'weekendWeekly', startOn: null })).toBe(true)
     expect(isWeekend({ kind: 'weekendBiweekly', startOn: '2026-12-05' })).toBe(true)
   })
 
@@ -333,7 +428,7 @@ describe('isWeekend: si una frecuencia es de fin de semana', () => {
 
 // US-48 · Las tareas nuevas no empiezan con retraso (#71)
 describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
-  const weekly: Frequency = { kind: 'weekendWeekly' }
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
   const cati: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
   const roundOf = (frequency: Frequency, created: string, today: string) =>
     currentRound({ frequency, createdOn: created, lastCompletedOn: null }, today)!

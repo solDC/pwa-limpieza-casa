@@ -15,6 +15,8 @@ type TaskRow = {
   frequency: 'weekend_weekly' | 'weekend_biweekly' | 'interval' | 'one_off'
   interval_days: number | null
   biweekly_start_on: string | null
+  // Solo en las semanales: el sábado desde el que tocan, si se han movido (US-42).
+  weekly_start_on: string | null
   // Solo en las puntuales, y opcional (US-38).
   due_on: string | null
   // Solo en las de cada N días: el día elegido para la próxima vez, si se ha cambiado (US-41).
@@ -33,7 +35,7 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, due_on, next_due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     .order('position')
@@ -168,6 +170,21 @@ export async function setTaskNextDueOn(taskId: string, nextDueOn: LocalDate): Pr
   if (error) throw new AppError('saveFailed')
 }
 
+/**
+ * US-42 · Mueve una tarea de fin de semana al finde que empieza ese sábado. En las semanales
+ * solo se mueve la vuelta; en las de cada 15 días, todo el calendario.
+ */
+export async function moveWeekendTask(taskId: string, saturday: LocalDate): Promise<void> {
+  const { error } = await getSupabase().rpc('move_weekend_task', {
+    target_task_id: taskId,
+    new_saturday: saturday,
+  })
+  // 23514: el finde ya ha pasado para la base de datos (hoy en Madrid), porque la fecha del
+  // dispositivo va mal.
+  if (error?.code === '23514') throw new AppError('deviceDate')
+  if (error) throw new AppError('saveFailed')
+}
+
 function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
   switch (frequency.kind) {
     case 'weekendWeekly':
@@ -207,7 +224,7 @@ function toTask(row: TaskRow): Task {
 function toFrequency(row: TaskRow): Frequency {
   switch (row.frequency) {
     case 'weekend_weekly':
-      return { kind: 'weekendWeekly' }
+      return { kind: 'weekendWeekly', startOn: row.weekly_start_on }
     case 'weekend_biweekly':
       return { kind: 'weekendBiweekly', startOn: required(row.biweekly_start_on, row) }
     case 'interval':

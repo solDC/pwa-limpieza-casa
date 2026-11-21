@@ -18,10 +18,10 @@ Para empezar de cero, lo más fácil es entrar con otra cuenta (`+prueba2`, `+pr
 
 ## Ver las tareas de una cuenta
 
-Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41) y cuándo se hicieron por última vez.
+Qué tareas tiene, cuándo se crearon, el primer finde de las de cada 15 días y el de las semanales movidas (US-42), la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41) y cuándo se hicieron por última vez.
 
 ```sql
-select t.name, t.frequency, t.created_on, t.due_on, t.next_due_on,
+select t.name, t.frequency, t.created_on, t.biweekly_start_on, t.weekly_start_on, t.due_on, t.next_due_on,
   (select max(r.completed_on) from public.task_rounds r where r.task_id = t.id) as last_completed_on
 from public.tasks t
 join public.household_members m on m.household_id = t.household_id
@@ -74,7 +74,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada».
 
-Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas.
+Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni se han movido a otro finde desde la app (US-42).
 
 ```sql
 update public.tasks t

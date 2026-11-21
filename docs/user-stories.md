@@ -37,7 +37,7 @@ Primero las hechas y después las pendientes.
 | US-39 | Marcar una parte como hecha | Must have | Hecha | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
 | US-38 | Poner fecha a una tarea puntual | Must have | Hecha | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Hecha | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
-| US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
+| US-42 | Mover una tarea de fin de semana a otro finde | Must have | Hecha | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Pendiente | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
@@ -94,8 +94,8 @@ Tener más de una casa. Están descritas en la sección «Backlog».
 
   | Tipo | Ejemplo | Cuándo toca | Cuándo se acaba el plazo |
   |---|---|---|---|
-  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: de lunes a viernes se puede hacer, como retrasada (el lunes, 1 día) |
-  | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
+  | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo; si se mueve a otro finde (US-42), desde ese finde | El viernes siguiente, incluido: de lunes a viernes se puede hacer, como retrasada (el lunes, 1 día) |
+  | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 (moverla a otro finde, US-42, mueve todo el calendario) | El viernes siguiente, incluido, como las semanales |
   | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez, o el día que se elija para la próxima vez (US-41) | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
   | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha, o el día que se le ponga (US-38): pendiente hasta que se hace, y después desaparece | Nunca. Sin fecha no tiene retraso; con fecha, desde el día siguiente aparece como retrasada (X días) hasta que se hace |
 
@@ -254,7 +254,7 @@ para adelantarla o retrasarla.
 - En las de cada 15 días se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
 - En las semanales solo se mueve esa vuelta; las siguientes siguen siendo cada finde.
 
-*Depende de la US-30.*
+*Depende de la US-30. Decisiones al implementarla: el finde se elige de una lista con los 8 próximos, desde el actual, sin el que ya se muestra ni los que ya están hechos; si la vuelta tenía partes hechas, la vuelta movida empieza con todas por hacer.*
 
 ### US-46 · Marcar como hecha en un día anterior (Nice to have)
 Como usuario,

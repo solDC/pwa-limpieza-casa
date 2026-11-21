@@ -67,6 +67,10 @@ const es = {
     saveDueOn: 'Guardar',
     removeDueOn: 'Quitar fecha',
     cancel: 'Cancelar',
+    moveWeekend: 'Mover a otro finde',
+    moveWeekendLabel: (name: string) => `Mover ${name} a otro finde`,
+    moveWeekendForm: (name: string) => `Mover ${name}`,
+    moveWeekendTo: 'Mover al finde del',
   },
 
   newTask: {
@@ -189,6 +193,10 @@ const en: Messages = {
     saveDueOn: 'Save',
     removeDueOn: 'Remove date',
     cancel: 'Cancel',
+    moveWeekend: 'Move to another weekend',
+    moveWeekendLabel: (name: string) => `Move ${name} to another weekend`,
+    moveWeekendForm: (name: string) => `Move ${name}`,
+    moveWeekendTo: 'Move to the weekend of',
   },
 
   newTask: {

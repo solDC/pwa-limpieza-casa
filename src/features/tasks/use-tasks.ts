@@ -17,6 +17,7 @@ export type TasksState =
  *   faltaban, la vuelta queda terminada.
  * - `changeDueOn`: se ha puesto, cambiado o quitado la fecha de una puntual (US-38), o se ha
  *   cambiado cuándo toca la próxima vez una de cada N días (US-41), ya guardada.
+ * - `moveWeekend`: se ha movido una tarea de fin de semana a otro finde (ya guardado).
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -91,8 +92,20 @@ export function useTasks() {
     })
   }
 
+  /** US-42 · Una tarea de fin de semana se ha movido al finde de ese sábado (ya guardado). */
+  function moveWeekend(taskId: string, saturday: LocalDate) {
+    changeTask(taskId, (task) => {
+      const { frequency } = task
+      if (frequency.kind === 'weekendWeekly' || frequency.kind === 'weekendBiweekly') {
+        return { ...task, frequency: { ...frequency, startOn: saturday } }
+      }
+      return task
+    })
+  }
+
   return {
     state,
+    moveWeekend,
     markCompleted,
     markPartsDone,
     changeDueOn,

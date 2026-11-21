@@ -41,7 +41,7 @@ describe('las fechas, en el idioma elegido', () => {
 })
 
 describe('describeDue en inglés', () => {
-  const weekly = { kind: 'weekendWeekly' } as const
+  const weekly = { kind: 'weekendWeekly', startOn: null } as const
   const bathroom = { kind: 'interval', days: 3, nextDueOn: null } as const
   const weekend = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
 
@@ -74,7 +74,7 @@ describe('describeDue en inglés', () => {
 
 describe('describeFrequency en inglés', () => {
   it('las cuatro frecuencias', () => {
-    expect(describeFrequency({ kind: 'weekendWeekly' }, 'en')).toBe('Weekly, at the weekend')
+    expect(describeFrequency({ kind: 'weekendWeekly', startOn: null }, 'en')).toBe('Weekly, at the weekend')
     expect(describeFrequency({ kind: 'weekendBiweekly', startOn: '2026-12-05' }, 'en')).toBe(
       'Every other weekend',
     )

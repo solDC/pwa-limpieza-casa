@@ -7,6 +7,12 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-42 · Mover una tarea de fin de semana a otro finde** (#60). Las tareas de fin de semana tienen «Mover a otro finde», que abre en la tarjeta la lista «Mover al finde del» con los 8 próximos fines de semana, desde el actual (el de hoy, en sábado o domingo; si no, el siguiente), y «Guardar» y «Cancelar». Así se puede adelantar o retrasar, por ejemplo, Superficies si un finde no se está en casa.
+  - **Semanales:** solo se mueve esa vuelta. Hasta el finde elegido no toca ni va con retraso; desde él, vuelve a tocar cada finde. Una que iba con retraso, movida, deja de estarlo.
+  - **Cada 15 días:** se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
+  - La lista no ofrece el finde que ya se muestra ni los que ya están hechos. Se elige de una lista, y no con el calendario, porque el del móvil no deja limitar la elección a los sábados.
+  - Si la vuelta tenía partes hechas, se quedan en esa vuelta: la vuelta movida empieza con todas por hacer, como se decidió para cambiar la frecuencia (US-53).
+  - **En la base de datos** (migración nueva): columna `weekly_start_on` en `tasks`, solo en las semanales (el sábado desde el que tocan, como `biweekly_start_on` en las de cada 15 días), y la función `move_weekend_task`, que mueve una tarea de fin de semana del hogar del usuario a un sábado del finde actual o posterior. La app sigue sin poder cambiar `tasks` directamente.
 - **US-41 · Cambiar cuándo toca la próxima vez** (#59). En las tareas de cada N días, «Cambiar fecha» abre la fecha en la tarjeta, con el día en que toca ahora, «Guardar» y «Cancelar», como en las puntuales (US-38) pero sin «Quitar fecha»: siempre tocan algún día. Así se puede adaptar una tarea a los planes, por ejemplo pasar los cristales al sábado o quitarle el retraso al baño pasándolo a hoy.
   - Solo se puede elegir hoy o un día futuro; si ya se ha hecho hoy, desde mañana, porque no se puede marcar dos veces el mismo día. La tarjeta dice «Toca: …» con el día elegido, y la lista la ordena por él; si llega sin hacerse, va con retraso desde el día siguiente.
   - Vale solo para la próxima vez: al marcarla como hecha (entera o todas sus partes), las siguientes se vuelven a contar N días desde el día en que se hizo, como siempre.

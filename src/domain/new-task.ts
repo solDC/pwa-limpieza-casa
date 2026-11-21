@@ -222,7 +222,7 @@ export function validateNewTask(
       errors.frequency = text.frequencyRequired
       break
     case 'weekendWeekly':
-      frequency = { kind: 'weekendWeekly' }
+      frequency = { kind: 'weekendWeekly', startOn: null }
       break
     case 'weekendBiweekly':
       if (draft.biweeklyStartOn) {
