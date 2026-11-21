@@ -24,6 +24,6 @@ describe('describeFrequency', () => {
   })
 
   it('puntual', () => {
-    expect(describeFrequency({ kind: 'oneOff' }, 'es')).toBe('Puntual')
+    expect(describeFrequency({ kind: 'oneOff', dueOn: null }, 'es')).toBe('Puntual')
   })
 })

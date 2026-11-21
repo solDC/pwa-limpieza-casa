@@ -24,6 +24,7 @@ Primero las hechas y después las pendientes.
 |---|---|---|---|---|
 | US-01 | Entrar con enlace mágico | Must have | Hecha | [#2](https://github.com/solDC/pwa-limpieza-casa/issues/2) |
 | US-02 | Hogar creado automáticamente | Must have | Hecha | [#3](https://github.com/solDC/pwa-limpieza-casa/issues/3) |
+| US-03 | Cerrar sesión | Nice to have | Hecha | [#4](https://github.com/solDC/pwa-limpieza-casa/issues/4) |
 | US-26 | Entrar con código desde la app instalada | Must have | Hecha | [#29](https://github.com/solDC/pwa-limpieza-casa/issues/29) |
 | US-27 | Mis tareas por defecto | Must have | Hecha | [#36](https://github.com/solDC/pwa-limpieza-casa/issues/36) |
 | US-28 | Frecuencias | Must have | Hecha | [#37](https://github.com/solDC/pwa-limpieza-casa/issues/37) |
@@ -33,12 +34,12 @@ Primero las hechas y después las pendientes.
 | US-34 | Elegir el peso de las partes | Must have | Hecha | [#43](https://github.com/solDC/pwa-limpieza-casa/issues/43) |
 | US-48 | Las tareas nuevas no empiezan con retraso | Nice to have | Hecha | [#71](https://github.com/solDC/pwa-limpieza-casa/issues/71) |
 | US-52 | La app en inglés y en castellano | Must have | Hecha | [#85](https://github.com/solDC/pwa-limpieza-casa/issues/85) |
-| US-39 | Marcar una parte como hecha | Must have | Pendiente | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
-| US-38 | Poner fecha a una tarea puntual | Must have | Pendiente | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
+| US-39 | Marcar una parte como hecha | Must have | Hecha | [#57](https://github.com/solDC/pwa-limpieza-casa/issues/57) |
+| US-38 | Poner fecha a una tarea puntual | Must have | Hecha | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
-
-Fuera de los milestones, ya hecha: US-03 · Cerrar sesión ([#4](https://github.com/solDC/pwa-limpieza-casa/issues/4), Nice to have).
+| US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
+| US-51 | Cambiar el peso de las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -48,8 +49,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 |---|---|---|---|---|
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
-| US-50 | Elegir desde qué día toca una tarea de cada N días | Nice to have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
-| US-51 | Cambiar el peso de las partes de una tarea | Nice to have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-31 | Histórico de cada vuelta | Backlog | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
@@ -66,9 +66,18 @@ Mejoras centradas en la experiencia de uso.
 |---|---|---|---|---|
 | US-35 | Épica: Rediseño de la interfaz | Backlog | Pendiente | [#44](https://github.com/solDC/pwa-limpieza-casa/issues/44) |
 
+### Multicasa (v2.0)
+
+Tener más de una casa. Están descritas en la sección «Backlog».
+
+| ID | Historia | Prioridad | Estado | Issue |
+|---|---|---|---|---|
+| US-36 | Tener varias casas y cambiar entre ellas | Backlog | Pendiente | [#50](https://github.com/solDC/pwa-limpieza-casa/issues/50) |
+| US-37 | Archivar una casa | Backlog | Pendiente | [#51](https://github.com/solDC/pwa-limpieza-casa/issues/51) |
+
 ## Conceptos
 
-- **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %.
+- **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: cuando se puedan quitar, quitar una será **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
 - **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados:
 
   | Estado | Cuándo |
@@ -86,7 +95,7 @@ Mejoras centradas en la experiencia de uso.
   | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: de lunes a viernes se puede hacer, como retrasada (el lunes, 1 día) |
   | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
   | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
-  | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha: pendiente hasta que se hace, y después desaparece | Nunca: sin fecha no tiene retraso |
+  | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha, o el día que se le ponga (US-38): pendiente hasta que se hace, y después desaparece | Nunca. Sin fecha no tiene retraso; con fecha, desde el día siguiente aparece como retrasada (X días) hasta que se hace |
 
 - Los días son **fechas locales sin hora**. Llegar a la fecha prevista **nunca** marca una tarea como hecha.
 
@@ -155,10 +164,10 @@ quiero ver en el Inicio qué toca y qué está retrasado,
 para saber qué hacer sin buscar.
 - Las tareas retrasadas dicen cuántos días de retraso llevan («Retrasada 3 días»; con 1, «Retrasada 1 día»).
 - Las de fin de semana tocan el sábado y el domingo. Si no se han hecho, de lunes a viernes salen como retrasadas, contando desde el lunes (el lunes, 1 día), y el sábado empieza la vuelta nueva.
-- En las de cada N días, el retraso se cuenta desde el día siguiente al que tocaban. Las puntuales nunca van con retraso.
-- En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales y al final las que tocan más adelante, por fecha.
+- En las de cada N días, el retraso se cuenta desde el día siguiente al que tocaban. Las puntuales sin fecha nunca van con retraso; las que tienen fecha, como las de cada N días (US-38).
+- En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales sin fecha y al final las que tocan más adelante (también las puntuales con fecha), por fecha.
 
-*El progreso de las tareas con partes («Cocina hecha · 50 %») llega con la US-39, que es cuando se pueden marcar.*
+*El progreso de las tareas con partes («Llevas 50 %») es de la US-39, que es la que deja marcarlas.*
 
 ### US-30 · Marcar una tarea como hecha (Must have)
 Como usuario,
@@ -177,7 +186,7 @@ para avanzar poco a poco y que la app sepa cuánto llevo.
 - Al marcar todas las partes, la vuelta queda completada.
 - Si falla el guardado, la app lo dice y no muestra la parte como hecha.
 
-*Depende de la US-30.*
+*Depende de la US-30. Cada parte tiene su botón «Marcar»; hecha, el botón pasa a «Hecha», desactivado (será el de deshacer). Las tareas con partes se marcan enteras con «Marcar todo como hecho», que marca las partes que faltan. Una vuelta que se queda a medias no se arrastra: la siguiente empieza con todo por hacer. Deshacer una parte es la US-44.*
 
 ### US-32 · Cancelar una tarea (Nice to have)
 Como usuario,
@@ -254,7 +263,7 @@ para que la lista solo me avise de lo que de verdad he dejado sin hacer.
 - En las de cada 15 días, la primera vuelta es la primera de su calendario cuyo sábado o domingo es el día en que se crea o después (como en las semanales: creada en el domingo de un finde que toca, toca ese finde).
 - Si alguien se da de alta entre semana, sus tareas por defecto de fin de semana no salen retrasadas.
 
-### US-50 · Elegir desde qué día toca una tarea de cada N días (Nice to have)
+### US-50 · Elegir desde qué día toca una tarea de cada N días (Must have)
 Como usuario,
 quiero elegir, al añadir una tarea de cada N días, el día en que toca la primera vez,
 para que no me salga como pendiente hoy algo que pienso empezar más adelante.
@@ -265,7 +274,7 @@ para que no me salga como pendiente hoy algo que pienso empezar más adelante.
 
 *Depende de la US-33. Cambiarlo en una tarea que ya existe es la US-41; ponerle fecha a una puntual al crearla, la US-38.*
 
-### US-51 · Cambiar el peso de las partes de una tarea (Nice to have)
+### US-51 · Cambiar el peso de las partes de una tarea (Must have)
 Como usuario,
 quiero cambiar cuánto cuenta cada parte de una tarea que ya existe,
 para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo que pensaba.
@@ -274,7 +283,7 @@ para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo qu
 - Al guardar, la tarea muestra los pesos nuevos; con «Cancelar», se quedan como estaban.
 - Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
 
-*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, habrá que guardar los pesos con los que se hizo cada vuelta (con la US-39, marcar una parte como hecha). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
+*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
 
 ### US-52 · La app en inglés y en castellano (Must have)
 Como usuario que no habla castellano,
@@ -288,6 +297,18 @@ para entender qué toca y qué he hecho sin traducir nada.
 - El email para entrar llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app.
 
 *Dentro de la app se llama «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «My House Cleaning».*
+
+### US-53 · Cambiar cada cuánto toca una tarea (Must have)
+Como usuario,
+quiero cambiar la frecuencia de una tarea que ya existe (por ejemplo, de cada N días a semanal en fin de semana, de semanal a cada 15 días, o de cada 7 días a cada 10),
+para adaptarla cuando cambia cómo la hago.
+- En «Tus tareas», cada tarea tiene «Cambiar frecuencia», con las cuatro frecuencias y lo que pide cada una, como al crearla (US-33): los días en las de cada N días y el primer finde en las de cada 15 días. También sirve para cambiar solo el número de días.
+- Al guardar, la tarea muestra la frecuencia nueva y cuándo toca con ella; con «Cancelar», se queda como estaba.
+- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima se cuenta desde la última vez que se hizo, o desde hoy si nunca se ha hecho; si ese día ya ha pasado, toca hoy.
+- Si la vuelta en curso estaba a medias, sus partes hechas no pasan a la vuelta nueva, que empieza con todas por hacer.
+- Las vueltas ya terminadas se conservan.
+
+*Depende de la US-30. Cambiar el nombre o las partes de la tarea no entra aquí; cambiar solo el número de días se podría separar en otra historia si esta resulta grande.*
 
 ## Historias anteriores
 

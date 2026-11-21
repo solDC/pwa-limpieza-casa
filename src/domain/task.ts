@@ -13,8 +13,8 @@ export type Frequency =
   | { kind: 'weekendBiweekly'; startOn: LocalDate }
   /** `days` días después del día en que se terminó la última vez. */
   | { kind: 'interval'; days: number }
-  /** Una sola vez. */
-  | { kind: 'oneOff' }
+  /** Una sola vez; si tiene fecha (`dueOn`, US-38), toca ese día. */
+  | { kind: 'oneOff'; dueOn: LocalDate | null }
 
 export type TaskPart = {
   id: string
@@ -23,6 +23,12 @@ export type TaskPart = {
   defaultKey: string | null
   /** Cuánto cuenta en el progreso de la tarea, en %. Los de una tarea suman 100. */
   weight: number
+}
+
+/** Una parte hecha, y en qué vuelta: desde cuándo tocaba (`null` en las puntuales). */
+export type PartCompletion = {
+  partId: string
+  startsOn: LocalDate | null
 }
 
 export type Task = {
@@ -37,6 +43,8 @@ export type Task = {
   cancelledOn: LocalDate | null
   /** Día en que se terminó la última vuelta (`null` si nunca). */
   lastCompletedOn: LocalDate | null
+  /** Las últimas partes hechas (US-39): las de la vuelta en curso están siempre. */
+  partCompletions: PartCompletion[]
 }
 
 /** Texto de la frecuencia para la interfaz. */

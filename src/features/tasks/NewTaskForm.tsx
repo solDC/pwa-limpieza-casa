@@ -17,11 +17,13 @@ import {
 import type { Frequency, LocalDate } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { createTask } from '../../storage/tasks'
+import { FieldError } from './FieldError'
 
 const frequencyKinds: Frequency['kind'][] = ['weekendWeekly', 'weekendBiweekly', 'interval', 'oneOff']
 
 // US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes.
 // US-34 · Elegir el peso de las partes: si no se cambian, cuentan lo mismo.
+// US-38 · Las puntuales, con fecha si se quiere.
 export function NewTaskForm({
   householdId,
   today,
@@ -42,7 +44,7 @@ export function NewTaskForm({
   // Los errores de cada campo salen al intentar guardar, no mientras se escribe. Después
   // se ponen al día solos al corregir (y al cambiar de idioma): se calculan cada vez.
   const [showErrors, setShowErrors] = useState(false)
-  const validation = validateNewTask(draft, language)
+  const validation = validateNewTask(draft, language, today)
   const errors = showErrors && !validation.ok ? validation.errors : null
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
@@ -170,6 +172,24 @@ export function NewTaskForm({
         </>
       )}
 
+      {/* US-38 · La fecha de una puntual, opcional: sin ella, queda «Sin fecha». */}
+      {draft.frequencyKind === 'oneOff' && (
+        <>
+          <label htmlFor="new-task-due-on">{t.newTask.dueOn}</label>
+          <input
+            id="new-task-due-on"
+            type="date"
+            min={today}
+            value={draft.dueOn ?? ''}
+            onChange={(event) => update({ dueOn: event.target.value || null })}
+            aria-invalid={invalid(errors?.dueOn)}
+            aria-describedby={errors?.dueOn ? 'new-task-due-on-error' : undefined}
+            disabled={saving}
+          />
+          <FieldError id="new-task-due-on-error" message={errors?.dueOn} />
+        </>
+      )}
+
       {draft.frequencyKind === 'weekendBiweekly' && (
         <fieldset
           className="stack"
@@ -275,15 +295,5 @@ export function NewTaskForm({
         </button>
       </div>
     </form>
-  )
-}
-
-/** El error de un campo, enlazado con él por su id (aria-describedby). */
-function FieldError({ id, message }: { id: string; message: string | undefined }) {
-  if (!message) return null
-  return (
-    <p id={id} className="error">
-      {message}
-    </p>
   )
 }

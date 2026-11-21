@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { localDateIn } from '../../../src/domain/dates'
 import { waitForSignInEmail, type SignInEmail } from './mailbox'
 
@@ -30,6 +30,11 @@ export function task(page: Page, name: string) {
     .getByRole('list', { name: 'Tus tareas' })
     .getByRole('listitem')
     .filter({ has: page.getByRole('heading', { level: 3, name, exact: true }) })
+}
+
+/** Las partes de la tarjeta de una tarea (US-39), en su orden. */
+export function taskParts(card: Locator) {
+  return card.getByRole('list', { name: /^(Partes|Parts)$/ }).getByRole('listitem')
 }
 
 /** Los nombres de las tareas de «Tus tareas», en el orden en que salen. */

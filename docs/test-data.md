@@ -18,10 +18,10 @@ Para empezar de cero, lo más fácil es entrar con otra cuenta (`+prueba2`, `+pr
 
 ## Ver las tareas de una cuenta
 
-Qué tareas tiene, cuándo se crearon y cuándo se hicieron por última vez.
+Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38) y cuándo se hicieron por última vez.
 
 ```sql
-select t.name, t.frequency, t.created_on,
+select t.name, t.frequency, t.created_on, t.due_on,
   (select max(r.completed_on) from public.task_rounds r where r.task_id = t.id) as last_completed_on
 from public.tasks t
 join public.household_members m on m.household_id = t.household_id
@@ -38,6 +38,12 @@ Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer.
 delete from public.task_rounds r
 using public.household_members m, auth.users u
 where r.household_id = m.household_id and m.user_id = u.id
+  and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
+
+-- Y las partes marcadas (US-39).
+delete from public.task_part_completions c
+using public.household_members m, auth.users u
+where c.household_id = m.household_id and m.user_id = u.id
   and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
 ```
 
@@ -84,6 +90,19 @@ join public.household_members m on m.household_id = t.household_id
 join auth.users u on u.id = m.user_id
 where u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
   and t.name = 'Baño' and t.frequency = 'interval';
+```
+
+## Que una puntual tuviera fecha hace unos días
+
+Para tener una puntual retrasada sin esperar (US-38): la app solo deja elegir hoy o un día futuro. Con `- 2`, Limpiar juntas sale «Retrasada 2 días (tocaba el …)». Desde la app se le puede poner después otra fecha, hoy o futura.
+
+```sql
+update public.tasks t
+set due_on = (now() at time zone 'Europe/Madrid')::date - 2
+from public.household_members m, auth.users u
+where t.household_id = m.household_id and m.user_id = u.id
+  and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
+  and t.name = 'Limpiar juntas' and t.frequency = 'one_off';
 ```
 
 ## Borrar una cuenta de prueba
