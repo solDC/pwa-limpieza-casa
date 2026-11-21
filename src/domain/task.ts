@@ -13,8 +13,8 @@ export type Frequency =
   | { kind: 'weekendBiweekly'; startOn: LocalDate }
   /** `days` días después del día en que se terminó la última vez. */
   | { kind: 'interval'; days: number }
-  /** Una sola vez. */
-  | { kind: 'oneOff' }
+  /** Una sola vez; si tiene fecha (`dueOn`, US-38), toca ese día. */
+  | { kind: 'oneOff'; dueOn: LocalDate | null }
 
 export type TaskPart = {
   id: string

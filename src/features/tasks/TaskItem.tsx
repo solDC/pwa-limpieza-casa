@@ -12,17 +12,20 @@ import {
 } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { AlreadyDoneError, completeParts, completeTask } from '../../storage/tasks'
+import { DueOnForm } from './DueOnForm'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
 // para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón («Marcar» o,
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
-// vuelta y «Marcar todo como hecho» (US-39).
+// vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
+// (US-38).
 export function TaskItem({
   task,
   round,
   today,
   onCompleted,
   onPartsDone,
+  onDueOnChanged,
   onStale,
 }: {
   task: Task
@@ -32,6 +35,8 @@ export function TaskItem({
   onCompleted: (taskId: string, completedOn: LocalDate) => void
   /** Se han marcado esas partes en la vuelta (ya guardadas). */
   onPartsDone: (taskId: string, round: Round, partIds: string[], completedOn: LocalDate) => void
+  /** Se ha puesto, cambiado o quitado la fecha de una puntual (ya guardada). */
+  onDueOnChanged: (taskId: string, dueOn: LocalDate | null) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
@@ -76,13 +81,27 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
+  // US-38 · El formulario de la fecha de una puntual. Al cerrarlo, el foco vuelve a su botón.
+  const [editingDueOn, setEditingDueOn] = useState(false)
+  const dueOnButton = useRef<HTMLButtonElement>(null)
+  const focusDueOnButton = useRef(false)
+  useEffect(() => {
+    if (!editingDueOn && focusDueOnButton.current) {
+      focusDueOnButton.current = false
+      dueOnButton.current?.focus()
+    }
+  }, [editingDueOn])
+
   const canMark = canMarkDone(task, round, today)
   const hasParts = task.parts.length > 0
   const progress = roundProgress(task, round)
 
+  const name = taskDisplayName(task, language)
+  const { frequency } = task
+
   return (
     <li className="card" ref={card}>
-      <h3 tabIndex={-1}>{taskDisplayName(task, language)}</h3>
+      <h3 tabIndex={-1}>{name}</h3>
       <p className="muted">{describeFrequency(task.frequency, language)}</p>
       {/* Con `aria-live`, al marcar la última parte los lectores de pantalla dicen cuándo
           vuelve a tocar la tarea: la tarjeta ya es la de la vuelta siguiente. */}
@@ -100,11 +119,11 @@ export function TaskItem({
           {/* `role="list"`: sin viñetas, VoiceOver deja de tratarla como una lista. */}
           <ul role="list" className="parts" aria-label={t.tasks.parts}>
             {progress.parts.map(({ part, done }) => {
-              const name = partDisplayName(part, language)
+              const partName = partDisplayName(part, language)
               return (
                 <li key={part.id} className={done ? 'part-done' : undefined}>
                   <span>
-                    {name} {part.weight} %
+                    {partName} {part.weight} %
                   </span>
                   {done && (
                     <button type="button" className="button-secondary" disabled>
@@ -115,7 +134,7 @@ export function TaskItem({
                     <button
                       type="button"
                       className="button-secondary"
-                      aria-label={t.tasks.markPartLabel(name)}
+                      aria-label={t.tasks.markPartLabel(partName)}
                       onClick={() => handlePartsDone(part.id, [part.id])}
                       disabled={saving}
                     >
@@ -144,6 +163,34 @@ export function TaskItem({
         </button>
       )}
       {error && <ErrorMessage>{t.errors[error]}</ErrorMessage>}
+      {frequency.kind === 'oneOff' &&
+        (editingDueOn ? (
+          <DueOnForm
+            taskId={task.id}
+            taskName={name}
+            dueOn={frequency.dueOn}
+            today={today}
+            onSaved={(dueOn) => onDueOnChanged(task.id, dueOn)}
+            onClose={() => {
+              focusDueOnButton.current = true
+              setEditingDueOn(false)
+            }}
+            onStale={onStale}
+          />
+        ) : (
+          <button
+            ref={dueOnButton}
+            type="button"
+            className="button-secondary"
+            aria-label={
+              frequency.dueOn === null ? t.tasks.setDueOnLabel(name) : t.tasks.changeDueOnLabel(name)
+            }
+            onClick={() => setEditingDueOn(true)}
+            disabled={saving}
+          >
+            {frequency.dueOn === null ? t.tasks.setDueOn : t.tasks.changeDueOn}
+          </button>
+        ))}
     </li>
   )
 }

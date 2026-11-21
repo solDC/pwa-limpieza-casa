@@ -77,7 +77,7 @@ test.describe('US-29 · Qué toca', () => {
     await expect(task(page, 'Superficies')).not.toContainText('Retrasada')
   })
 
-  test('en las de cada N días, el retraso cuenta desde el día siguiente; las puntuales nunca van con retraso', async ({
+  test('en las de cada N días, el retraso cuenta desde el día siguiente; las puntuales sin fecha nunca van con retraso', async ({
     page,
   }) => {
     const email = uniqueEmail()

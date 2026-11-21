@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   addPart,
+  dueOnError,
   emptyDraft,
   equalWeights,
   MAX_PARTS,
@@ -12,6 +13,8 @@ import {
   weightsTotal,
   type NewTaskDraft,
 } from '../../../src/domain/new-task'
+
+const TODAY = '2026-11-08'
 
 // US-33 · Añadir una tarea (#42)
 
@@ -69,7 +72,7 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
   })
 
   it('con nombre y frecuencia, vale, sin espacios de más', () => {
-    expect(validateNewTask(draft({ name: '  Regar las plantas ' }), 'es')).toEqual({
+    expect(validateNewTask(draft({ name: '  Regar las plantas ' }), 'es', TODAY)).toEqual({
       ok: true,
       task: {
         name: 'Regar las plantas',
@@ -80,22 +83,22 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
   })
 
   it('sin nombre no vale', () => {
-    expect(validateNewTask(draft({ name: '   ' }), 'es')).toEqual({
+    expect(validateNewTask(draft({ name: '   ' }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { name: 'Escribe el nombre de la tarea.' },
     })
   })
 
   it('con un nombre de más de 80 caracteres no vale', () => {
-    expect(validateNewTask(draft({ name: 'a'.repeat(80) }), 'es').ok).toBe(true)
-    expect(validateNewTask(draft({ name: 'a'.repeat(81) }), 'es')).toEqual({
+    expect(validateNewTask(draft({ name: 'a'.repeat(80) }), 'es', TODAY).ok).toBe(true)
+    expect(validateNewTask(draft({ name: 'a'.repeat(81) }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { name: 'El nombre puede tener como mucho 80 caracteres.' },
     })
   })
 
   it('sin frecuencia no vale', () => {
-    expect(validateNewTask(draft({ frequencyKind: null }), 'es')).toEqual({
+    expect(validateNewTask(draft({ frequencyKind: null }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { frequency: 'Elige cada cuánto toca.' },
     })
@@ -103,7 +106,7 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
 
   it('las cuatro frecuencias', () => {
     const frequencyOf = (changes: Partial<NewTaskDraft>) => {
-      const result = validateNewTask(draft(changes), 'es')
+      const result = validateNewTask(draft(changes), 'es', TODAY)
       return result.ok ? result.task.frequency : result.errors
     }
     expect(frequencyOf({ frequencyKind: 'weekendWeekly' })).toEqual({ kind: 'weekendWeekly' })
@@ -114,26 +117,26 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
       kind: 'interval',
       days: 30,
     })
-    expect(frequencyOf({ frequencyKind: 'oneOff' })).toEqual({ kind: 'oneOff' })
+    expect(frequencyOf({ frequencyKind: 'oneOff' })).toEqual({ kind: 'oneOff', dueOn: null })
   })
 
   it('«cada N días» necesita un número de días entero, de 1 a 365', () => {
     const error = { ok: false, errors: { intervalDays: 'Escribe cada cuántos días: de 1 a 365.' } }
     for (const intervalDays of ['', '0', '366', '2.5', 'tres', '-3']) {
-      expect(validateNewTask(draft({ intervalDays }), 'es')).toEqual(error)
+      expect(validateNewTask(draft({ intervalDays }), 'es', TODAY)).toEqual(error)
     }
-    expect(validateNewTask(draft({ intervalDays: ' 365 ' }), 'es').ok).toBe(true)
+    expect(validateNewTask(draft({ intervalDays: ' 365 ' }), 'es', TODAY).ok).toBe(true)
   })
 
   it('«cada 15 días» necesita su primer fin de semana', () => {
-    expect(validateNewTask(draft({ frequencyKind: 'weekendBiweekly' }), 'es')).toEqual({
+    expect(validateNewTask(draft({ frequencyKind: 'weekendBiweekly' }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { biweeklyStartOn: 'Elige el primer fin de semana.' },
     })
   })
 
   it('las partes son opcionales; si las hay, cuentan lo mismo', () => {
-    expect(validateNewTask(draft({ partNames: [' Cocina ', 'Baño', 'Salón'] }), 'es')).toMatchObject({
+    expect(validateNewTask(draft({ partNames: [' Cocina ', 'Baño', 'Salón'] }), 'es', TODAY)).toMatchObject({
       ok: true,
       task: {
         parts: [
@@ -146,21 +149,21 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
   })
 
   it('una parte sin nombre no vale: dice cuál', () => {
-    expect(validateNewTask(draft({ partNames: ['Cocina', '  ', 'Salón'] }), 'es')).toEqual({
+    expect(validateNewTask(draft({ partNames: ['Cocina', '  ', 'Salón'] }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { parts: [undefined, 'Escribe el nombre de la parte o quítala.', undefined] },
     })
   })
 
   it('una parte de más de 80 caracteres no vale', () => {
-    expect(validateNewTask(draft({ partNames: ['a'.repeat(81)] }), 'es')).toEqual({
+    expect(validateNewTask(draft({ partNames: ['a'.repeat(81)] }), 'es', TODAY)).toEqual({
       ok: false,
       errors: { parts: ['El nombre puede tener como mucho 80 caracteres.'] },
     })
   })
 
   it('dice todo lo que falta a la vez', () => {
-    expect(validateNewTask(draft({ name: '', frequencyKind: null, partNames: [''] }), 'es')).toEqual({
+    expect(validateNewTask(draft({ name: '', frequencyKind: null, partNames: [''] }), 'es', TODAY)).toEqual({
       ok: false,
       errors: {
         name: 'Escribe el nombre de la tarea.',
@@ -171,13 +174,59 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
   })
 })
 
+// US-38 · Poner fecha a una tarea puntual (#54)
+describe('validateNewTask: la fecha de una puntual', () => {
+  const oneOff = (dueOn: string | null) =>
+    validateNewTask({ ...emptyDraft(), name: 'Limpiar el horno', frequencyKind: 'oneOff', dueOn }, 'es', TODAY)
+
+  it('no es obligatoria: sin fecha, queda sin fecha', () => {
+    expect(emptyDraft().dueOn).toBeNull()
+    expect(oneOff(null)).toMatchObject({ ok: true, task: { frequency: { kind: 'oneOff', dueOn: null } } })
+  })
+
+  it('puede ser hoy o un día futuro', () => {
+    expect(oneOff(TODAY)).toMatchObject({ ok: true, task: { frequency: { kind: 'oneOff', dueOn: TODAY } } })
+    expect(oneOff('2027-02-28')).toMatchObject({
+      ok: true,
+      task: { frequency: { kind: 'oneOff', dueOn: '2027-02-28' } },
+    })
+  })
+
+  it('no puede ser un día pasado', () => {
+    expect(oneOff('2026-11-07')).toEqual({ ok: false, errors: { dueOn: 'Elige hoy o un día futuro.' } })
+  })
+
+  it('una fecha que no es una fecha no vale', () => {
+    expect(oneOff('mañana')).toEqual({ ok: false, errors: { dueOn: 'Elige hoy o un día futuro.' } })
+  })
+
+  it('las demás frecuencias no llevan fecha, aunque se haya elegido antes una', () => {
+    const result = validateNewTask(
+      { ...emptyDraft(), name: 'Baño', frequencyKind: 'interval', intervalDays: '3', dueOn: '2026-11-07' },
+      'es',
+      TODAY,
+    )
+    expect(result).toMatchObject({ ok: true, task: { frequency: { kind: 'interval', days: 3 } } })
+  })
+})
+
+describe('dueOnError: la fecha al cambiarla en una puntual que ya existe', () => {
+  it('hoy, un día futuro o sin fecha, bien; un día pasado, no', () => {
+    expect(dueOnError(TODAY, TODAY, 'es')).toBeUndefined()
+    expect(dueOnError('2026-12-01', TODAY, 'es')).toBeUndefined()
+    expect(dueOnError(null, TODAY, 'es')).toBeUndefined()
+    expect(dueOnError('2026-11-07', TODAY, 'es')).toBe('Elige hoy o un día futuro.')
+    expect(dueOnError('2026-11-07', TODAY, 'en')).toBe('Choose today or a later day.')
+  })
+})
+
 describe('validateNewTask: cuenta los caracteres como la base de datos', () => {
   it('un emoji cuenta como un carácter', () => {
     const result = validateNewTask({
       ...emptyDraft(),
       name: '🧽'.repeat(80),
       frequencyKind: 'oneOff',
-    }, 'es')
+    }, 'es', TODAY)
     expect(result.ok).toBe(true)
   })
 })
@@ -219,7 +268,7 @@ describe('los pesos de las partes en el formulario', () => {
     draft = setPartWeight(draft, 0, '50%')
     draft = setPartWeight(draft, 1, '50 %')
     expect(weightsTotal(draft)).toBe(100)
-    expect(validateNewTask(draft, 'es')).toMatchObject({
+    expect(validateNewTask(draft, 'es', TODAY)).toMatchObject({
       ok: true,
       task: { parts: [{ weight: 50 }, { weight: 50 }] },
     })
@@ -236,7 +285,7 @@ describe('los pesos de las partes en el formulario', () => {
     draft = setPartWeight(draft, 0, '50')
     draft = setPartWeight(draft, 1, ' 30 ')
     draft = setPartWeight(draft, 2, '20')
-    expect(validateNewTask(draft, 'es')).toMatchObject({
+    expect(validateNewTask(draft, 'es', TODAY)).toMatchObject({
       ok: true,
       task: {
         parts: [
@@ -250,7 +299,7 @@ describe('los pesos de las partes en el formulario', () => {
 
   it('si no suman 100, no vale: dice cuánto suman', () => {
     const draft = setPartWeight(withParts('Horno', 'Nevera'), 0, '40')
-    expect(validateNewTask(draft, 'es')).toEqual({
+    expect(validateNewTask(draft, 'es', TODAY)).toEqual({
       ok: false,
       errors: { weightsTotal: 'Los pesos tienen que sumar 100 % (ahora suman 90 %).' },
     })
@@ -258,7 +307,7 @@ describe('los pesos de las partes en el formulario', () => {
 
   it('cada peso tiene que ser un número entero de 1 a 100', () => {
     for (const weight of ['0', '', '101', '12.5', 'mucho', '-10']) {
-      const result = validateNewTask(setPartWeight(withParts('Horno', 'Nevera'), 0, weight), 'es')
+      const result = validateNewTask(setPartWeight(withParts('Horno', 'Nevera'), 0, weight), 'es', TODAY)
       expect(result.ok).toBe(false)
       if (!result.ok) {
         expect(result.errors.partWeights).toEqual(['Escribe un peso de 1 a 100.', undefined])
