@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, formatShortDate } from '../../src/domain/dates'
 import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
-import { setTaskNextDueOn } from './helpers/database'
+import { setTaskCreatedOn, setTaskNextDueOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-50 · Elegir desde qué día toca una tarea de cada N días (#81)
@@ -90,11 +90,18 @@ test.describe('US-50 · Elegir desde qué día toca una tarea de cada N días', 
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
     await expect(task(page, 'Regar las plantas')).toContainText(dueText(5))
 
-    // Como si ese día hubiera pasado hace 2 días (la app no deja elegir un día pasado).
-    await setTaskNextDueOn(email, 'Regar las plantas', day(-2))
+    // Como si hubiera llegado ese día (la app no deja elegir un día pasado): ese día toca
+    // hoy, sin retraso.
+    await setTaskCreatedOn(email, 'Regar las plantas', day(-5))
+    await setTaskNextDueOn(email, 'Regar las plantas', todayInMadrid())
+    await page.reload()
+    await expect(task(page, 'Regar las plantas')).toContainText('Toca: hoy')
+
+    // Y el día siguiente sin hacerla, 1 día de retraso.
+    await setTaskNextDueOn(email, 'Regar las plantas', day(-1))
     await page.reload()
     await expect(task(page, 'Regar las plantas')).toContainText(
-      `Retrasada 2 días (tocaba el ${formatShortDate(day(-2), 'es')})`,
+      `Retrasada 1 día (tocaba el ${formatShortDate(day(-1), 'es')})`,
     )
   })
 
