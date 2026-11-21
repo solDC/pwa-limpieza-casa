@@ -20,7 +20,7 @@ const dueText = (days: number) => `Toca: ${formatShortDate(day(days), 'es')}`
 
 function dueOnButton(page: Page, taskName: string) {
   return task(page, taskName).getByRole('button', {
-    name: new RegExp(`^(Poner fecha a|Cambiar la fecha de) ${taskName}$`),
+    name: new RegExp(`^(Poner fecha a|Cambiar fecha de) ${taskName}$`),
   })
 }
 
@@ -84,8 +84,8 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Guardar' }).click()
     await expect(card).toContainText(dueText(5))
     // Al cerrarse, el foco vuelve al botón, que ahora es para cambiarla.
-    await expect(card.getByRole('button', { name: 'Cambiar la fecha de Cepillar suelo' })).toBeFocused()
-    await expect(card.getByRole('button', { name: 'Cambiar la fecha de Cepillar suelo' })).toHaveText('Cambiar fecha')
+    await expect(card.getByRole('button', { name: 'Cambiar fecha de Cepillar suelo' })).toBeFocused()
+    await expect(card.getByRole('button', { name: 'Cambiar fecha de Cepillar suelo' })).toHaveText('Cambiar fecha')
 
     await page.reload()
     await expect(card).toContainText(dueText(5))
@@ -241,7 +241,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Scrub the floor', exact: true }) })
       await expect(card).toContainText('No date')
 
-      await card.getByRole('button', { name: 'Set a date for Scrub the floor' }).click()
+      await card.getByRole('button', { name: 'Set date for Scrub the floor' }).click()
       const form = page.getByRole('form', { name: 'Date of Scrub the floor' })
       await form.getByLabel('Date').fill(day(-1))
       await form.getByRole('button', { name: 'Save' }).click()
@@ -250,7 +250,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
       await form.getByLabel('Date').fill(day(5))
       await form.getByRole('button', { name: 'Save' }).click()
       await expect(card).toContainText(`Due: ${formatShortDate(day(5), 'en')}`)
-      await expect(card.getByRole('button', { name: 'Change the date of Scrub the floor' })).toHaveText(
+      await expect(card.getByRole('button', { name: 'Change date of Scrub the floor' })).toHaveText(
         'Change date',
       )
 
