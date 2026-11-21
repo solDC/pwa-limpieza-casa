@@ -147,9 +147,14 @@ as $$
 declare
   target public.tasks;
 begin
-  select * into target from public.tasks where id = target_task_id for update;
+  -- Solo bloquea la fila (para que no se marque como hecha a la vez) si es del hogar del
+  -- usuario: una tarea de otro hogar ni se bloquea.
+  select * into target
+  from public.tasks
+  where id = target_task_id and public.is_household_member(household_id)
+  for update;
 
-  if not found or not public.is_household_member(target.household_id) then
+  if not found then
     raise exception using errcode = '42501', message = 'No existe esa tarea en tu hogar.';
   end if;
 

@@ -121,9 +121,11 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
     part_weights: task.parts.map((part) => part.weight),
     task_due_on: frequency.kind === 'oneOff' ? frequency.dueOn : null,
   })
-  // 23514: la fecha de la puntual ya ha pasado para la base de datos (hoy en Madrid),
-  // porque la fecha del dispositivo va mal (US-38).
-  if (error?.code === '23514') throw new AppError('deviceDate')
+  // 23514 con fecha: la de la puntual ya ha pasado para la base de datos (hoy en Madrid),
+  // porque la fecha del dispositivo va mal (US-38). Sin fecha, 23514 es otra regla de la
+  // tabla (el formulario ya la comprueba): un fallo general, no uno de la fecha.
+  const hasDueOn = frequency.kind === 'oneOff' && frequency.dueOn !== null
+  if (error?.code === '23514' && hasDueOn) throw new AppError('deviceDate')
   if (error) throw new AppError('taskSaveFailed')
 }
 
