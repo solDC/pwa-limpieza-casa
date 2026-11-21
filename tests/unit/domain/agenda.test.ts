@@ -7,7 +7,7 @@ import type { Frequency, LocalDate } from '../../../src/domain/task'
 
 const weekly: Frequency = { kind: 'weekendWeekly' }
 const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
-const bathroom: Frequency = { kind: 'interval', days: 3 }
+const bathroom: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
 const oneOff: Frequency = { kind: 'oneOff', dueOn: null }
 
 const interval = (startsOn: LocalDate): Round => ({ startsOn, dueBy: null })
@@ -135,9 +135,9 @@ describe('agenda: el orden de «Tus tareas»', () => {
         task('Superficies', weekly), // retrasada 3 días
         task('Baño', bathroom, '2026-10-01', '2026-10-24'), // tocaba el 27: retrasada 1 día
         task('Aspirar cosas de Cati', biweekly), // 5 dic: más adelante
-        task('Cristales y espejos', { kind: 'interval', days: 30 }, '2026-10-28'), // hoy
+        task('Cristales y espejos', { kind: 'interval', days: 30, nextDueOn: null }, '2026-10-28'), // hoy
         task('Cepillar suelo', oneOff),
-        task('Polvo', { kind: 'interval', days: 7 }, '2026-10-01', '2026-10-25'), // 1 nov: más adelante
+        task('Polvo', { kind: 'interval', days: 7, nextDueOn: null }, '2026-10-01', '2026-10-25'), // 1 nov: más adelante
       ]),
     ).toEqual([
       'Superficies',
@@ -157,7 +157,7 @@ describe('agenda: el orden de «Tus tareas»', () => {
     expect(
       names([
         task('Baño', bathroom, '2026-10-28'),
-        task('Cristales y espejos', { kind: 'interval', days: 30 }, '2026-10-28'),
+        task('Cristales y espejos', { kind: 'interval', days: 30, nextDueOn: null }, '2026-10-28'),
       ]),
     ).toEqual(['Baño', 'Cristales y espejos'])
   })
@@ -168,12 +168,25 @@ describe('agenda: el orden de «Tus tareas»', () => {
       names([
         task('Cepillar suelo', oneOff),
         task('Horno', { kind: 'oneOff', dueOn: '2026-11-05' }), // más adelante, después de Polvo
-        task('Polvo', { kind: 'interval', days: 7 }, '2026-10-01', '2026-10-25'), // 1 nov
+        task('Polvo', { kind: 'interval', days: 7, nextDueOn: null }, '2026-10-01', '2026-10-25'), // 1 nov
         task('Nevera', { kind: 'oneOff', dueOn: '2026-10-28' }), // hoy
         task('Juntas', { kind: 'oneOff', dueOn: '2026-10-20' }), // retrasada 8 días
         task('Baño', bathroom, '2026-10-01', '2026-10-24'), // retrasada 1 día
       ]),
     ).toEqual(['Juntas', 'Baño', 'Nevera', 'Cepillar suelo', 'Polvo', 'Horno'])
+  })
+
+  // US-41: las de cada N días con otro día elegido van por ese día.
+  it('las de cada N días con otro día elegido van por ese día', () => {
+    const moved = (nextDueOn: LocalDate): Frequency => ({ kind: 'interval', days: 3, nextDueOn })
+    expect(
+      names([
+        task('Polvo', { kind: 'interval', days: 7, nextDueOn: null }, '2026-10-01', '2026-10-25'), // 1 nov
+        task('Baño', moved('2026-10-28'), '2026-10-01', '2026-10-20'), // tocaba el 23: ahora hoy
+        task('Cocina', moved('2026-10-30'), '2026-10-01', '2026-10-27'), // tocaba hoy: ahora el 30
+        task('Salón', bathroom, '2026-10-01', '2026-10-24'), // retrasada 1 día
+      ]),
+    ).toEqual(['Salón', 'Baño', 'Cocina', 'Polvo'])
   })
 
   it('no incluye las puntuales ya hechas', () => {

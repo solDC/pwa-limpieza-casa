@@ -7,6 +7,11 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-41 · Cambiar cuándo toca la próxima vez** (#59). En las tareas de cada N días, «Cambiar fecha» abre la fecha en la tarjeta, con el día en que toca ahora, «Guardar» y «Cancelar», como en las puntuales (US-38) pero sin «Quitar fecha»: siempre tocan algún día. Así se puede adaptar una tarea a los planes, por ejemplo pasar los cristales al sábado o quitarle el retraso al baño pasándolo a hoy.
+  - Solo se puede elegir hoy o un día futuro; si ya se ha hecho hoy, desde mañana, porque no se puede marcar dos veces el mismo día. La tarjeta dice «Toca: …» con el día elegido, y la lista la ordena por él; si llega sin hacerse, va con retraso desde el día siguiente.
+  - Vale solo para la próxima vez: al marcarla como hecha (entera o todas sus partes), las siguientes se vuelven a contar N días desde el día en que se hizo, como siempre.
+  - Cambiar el día no cambia la vuelta: si la tarea tiene partes y ya hay alguna hecha, se conserva.
+  - **En la base de datos** (migración nueva): columna `next_due_on` en `tasks`, solo en las de cada N días, y la función `set_task_next_due_on`, que la pone en una tarea del hogar del usuario y rechaza un día pasado (hoy en Madrid) y, si ya se ha hecho hoy, también hoy. Al terminar una vuelta, la base de datos vacía la columna sola. La app sigue sin poder cambiar `tasks` directamente.
 - **US-38 · Poner fecha a una tarea puntual** (#54). Una tarea puntual puede tener fecha, si se quiere: al añadirla, el formulario tiene «Fecha (opcional)»; en una que ya existe, «Poner fecha» o «Cambiar fecha», que abre la fecha en la tarjeta con «Guardar», «Quitar fecha» y «Cancelar». Así se puede planificar algo que se hace una sola vez, como limpiar el horno antes de una visita.
   - Con fecha, se ve como una de cada N días: «Toca: hoy», «Toca: mañana», «Toca: mié 25 nov» y, si pasa la fecha sin hacerse, «Retrasada 2 días (tocaba el lun 23 nov)», desde el día siguiente. En la lista se ordena con las demás por esa fecha. Sin fecha, sigue como antes: «Sin fecha», sin retraso nunca.
   - Solo se puede elegir hoy o un día futuro, al crearla y al cambiarla; una retrasada se puede pasar a hoy o a otro día. Se puede marcar como hecha antes de su fecha, como las de cada N días.

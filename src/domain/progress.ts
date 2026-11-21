@@ -48,9 +48,20 @@ export function withPartsDone(
     ...partIds.map((partId) => ({ partId, startsOn: round.startsOn })),
   ]
   const allDone = roundProgress({ parts: task.parts, partCompletions }, round).remaining.length === 0
+  const withParts = { ...task, partCompletions }
+  return allDone ? withRoundDone(withParts, completedOn) : withParts
+}
+
+/**
+ * La tarea después de terminar su vuelta ese día (la tarea entera o su última parte): la
+ * próxima vez se cuenta desde ese día. En las de cada N días, se olvida el día elegido para
+ * la próxima vez (US-41), como hace la base de datos.
+ */
+export function withRoundDone(task: Task, completedOn: LocalDate): Task {
+  const { frequency } = task
   return {
     ...task,
-    partCompletions,
-    lastCompletedOn: allDone ? completedOn : task.lastCompletedOn,
+    lastCompletedOn: completedOn,
+    frequency: frequency.kind === 'interval' ? { ...frequency, nextDueOn: null } : frequency,
   }
 }

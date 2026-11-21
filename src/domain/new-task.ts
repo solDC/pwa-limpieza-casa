@@ -142,6 +142,7 @@ const VALIDATION_TEXTS = {
     weightsTotal: (total: number) => `Los pesos tienen que sumar 100 % (ahora suman ${total} %).`,
     nameTooLong: (max: number) => `El nombre puede tener como mucho ${max} caracteres.`,
     dueOnNotPast: 'Elige hoy o un día futuro.',
+    nextDueOnDoneToday: 'Ya está hecha hoy: elige mañana o un día futuro.',
   },
   en: {
     taskNameRequired: 'Enter the name of the task.',
@@ -154,6 +155,7 @@ const VALIDATION_TEXTS = {
       `The weights must add up to 100 % (now they add up to ${total} %).`,
     nameTooLong: (max: number) => `The name can have at most ${max} characters.`,
     dueOnNotPast: 'Choose today or a later day.',
+    nextDueOnDoneToday: 'Already done today: choose tomorrow or a later day.',
   },
 } satisfies Record<Language, unknown>
 
@@ -169,6 +171,33 @@ export function dueOnError(
   if (dueOn === null) return undefined
   const valid = /^\d{4}-\d{2}-\d{2}$/.test(dueOn) && dueOn >= today
   return valid ? undefined : VALIDATION_TEXTS[language].dueOnNotPast
+}
+
+/**
+ * US-41 · El primer día que se puede elegir para la próxima vez en una de cada N días: hoy
+ * o, si ya se ha hecho hoy, mañana (no se puede marcar dos veces el mismo día).
+ */
+export function earliestNextDueOn(today: LocalDate, lastCompletedOn: LocalDate | null): LocalDate {
+  return lastCompletedOn === today ? addDays(today, 1) : today
+}
+
+/**
+ * US-41 · El aviso del día elegido para la próxima vez en una de cada N días, o `undefined`
+ * si vale. Siempre hace falta uno ('' es sin día), desde `earliestNextDueOn()`.
+ */
+export function nextDueOnError(
+  nextDueOn: LocalDate,
+  today: LocalDate,
+  lastCompletedOn: LocalDate | null,
+  language: Language,
+): string | undefined {
+  // Si ya se ha hecho hoy, el primer día que vale es mañana: con cualquier día anterior, o
+  // sin día, se dice eso.
+  if (lastCompletedOn === today) {
+    const valid = /^\d{4}-\d{2}-\d{2}$/.test(nextDueOn) && nextDueOn > today
+    return valid ? undefined : VALIDATION_TEXTS[language].nextDueOnDoneToday
+  }
+  return dueOnError(nextDueOn, today, language)
 }
 
 /**
@@ -206,7 +235,7 @@ export function validateNewTask(
       const written = draft.intervalDays.trim()
       const days = Number(written)
       if (/^\d+$/.test(written) && days >= 1 && days <= MAX_INTERVAL_DAYS) {
-        frequency = { kind: 'interval', days }
+        frequency = { kind: 'interval', days, nextDueOn: null }
       } else {
         errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
       }
