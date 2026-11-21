@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import type { Round } from '../../domain/frequency'
-import { withPartsDone } from '../../domain/progress'
+import { withPartsDone, withRoundDone } from '../../domain/progress'
 import type { LocalDate, Task } from '../../domain/task'
 import { listTasks } from '../../storage/tasks'
 
@@ -15,7 +15,8 @@ export type TasksState =
  * - `markCompleted`: una tarea se ha marcado como hecha (ya guardada).
  * - `markPartsDone`: se han marcado partes de una tarea (ya guardadas); si eran las que
  *   faltaban, la vuelta queda terminada.
- * - `changeDueOn`: se ha puesto, cambiado o quitado la fecha de una puntual (ya guardada).
+ * - `changeDueOn`: se ha puesto, cambiado o quitado la fecha de una puntual (US-38), o se ha
+ *   cambiado cuándo toca la próxima vez una de cada N días (US-41), ya guardada.
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -74,7 +75,7 @@ export function useTasks() {
   }
 
   function markCompleted(taskId: string, completedOn: LocalDate) {
-    changeTask(taskId, (task) => ({ ...task, lastCompletedOn: completedOn }))
+    changeTask(taskId, (task) => withRoundDone(task, completedOn))
   }
 
   function markPartsDone(taskId: string, round: Round, partIds: string[], completedOn: LocalDate) {
@@ -82,9 +83,12 @@ export function useTasks() {
   }
 
   function changeDueOn(taskId: string, dueOn: LocalDate | null) {
-    changeTask(taskId, (task) =>
-      task.frequency.kind === 'oneOff' ? { ...task, frequency: { ...task.frequency, dueOn } } : task,
-    )
+    changeTask(taskId, (task) => {
+      const { frequency } = task
+      if (frequency.kind === 'oneOff') return { ...task, frequency: { ...frequency, dueOn } }
+      if (frequency.kind === 'interval') return { ...task, frequency: { ...frequency, nextDueOn: dueOn } }
+      return task
+    })
   }
 
   return {

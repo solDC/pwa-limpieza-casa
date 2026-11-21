@@ -4,16 +4,19 @@ import { errorCode, type ErrorCode } from '../../domain/errors'
 import { dueOnError } from '../../domain/new-task'
 import type { LocalDate } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
-import { AlreadyDoneError, setTaskDueOn } from '../../storage/tasks'
+import { AlreadyDoneError } from '../../storage/tasks'
 import { FieldError } from './FieldError'
 
-// US-38 · Poner fecha a una tarea puntual que ya existe, cambiarla o quitarla. Se abre
-// dentro de su tarjeta. Solo hoy o un día futuro.
+// La fecha de una tarea que ya existe, dentro de su tarjeta. Solo hoy o un día futuro.
+// - US-38 · En una puntual: ponerla, cambiarla o quitarla (con `remove`).
+// - US-41 · En una de cada N días: cambiar cuándo toca la próxima vez. Siempre tiene una.
 export function DueOnForm({
   taskId,
   taskName,
   dueOn,
   today,
+  save,
+  remove,
   onSaved,
   onClose,
   onStale,
@@ -24,6 +27,10 @@ export function DueOnForm({
   /** La fecha que tiene ahora (`null`, sin fecha). */
   dueOn: LocalDate | null
   today: LocalDate
+  /** Guarda la fecha nueva. */
+  save: (dueOn: LocalDate) => Promise<void>
+  /** Quita la fecha. Sin ella, la fecha no se puede quitar ni dejar vacía. */
+  remove?: () => Promise<void>
   /** Se ha guardado la fecha nueva (o `null`, si se ha quitado). */
   onSaved: (dueOn: LocalDate | null) => void
   onClose: () => void
@@ -38,17 +45,20 @@ export function DueOnForm({
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const fieldId = `due-on-${taskId}`
-  // El aviso sale al intentar guardar, y después se pone al día solo al corregir la fecha.
-  const error = showError ? dueOnError(value || null, today, language) : undefined
+  // Vacía, solo si se puede quitar. El aviso sale al intentar guardar, y después se pone al
+  // día solo al corregir la fecha.
+  const validate = () => dueOnError(value === '' && remove ? null : value, today, language)
+  const error = showError ? validate() : undefined
 
   // Al abrirlo, se empieza por la fecha (también con el teclado o VoiceOver).
   useEffect(() => input.current?.focus(), [])
 
-  async function save(target: 'save' | 'remove', newDueOn: LocalDate | null) {
+  async function run(target: 'save' | 'remove', newDueOn: LocalDate | null) {
     setSaving(target)
     setSaveError(null)
     try {
-      await setTaskDueOn(taskId, newDueOn)
+      if (newDueOn === null) await remove?.()
+      else await save(newDueOn)
       onSaved(newDueOn)
       onClose()
     } catch (saveFailure) {
@@ -60,13 +70,12 @@ export function DueOnForm({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const newDueOn = value || null
-    if (dueOnError(newDueOn, today, language)) {
+    if (validate()) {
       setShowError(true)
       input.current?.focus()
       return
     }
-    void save('save', newDueOn)
+    void run('save', value || null)
   }
 
   return (
@@ -89,11 +98,11 @@ export function DueOnForm({
         <button type="button" className="button-secondary" onClick={onClose} disabled={saving !== null}>
           {t.tasks.cancel}
         </button>
-        {dueOn !== null && (
+        {remove && dueOn !== null && (
           <button
             type="button"
             className="button-secondary"
-            onClick={() => void save('remove', null)}
+            onClick={() => void run('remove', null)}
             disabled={saving !== null}
           >
             {saving === 'remove' ? t.tasks.saving : t.tasks.removeDueOn}

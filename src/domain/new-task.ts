@@ -206,7 +206,7 @@ export function validateNewTask(
       const written = draft.intervalDays.trim()
       const days = Number(written)
       if (/^\d+$/.test(written) && days >= 1 && days <= MAX_INTERVAL_DAYS) {
-        frequency = { kind: 'interval', days }
+        frequency = { kind: 'interval', days, nextDueOn: null }
       } else {
         errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
       }

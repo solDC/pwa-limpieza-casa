@@ -18,10 +18,10 @@ Para empezar de cero, lo más fácil es entrar con otra cuenta (`+prueba2`, `+pr
 
 ## Ver las tareas de una cuenta
 
-Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38) y cuándo se hicieron por última vez.
+Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41) y cuándo se hicieron por última vez.
 
 ```sql
-select t.name, t.frequency, t.created_on, t.due_on,
+select t.name, t.frequency, t.created_on, t.due_on, t.next_due_on,
   (select max(r.completed_on) from public.task_rounds r where r.task_id = t.id) as last_completed_on
 from public.tasks t
 join public.household_members m on m.household_id = t.household_id
@@ -32,7 +32,7 @@ order by t.position;
 
 ## Dejar todas las tareas sin hacer
 
-Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer.
+Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41).
 
 ```sql
 delete from public.task_rounds r
@@ -45,13 +45,21 @@ delete from public.task_part_completions c
 using public.household_members m, auth.users u
 where c.household_id = m.household_id and m.user_id = u.id
   and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%';
+
+-- Y el día elegido para la próxima vez (US-41).
+update public.tasks t
+set next_due_on = null
+from public.household_members m, auth.users u
+where t.household_id = m.household_id and m.user_id = u.id
+  and u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
+  and t.next_due_on is not null;
 ```
 
 ## Que una tarea se creara hace unos días
 
 Para tener una tarea de cada N días retrasada sin esperar: una que nunca se ha hecho toca desde el día en que se creó. Con `- 5`, Baño (cada 3 días) tocaba hace 5 días y sale «Retrasada 5 días».
 
-**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta: cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo y el día de creación no cuenta. Si ya la has marcado, ejecuta antes «Dejar todas las tareas sin hacer».
+**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta, ni se le ha cambiado el día desde la app (US-41): cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo, y con un día elegido, toca ese día; en los dos casos, el día de creación no cuenta. Si es así, ejecuta antes «Dejar todas las tareas sin hacer».
 
 ```sql
 update public.tasks t

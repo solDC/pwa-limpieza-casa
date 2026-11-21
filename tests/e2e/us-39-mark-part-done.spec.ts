@@ -172,7 +172,8 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     const next = `Toca: ${formatShortDate(addDays(todayInMadrid(), 7), 'es')}`
     await expect(kitchen).toContainText(next)
     // Ya está hecha hoy: las partes de la vuelta siguiente no se marcan el mismo día.
-    await expect(kitchen.getByRole('button')).toHaveCount(0)
+    // (Sí sale «Cambiar fecha», de la US-41.)
+    await expect(kitchen.getByRole('button', { name: /^Marcar/ })).toHaveCount(0)
     await page.reload()
     await expect(kitchen).toContainText(next)
   })

@@ -76,7 +76,7 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
       ok: true,
       task: {
         name: 'Regar las plantas',
-        frequency: { kind: 'interval', days: 7 },
+        frequency: { kind: 'interval', days: 7, nextDueOn: null },
         parts: [],
       },
     })
@@ -116,6 +116,7 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
     expect(frequencyOf({ frequencyKind: 'interval', intervalDays: '30' })).toEqual({
       kind: 'interval',
       days: 30,
+      nextDueOn: null,
     })
     expect(frequencyOf({ frequencyKind: 'oneOff' })).toEqual({ kind: 'oneOff', dueOn: null })
   })
@@ -206,7 +207,7 @@ describe('validateNewTask: la fecha de una puntual', () => {
       'es',
       TODAY,
     )
-    expect(result).toMatchObject({ ok: true, task: { frequency: { kind: 'interval', days: 3 } } })
+    expect(result).toMatchObject({ ok: true, task: { frequency: { kind: 'interval', days: 3, nextDueOn: null } } })
   })
 })
 

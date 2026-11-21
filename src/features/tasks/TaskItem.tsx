@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { errorCode, type ErrorCode } from '../../domain/errors'
-import { canMarkDone, describeDue, type Round } from '../../domain/frequency'
+import { canMarkDone, describeDue, dueDate, type Round } from '../../domain/frequency'
 import { roundProgress } from '../../domain/progress'
 import {
   describeFrequency,
@@ -11,14 +11,20 @@ import {
   type Task,
 } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
-import { AlreadyDoneError, completeParts, completeTask } from '../../storage/tasks'
+import {
+  AlreadyDoneError,
+  completeParts,
+  completeTask,
+  setTaskDueOn,
+  setTaskNextDueOn,
+} from '../../storage/tasks'
 import { DueOnForm } from './DueOnForm'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
 // para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón («Marcar» o,
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
 // vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
-// (US-38).
+// (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41).
 export function TaskItem({
   task,
   round,
@@ -35,7 +41,10 @@ export function TaskItem({
   onCompleted: (taskId: string, completedOn: LocalDate) => void
   /** Se han marcado esas partes en la vuelta (ya guardadas). */
   onPartsDone: (taskId: string, round: Round, partIds: string[], completedOn: LocalDate) => void
-  /** Se ha puesto, cambiado o quitado la fecha de una puntual (ya guardada). */
+  /**
+   * Se ha puesto, cambiado o quitado la fecha de una puntual, o se ha cambiado cuándo toca la
+   * próxima vez una de cada N días (ya guardada).
+   */
   onDueOnChanged: (taskId: string, dueOn: LocalDate | null) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
@@ -81,7 +90,7 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
-  // US-38 · El formulario de la fecha de una puntual. Al cerrarlo, el foco vuelve a su botón.
+  // US-38 y US-41 · El formulario de la fecha. Al cerrarlo, el foco vuelve a su botón.
   const [editingDueOn, setEditingDueOn] = useState(false)
   const dueOnButton = useRef<HTMLButtonElement>(null)
   const focusDueOnButton = useRef(false)
@@ -98,6 +107,8 @@ export function TaskItem({
 
   const name = taskDisplayName(task, language)
   const { frequency } = task
+  // Una puntual sin fecha: «Poner fecha». Las demás ya tienen una: «Cambiar fecha».
+  const hasNoDate = frequency.kind === 'oneOff' && frequency.dueOn === null
 
   return (
     <li className="card" ref={card}>
@@ -163,13 +174,18 @@ export function TaskItem({
         </button>
       )}
       {error && <ErrorMessage>{t.errors[error]}</ErrorMessage>}
-      {frequency.kind === 'oneOff' &&
+      {(frequency.kind === 'oneOff' || frequency.kind === 'interval') &&
         (editingDueOn ? (
           <DueOnForm
             taskId={task.id}
             taskName={name}
-            dueOn={frequency.dueOn}
+            dueOn={dueDate(frequency, round)}
             today={today}
+            save={(dueOn) =>
+              frequency.kind === 'oneOff' ? setTaskDueOn(task.id, dueOn) : setTaskNextDueOn(task.id, dueOn)
+            }
+            // Solo la fecha de una puntual se puede quitar: una de cada N días siempre toca algún día.
+            remove={frequency.kind === 'oneOff' ? () => setTaskDueOn(task.id, null) : undefined}
             onSaved={(dueOn) => onDueOnChanged(task.id, dueOn)}
             onClose={() => {
               focusDueOnButton.current = true
@@ -182,13 +198,11 @@ export function TaskItem({
             ref={dueOnButton}
             type="button"
             className="button-secondary"
-            aria-label={
-              frequency.dueOn === null ? t.tasks.setDueOnLabel(name) : t.tasks.changeDueOnLabel(name)
-            }
+            aria-label={hasNoDate ? t.tasks.setDueOnLabel(name) : t.tasks.changeDueOnLabel(name)}
             onClick={() => setEditingDueOn(true)}
             disabled={saving}
           >
-            {frequency.dueOn === null ? t.tasks.setDueOn : t.tasks.changeDueOn}
+            {hasNoDate ? t.tasks.setDueOn : t.tasks.changeDueOn}
           </button>
         ))}
     </li>

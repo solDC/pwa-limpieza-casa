@@ -42,7 +42,7 @@ describe('las fechas, en el idioma elegido', () => {
 
 describe('describeDue en inglés', () => {
   const weekly = { kind: 'weekendWeekly' } as const
-  const bathroom = { kind: 'interval', days: 3 } as const
+  const bathroom = { kind: 'interval', days: 3, nextDueOn: null } as const
   const weekend = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
 
   it('las de fin de semana', () => {
@@ -78,10 +78,10 @@ describe('describeFrequency en inglés', () => {
     expect(describeFrequency({ kind: 'weekendBiweekly', startOn: '2026-12-05' }, 'en')).toBe(
       'Every other weekend',
     )
-    expect(describeFrequency({ kind: 'interval', days: 1 }, 'en')).toBe(
+    expect(describeFrequency({ kind: 'interval', days: 1, nextDueOn: null }, 'en')).toBe(
       'Every day since the last time',
     )
-    expect(describeFrequency({ kind: 'interval', days: 30 }, 'en')).toBe(
+    expect(describeFrequency({ kind: 'interval', days: 30, nextDueOn: null }, 'en')).toBe(
       'Every 30 days since the last time',
     )
     expect(describeFrequency({ kind: 'oneOff', dueOn: null }, 'en')).toBe('One-off')

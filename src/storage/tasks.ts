@@ -17,6 +17,8 @@ type TaskRow = {
   biweekly_start_on: string | null
   // Solo en las puntuales, y opcional (US-38).
   due_on: string | null
+  // Solo en las de cada N días: el día elegido para la próxima vez, si se ha cambiado (US-41).
+  next_due_on: string | null
   created_on: string
   cancelled_on: string | null
   task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
@@ -31,7 +33,7 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, due_on, next_due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     .order('position')
@@ -146,6 +148,21 @@ export async function setTaskDueOn(taskId: string, dueOn: LocalDate | null): Pro
   if (error) throw new AppError('saveFailed')
 }
 
+/**
+ * US-41 · Cambia el día en que toca la próxima vez una tarea de cada N días. Al terminar la
+ * vuelta, la base de datos lo olvida y la siguiente se cuenta desde el día en que se hizo.
+ */
+export async function setTaskNextDueOn(taskId: string, nextDueOn: LocalDate): Promise<void> {
+  const { error } = await getSupabase().rpc('set_task_next_due_on', {
+    target_task_id: taskId,
+    new_next_due_on: nextDueOn,
+  })
+  // 23514: el día ya ha pasado para la base de datos (hoy en Madrid), porque la fecha del
+  // dispositivo va mal.
+  if (error?.code === '23514') throw new AppError('deviceDate')
+  if (error) throw new AppError('saveFailed')
+}
+
 function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
   switch (frequency.kind) {
     case 'weekendWeekly':
@@ -189,7 +206,7 @@ function toFrequency(row: TaskRow): Frequency {
     case 'weekend_biweekly':
       return { kind: 'weekendBiweekly', startOn: required(row.biweekly_start_on, row) }
     case 'interval':
-      return { kind: 'interval', days: required(row.interval_days, row) }
+      return { kind: 'interval', days: required(row.interval_days, row), nextDueOn: row.next_due_on }
     case 'one_off':
       return { kind: 'oneOff', dueOn: row.due_on }
   }
