@@ -224,6 +224,46 @@ describe('dueOnError: la fecha al cambiarla en una puntual que ya existe', () =>
   })
 })
 
+describe('US-50 · al añadir una de cada N días, el día en que toca la primera vez', () => {
+  const interval = (firstDueOn: string | null) =>
+    validateNewTask(
+      { ...emptyDraft(), name: 'Cristales', frequencyKind: 'interval', intervalDays: '30', firstDueOn },
+      'es',
+      TODAY,
+    )
+
+  it('sin cambiarlo, o con hoy, toca hoy: como hasta ahora, sin ningún día elegido', () => {
+    const today = { ok: true, task: { frequency: { kind: 'interval', days: 30, nextDueOn: null } } }
+    expect(interval(null)).toMatchObject(today)
+    expect(interval(TODAY)).toMatchObject(today)
+  })
+
+  it('con un día futuro, toca ese día', () => {
+    expect(interval('2026-11-20')).toMatchObject({
+      ok: true,
+      task: { frequency: { kind: 'interval', days: 30, nextDueOn: '2026-11-20' } },
+    })
+  })
+
+  it('un día pasado, vacío o que no es una fecha no vale', () => {
+    for (const firstDueOn of ['2026-11-07', '', 'mañana']) {
+      expect(interval(firstDueOn)).toEqual({
+        ok: false,
+        errors: { firstDueOn: 'Elige hoy o un día futuro.' },
+      })
+    }
+  })
+
+  it('las demás frecuencias no lo llevan, aunque se haya elegido antes', () => {
+    const result = validateNewTask(
+      { ...emptyDraft(), name: 'Horno', frequencyKind: 'oneOff', firstDueOn: '2026-11-07' },
+      'es',
+      TODAY,
+    )
+    expect(result).toMatchObject({ ok: true, task: { frequency: { kind: 'oneOff', dueOn: null } } })
+  })
+})
+
 describe('nextDueOnError: cuándo toca la próxima vez una de cada N días (US-41)', () => {
   const yesterday = addDays(TODAY, -1)
   const tomorrow = addDays(TODAY, 1)

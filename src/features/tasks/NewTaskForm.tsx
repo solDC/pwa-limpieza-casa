@@ -169,6 +169,19 @@ export function NewTaskForm({
             disabled={saving}
           />
           <FieldError id="new-task-interval-days-error" message={errors?.intervalDays} />
+          {/* US-50 · El día en que toca la primera vez: hoy, si no se cambia. */}
+          <label htmlFor="new-task-first-due-on">{t.newTask.firstDueOn}</label>
+          <input
+            id="new-task-first-due-on"
+            type="date"
+            min={today}
+            value={draft.firstDueOn ?? today}
+            onChange={(event) => update({ firstDueOn: event.target.value })}
+            aria-invalid={invalid(errors?.firstDueOn)}
+            aria-describedby={errors?.firstDueOn ? 'new-task-first-due-on-error' : undefined}
+            disabled={saving}
+          />
+          <FieldError id="new-task-first-due-on-error" message={errors?.firstDueOn} />
         </>
       )}
 

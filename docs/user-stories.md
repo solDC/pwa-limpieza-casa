@@ -38,7 +38,7 @@ Primero las hechas y después las pendientes.
 | US-38 | Poner fecha a una tarea puntual | Must have | Hecha | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Hecha | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
-| US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
+| US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Pendiente | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 

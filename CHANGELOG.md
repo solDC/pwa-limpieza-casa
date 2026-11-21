@@ -7,6 +7,9 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-50 · Elegir desde qué día toca una tarea de cada N días** (#81). Al añadir una tarea de «cada N días», el formulario pide «Toca por primera vez el», con hoy ya elegido. Así, una tarea que se piensa empezar más adelante no sale como pendiente desde hoy.
+  - Solo se puede elegir hoy o un día futuro. Hasta ese día, la tarea dice «Toca: <día>», sin retraso; desde el día siguiente sin hacerla, va con retraso, como las demás. Después, las siguientes se cuentan desde el día en que se termine, como siempre, y el día se puede cambiar con «Cambiar fecha» (US-41).
+  - **En la base de datos** (migración nueva): `create_task` guarda ese día en `next_due_on`, la columna de la US-41, con el mismo argumento que la fecha de las puntuales (`task_due_on`). La función se llama igual que antes, así que la versión anterior de la app sigue funcionando. Rechaza un día pasado (hoy en Madrid), y las de fin de semana siguen sin admitir un día.
 - **US-41 · Cambiar cuándo toca la próxima vez** (#59). En las tareas de cada N días, «Cambiar fecha» abre la fecha en la tarjeta, con el día en que toca ahora, «Guardar» y «Cancelar», como en las puntuales (US-38) pero sin «Quitar fecha»: siempre tocan algún día. Así se puede adaptar una tarea a los planes, por ejemplo pasar los cristales al sábado o quitarle el retraso al baño pasándolo a hoy.
   - Solo se puede elegir hoy o un día futuro; si ya se ha hecho hoy, desde mañana, porque no se puede marcar dos veces el mismo día. La tarjeta dice «Toca: …» con el día elegido, y la lista la ordena por él; si llega sin hacerse, va con retraso desde el día siguiente.
   - Vale solo para la próxima vez: al marcarla como hecha (entera o todas sus partes), las siguientes se vuelven a contar N días desde el día en que se hizo, como siempre.
