@@ -247,6 +247,8 @@ describe('nextDueOnError: cuándo toca la próxima vez una de cada N días (US-4
     )
     expect(nextDueOnError(yesterday, TODAY, TODAY, 'es')).toBe('Ya está hecha hoy: elige mañana o un día futuro.')
     expect(nextDueOnError(tomorrow, TODAY, TODAY, 'es')).toBeUndefined()
+    // Sin día, el mismo aviso: hoy tampoco valdría.
+    expect(nextDueOnError('', TODAY, TODAY, 'es')).toBe('Ya está hecha hoy: elige mañana o un día futuro.')
   })
 
   it('el primer día que se puede elegir: hoy o, si ya se ha hecho hoy, mañana', () => {

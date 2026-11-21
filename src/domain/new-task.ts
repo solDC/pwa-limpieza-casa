@@ -191,9 +191,11 @@ export function nextDueOnError(
   lastCompletedOn: LocalDate | null,
   language: Language,
 ): string | undefined {
-  const text = VALIDATION_TEXTS[language]
-  if (lastCompletedOn === today && /^\d{4}-\d{2}-\d{2}$/.test(nextDueOn) && nextDueOn <= today) {
-    return text.nextDueOnDoneToday
+  // Si ya se ha hecho hoy, el primer día que vale es mañana: con cualquier día anterior, o
+  // sin día, se dice eso.
+  if (lastCompletedOn === today) {
+    const valid = /^\d{4}-\d{2}-\d{2}$/.test(nextDueOn) && nextDueOn > today
+    return valid ? undefined : VALIDATION_TEXTS[language].nextDueOnDoneToday
   }
   return dueOnError(nextDueOn, today, language)
 }
