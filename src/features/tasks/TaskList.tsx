@@ -13,7 +13,7 @@ import { useToday } from './use-today'
 // `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
 export function TaskList({ householdId }: { householdId?: string }) {
   const { t } = useLanguage()
-  const { state, markCompleted, refresh, reloadAfterAdding } = useTasks()
+  const { state, markCompleted, markPartsDone, refresh, reloadAfterAdding } = useTasks()
   const today = useToday()
   const [adding, setAdding] = useState(false)
   // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
@@ -77,7 +77,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
       {state.status === 'loading' && <p className="muted">{t.tasks.loading}</p>}
       {state.status === 'error' && <ErrorMessage>{t.errors[state.error]}</ErrorMessage>}
       {state.status === 'loaded' && (
-        <ul className="task-list" aria-label={t.tasks.title}>
+        <ul role="list" className="task-list" aria-label={t.tasks.title}>
           {agenda(state.tasks, today).map(({ task, round }) => (
             <TaskItem
               key={task.id}
@@ -85,6 +85,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
               round={round}
               today={today}
               onCompleted={markCompleted}
+              onPartsDone={markPartsDone}
               onStale={refresh}
             />
           ))}

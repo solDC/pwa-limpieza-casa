@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { formatDayMonth } from '../../src/domain/dates'
 import { nextWeekends } from '../../src/domain/new-task'
-import { newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
+import { newTaskForm, signIn, task, taskNames, todayInMadrid, taskParts } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-33 · Añadir una tarea (#42)
@@ -79,9 +79,9 @@ test.describe('US-33 · Añadir una tarea', () => {
     await expect(newTaskForm(page)).toContainText('Si no cambias los pesos, todas cuentan lo mismo.')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 34 % · Nevera 33 % · Campana 33 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 34 %', 'Nevera 33 %', 'Campana 33 %'])
     await page.reload()
-    await expect(task(page, 'Cocina a fondo')).toContainText('Horno 34 % · Nevera 33 % · Campana 33 %')
+    await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 34 %', 'Nevera 33 %', 'Campana 33 %'])
   })
 
   test('puedo quitar una parte antes de guardar, y una parte sin nombre no deja guardar', async ({
