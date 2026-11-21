@@ -151,14 +151,19 @@ export async function setTaskDueOn(taskId: string, dueOn: LocalDate | null): Pro
 /**
  * US-41 · Cambia el día en que toca la próxima vez una tarea de cada N días. Al terminar la
  * vuelta, la base de datos lo olvida y la siguiente se cuenta desde el día en que se hizo.
+ * Si ya se ha hecho hoy en otro dispositivo y se elige hoy, lanza `AlreadyDoneError`, para
+ * que la pantalla se ponga al día.
  */
 export async function setTaskNextDueOn(taskId: string, nextDueOn: LocalDate): Promise<void> {
   const { error } = await getSupabase().rpc('set_task_next_due_on', {
     target_task_id: taskId,
     new_next_due_on: nextDueOn,
   })
-  // 23514: el día ya ha pasado para la base de datos (hoy en Madrid), porque la fecha del
+  // Los códigos de set_task_next_due_on: 23505, ya se ha hecho hoy (en otro dispositivo,
+  // porque el formulario no deja elegir hoy si se ha hecho en este) y se ha elegido hoy;
+  // 23514, el día ya ha pasado para la base de datos (hoy en Madrid), porque la fecha del
   // dispositivo va mal.
+  if (error?.code === '23505') throw new AlreadyDoneError()
   if (error?.code === '23514') throw new AppError('deviceDate')
   if (error) throw new AppError('saveFailed')
 }

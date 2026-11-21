@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import { canMarkDone, describeDue, dueDate, type Round } from '../../domain/frequency'
+import { dueOnError, earliestNextDueOn, nextDueOnError } from '../../domain/new-task'
 import { roundProgress } from '../../domain/progress'
 import {
   describeFrequency,
@@ -180,7 +181,14 @@ export function TaskItem({
             taskId={task.id}
             taskName={name}
             dueOn={dueDate(frequency, round)}
-            today={today}
+            // US-41 · En las de cada N días, desde mañana si ya se ha hecho hoy (no se podría
+            // volver a marcar hasta entonces).
+            min={frequency.kind === 'oneOff' ? today : earliestNextDueOn(today, task.lastCompletedOn)}
+            validate={(value) =>
+              frequency.kind === 'oneOff'
+                ? dueOnError(value || null, today, language)
+                : nextDueOnError(value, today, task.lastCompletedOn, language)
+            }
             save={(dueOn) =>
               frequency.kind === 'oneOff' ? setTaskDueOn(task.id, dueOn) : setTaskNextDueOn(task.id, dueOn)
             }

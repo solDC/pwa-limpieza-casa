@@ -102,6 +102,27 @@ describe('US-41 · cambiar cuándo toca la próxima vez', () => {
     ).rejects.toThrow(/hoy o un día futuro/)
   })
 
+  it('si ya se ha hecho hoy, no se puede elegir hoy (no se puede volver a marcar hasta mañana)', async () => {
+    const today = await madridDay(0)
+    const tomorrow = await madridDay(1)
+    const result = await asUser(db, ana, async (query) => {
+      const id = await createTask(query)
+      await query('insert into public.task_rounds (household_id, task_id, starts_on) values ($1, $2, $3)', [
+        anaHousehold,
+        id,
+        today,
+      ])
+      // Mañana sí.
+      await setNextDueOn(query, id, tomorrow)
+      const saved = await nextDueOnOf(query, id)
+      // Hoy no (después del error, la transacción ya no admite nada más).
+      const error = await setNextDueOn(query, id, today).catch((e: { code: string; message: string }) => e)
+      return { error, saved }
+    })
+    expect(result.error).toMatchObject({ code: '23505', message: expect.stringMatching(/Ya está hecha hoy/) })
+    expect(result.saved).toBe(tomorrow)
+  })
+
   it('no se puede dejar sin día', async () => {
     await expect(
       asUser(db, ana, async (query) => setNextDueOn(query, await createTask(query), null)),

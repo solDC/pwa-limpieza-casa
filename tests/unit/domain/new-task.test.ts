@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { addDays } from '../../../src/domain/dates'
 import {
   addPart,
   dueOnError,
   emptyDraft,
+  earliestNextDueOn,
   equalWeights,
   MAX_PARTS,
+  nextDueOnError,
   nextWeekends,
   removePart,
   renamePart,
@@ -218,6 +221,38 @@ describe('dueOnError: la fecha al cambiarla en una puntual que ya existe', () =>
     expect(dueOnError(null, TODAY, 'es')).toBeUndefined()
     expect(dueOnError('2026-11-07', TODAY, 'es')).toBe('Elige hoy o un día futuro.')
     expect(dueOnError('2026-11-07', TODAY, 'en')).toBe('Choose today or a later day.')
+  })
+})
+
+describe('nextDueOnError: cuándo toca la próxima vez una de cada N días (US-41)', () => {
+  const yesterday = addDays(TODAY, -1)
+  const tomorrow = addDays(TODAY, 1)
+
+  it('hoy o un día futuro, bien', () => {
+    expect(nextDueOnError(TODAY, TODAY, null, 'es')).toBeUndefined()
+    expect(nextDueOnError(TODAY, TODAY, yesterday, 'es')).toBeUndefined()
+    expect(nextDueOnError('2026-12-01', TODAY, yesterday, 'es')).toBeUndefined()
+  })
+
+  it('un día pasado o sin día, no: siempre toca algún día', () => {
+    expect(nextDueOnError(yesterday, TODAY, null, 'es')).toBe('Elige hoy o un día futuro.')
+    expect(nextDueOnError('', TODAY, null, 'es')).toBe('Elige hoy o un día futuro.')
+    expect(nextDueOnError('', TODAY, null, 'en')).toBe('Choose today or a later day.')
+  })
+
+  it('si ya se ha hecho hoy, hoy no: no se puede volver a marcar hasta mañana', () => {
+    expect(nextDueOnError(TODAY, TODAY, TODAY, 'es')).toBe('Ya está hecha hoy: elige mañana o un día futuro.')
+    expect(nextDueOnError(TODAY, TODAY, TODAY, 'en')).toBe(
+      'Already done today: choose tomorrow or a later day.',
+    )
+    expect(nextDueOnError(yesterday, TODAY, TODAY, 'es')).toBe('Ya está hecha hoy: elige mañana o un día futuro.')
+    expect(nextDueOnError(tomorrow, TODAY, TODAY, 'es')).toBeUndefined()
+  })
+
+  it('el primer día que se puede elegir: hoy o, si ya se ha hecho hoy, mañana', () => {
+    expect(earliestNextDueOn(TODAY, null)).toBe(TODAY)
+    expect(earliestNextDueOn(TODAY, yesterday)).toBe(TODAY)
+    expect(earliestNextDueOn(TODAY, TODAY)).toBe(tomorrow)
   })
 })
 

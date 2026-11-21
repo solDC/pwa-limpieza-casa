@@ -78,7 +78,7 @@ Tener más de una casa. Están descritas en la sección «Backlog».
 ## Conceptos
 
 - **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: cuando se puedan quitar, quitar una será **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
-- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados:
+- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o la próxima vez de una de cada N días, US-41) no cambia la vuelta: conserva sus partes hechas.
 
   | Estado | Cuándo |
   |---|---|
@@ -232,7 +232,7 @@ para adaptarla a mis planes.
 - Puedo cambiar el día en que toca la próxima vez; solo hoy o una fecha futura.
 - Después, las siguientes se cuentan desde el día en que se termine, como siempre.
 
-*Depende de la US-30.*
+*Depende de la US-30. Decisiones al implementarla: no hay «Quitar fecha», porque una tarea de cada N días siempre toca algún día; al cambiar el día se conservan las partes ya hechas de la vuelta; y, si ya se ha hecho hoy, solo se puede elegir desde mañana, porque no se puede marcar dos veces el mismo día.*
 
 ### US-42 · Mover una tarea de fin de semana a otro finde (Must have)
 Como usuario,

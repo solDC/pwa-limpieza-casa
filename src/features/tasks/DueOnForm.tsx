@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { errorCode, type ErrorCode } from '../../domain/errors'
-import { dueOnError } from '../../domain/new-task'
 import type { LocalDate } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { AlreadyDoneError } from '../../storage/tasks'
@@ -14,7 +13,8 @@ export function DueOnForm({
   taskId,
   taskName,
   dueOn,
-  today,
+  min,
+  validate,
   save,
   remove,
   onSaved,
@@ -26,10 +26,13 @@ export function DueOnForm({
   taskName: string
   /** La fecha que tiene ahora (`null`, sin fecha). */
   dueOn: LocalDate | null
-  today: LocalDate
+  /** El primer día que se puede elegir. */
+  min: LocalDate
+  /** El aviso de la fecha escrita ('' si está vacía), o `undefined` si vale. */
+  validate: (value: string) => string | undefined
   /** Guarda la fecha nueva. */
   save: (dueOn: LocalDate) => Promise<void>
-  /** Quita la fecha. Sin ella, la fecha no se puede quitar ni dejar vacía. */
+  /** Quita la fecha (al pulsar «Quitar fecha» o al guardarla vacía). Sin ella, no se puede quitar. */
   remove?: () => Promise<void>
   /** Se ha guardado la fecha nueva (o `null`, si se ha quitado). */
   onSaved: (dueOn: LocalDate | null) => void
@@ -37,7 +40,7 @@ export function DueOnForm({
   /** La lista no está al día (la tarea ya se hizo en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
   const [value, setValue] = useState(dueOn ?? '')
   const [showError, setShowError] = useState(false)
   // Qué se está guardando: la fecha escrita o quitarla. El «Guardando…» sale en ese botón.
@@ -45,10 +48,8 @@ export function DueOnForm({
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const fieldId = `due-on-${taskId}`
-  // Vacía, solo si se puede quitar. El aviso sale al intentar guardar, y después se pone al
-  // día solo al corregir la fecha.
-  const validate = () => dueOnError(value === '' && remove ? null : value, today, language)
-  const error = showError ? validate() : undefined
+  // El aviso sale al intentar guardar, y después se pone al día solo al corregir la fecha.
+  const error = showError ? validate(value) : undefined
 
   // Al abrirlo, se empieza por la fecha (también con el teclado o VoiceOver).
   useEffect(() => input.current?.focus(), [])
@@ -70,7 +71,7 @@ export function DueOnForm({
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (validate()) {
+    if (validate(value)) {
       setShowError(true)
       input.current?.focus()
       return
@@ -85,7 +86,7 @@ export function DueOnForm({
         id={fieldId}
         ref={input}
         type="date"
-        min={today}
+        min={min}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         aria-invalid={error ? true : undefined}

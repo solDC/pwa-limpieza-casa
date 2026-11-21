@@ -109,6 +109,25 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
     await expect(task(page, 'Baño')).toContainText('Toca: hoy')
   })
 
+  test('si ya la he hecho hoy, solo puedo elegir desde mañana', async ({ page }) => {
+    await signInAs(page)
+    await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
+    await expect(task(page, 'Baño')).toContainText(dueText(3))
+
+    await changeButton(page, 'Baño').click()
+    const form = dateForm(page, 'Baño')
+    await expect(form.getByLabel('Fecha')).toHaveValue(day(3))
+    await expect(form.getByLabel('Fecha')).toHaveAttribute('min', day(1))
+    // Hoy no: no se podría volver a marcar hasta mañana.
+    await form.getByLabel('Fecha').fill(todayInMadrid())
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toContainText('Ya está hecha hoy: elige mañana o un día futuro.')
+
+    await form.getByLabel('Fecha').fill(day(1))
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(task(page, 'Baño')).toContainText('Toca: mañana')
+  })
+
   test('después, las siguientes se cuentan desde el día en que se termine, como siempre', async ({ page }) => {
     await signInAs(page)
     await changeNextDue(page, 'Baño', day(5))

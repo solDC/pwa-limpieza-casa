@@ -38,6 +38,8 @@ alter table public.tasks
 -- Errores:
 -- - 42501: la tarea no existe o es de otro hogar (no se distingue, para no dar pistas).
 -- - 22023: no es de cada N días, está cancelada o falta el día.
+-- - 23505: ya se ha hecho hoy y se elige hoy (no se puede volver a marcar hasta mañana).
+--   Desde la app, solo si se ha hecho en otro móvil: la app vuelve a cargar la lista.
 -- - 23514: el día ya ha pasado.
 create function public.set_task_next_due_on(target_task_id uuid, new_next_due_on date)
 returns void
@@ -68,6 +70,13 @@ begin
   end if;
 
   perform public.check_due_on_not_past(new_next_due_on);
+
+  if exists (
+    select 1 from public.task_rounds r
+    where r.task_id = target_task_id and r.completed_on >= new_next_due_on
+  ) then
+    raise exception using errcode = '23505', message = 'Ya está hecha hoy: elige mañana o un día futuro.';
+  end if;
 
   update public.tasks set next_due_on = new_next_due_on where id = target_task_id;
 end;
