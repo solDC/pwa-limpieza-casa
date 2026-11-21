@@ -50,6 +50,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
+| US-55 | La lista se pone al día al volver a la app | Nice to have | Pendiente | [#98](https://github.com/solDC/pwa-limpieza-casa/issues/98) |
 | US-31 | Histórico de cada vuelta | Backlog | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
@@ -168,6 +169,16 @@ para saber qué hacer sin buscar.
 - En «Tus tareas», primero salen las retrasadas (las de más retraso arriba), luego las que tocan hoy, luego las puntuales sin fecha y al final las que tocan más adelante (también las puntuales con fecha), por fecha.
 
 *El progreso de las tareas con partes («Llevas 50 %») es de la US-39, que es la que deja marcarlas.*
+
+### US-55 · La lista se pone al día al volver a la app (Nice to have)
+Como usuario que usa la app en el móvil y en el ordenador,
+quiero que al volver a la app la lista muestre lo que he hecho en otro dispositivo,
+para no ver como pendiente algo que ya está hecho ni tener que recargar a mano.
+- Al volver a la app (abrirla desde la pantalla de inicio o volver a su pestaña), la lista muestra las tareas, partes y fechas tal como están guardadas, también lo que se ha cambiado en otro dispositivo.
+- Si no se puede poner al día (por ejemplo, sin conexión), sigue mostrando la lista que tenía, sin aviso de error.
+- Si al volver hay un formulario abierto (añadir tarea, fecha), no se pierde lo escrito.
+
+*Depende de la US-29. Que se vea al momento, sin salir de la app, es parte de «Compartir la casa» (ver «Visión»).*
 
 ### US-30 · Marcar una tarea como hecha (Must have)
 Como usuario,
