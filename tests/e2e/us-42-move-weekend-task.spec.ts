@@ -8,11 +8,11 @@ import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 //
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
 //
-// «Hoy» es el de Madrid, con el reloj de verdad, así que las pruebas valen cualquier día de
-// la semana. Que después del finde movido vuelvan a tocar cada finde (semanales) o cada 15
-// días desde él (cada 15 días) necesita que pase ese finde: se prueba en
-// tests/unit/domain/frequency.test.ts. Las reglas de la base de datos, en
-// tests/integration/move-weekend-task.test.ts.
+// «Hoy» es el de Madrid, con el reloj de verdad (la base de datos rechaza un finde pasado),
+// así que las pruebas valen cualquier día de la semana. Para ver qué pasa después del finde
+// movido, se adelanta el reloj del navegador, que es el que decide qué vuelta se muestra.
+// Los casos límite, en tests/unit/domain/frequency.test.ts; las reglas de la base de datos,
+// en tests/integration/move-weekend-task.test.ts.
 
 const today = todayInMadrid()
 const isWeekend = [0, 6].includes(dayOfWeek(today))
@@ -30,6 +30,12 @@ function moveButton(page: Page, taskName: string) {
 
 function moveForm(page: Page, taskName: string) {
   return page.getByRole('form', { name: `Mover ${taskName}` })
+}
+
+/** Adelanta el reloj del navegador a ese día (a mediodía en Madrid) y vuelve a cargar. */
+async function goTo(page: Page, day: string) {
+  await page.clock.setFixedTime(new Date(`${day}T12:00:00+01:00`))
+  await page.reload()
 }
 
 /** Mueve la tarea al finde que empieza ese sábado, desde su tarjeta. */
@@ -96,13 +102,53 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
     const values = await field.getByRole('option').evaluateAll((nodes) =>
       nodes.map((node) => (node as HTMLOptionElement).value),
     )
-    const target = values.find((value) => !shown?.includes(formatDayMonth(value, 'es')))!
+    const target = values.find((value) => !shown?.endsWith(weekendOf(value)))!
     await field.selectOption(target)
     await moveForm(page, 'Aspirar cosas de Cati').getByRole('button', { name: 'Guardar' }).click()
 
     await expect(card).toContainText(`Toca: ${weekendOf(target)}`)
     await page.reload()
     await expect(card).toContainText(`Toca: ${weekendOf(target)}`)
+  })
+
+  test('en las semanales solo se mueve esa vuelta: las siguientes siguen siendo cada finde', async ({
+    page,
+  }) => {
+    await signIn(page, uniqueEmail())
+    const moved = addDays(currentSaturday, 14)
+    await moveTo(page, 'Superficies', moved)
+    await expect(task(page, 'Superficies')).toContainText(`Toca: ${weekendOf(moved)}`)
+
+    // Ese finde toca; el siguiente, otra vez (cada finde, no cada 14 días).
+    await goTo(page, moved)
+    await expect(task(page, 'Superficies')).toContainText(`Toca: ${weekendOf(moved)}`)
+    await goTo(page, addDays(moved, 7))
+    await expect(task(page, 'Superficies')).toContainText(`Toca: ${weekendOf(addDays(moved, 7))}`)
+    await goTo(page, addDays(moved, 14))
+    await expect(task(page, 'Superficies')).toContainText(`Toca: ${weekendOf(addDays(moved, 14))}`)
+  })
+
+  test('en las de cada 15 días, las siguientes son cada 15 días desde el finde nuevo', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    // Un finde que no estaba en su calendario: el de su vuelta más una semana.
+    const shown = await task(page, 'Aspirar cosas de Cati').locator('.due').textContent()
+    await moveButton(page, 'Aspirar cosas de Cati').click()
+    const values = await moveForm(page, 'Aspirar cosas de Cati')
+      .getByLabel('Mover al finde del')
+      .getByRole('option')
+      .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value))
+    const moved = values.find((value) => shown?.endsWith(weekendOf(addDays(value, -7))))!
+    await moveForm(page, 'Aspirar cosas de Cati').getByLabel('Mover al finde del').selectOption(moved)
+    await moveForm(page, 'Aspirar cosas de Cati').getByRole('button', { name: 'Guardar' }).click()
+    await expect(task(page, 'Aspirar cosas de Cati')).toContainText(`Toca: ${weekendOf(moved)}`)
+
+    // Ese finde toca; el siguiente no (se ve ya el de 15 días después), y ese, sí.
+    await goTo(page, moved)
+    await expect(task(page, 'Aspirar cosas de Cati')).toContainText(`Toca: ${weekendOf(moved)}`)
+    await goTo(page, addDays(moved, 8)) // el domingo siguiente, ya sin hacer la del finde movido
+    await expect(task(page, 'Aspirar cosas de Cati')).toContainText(`Toca: ${weekendOf(addDays(moved, 14))}`)
+    await goTo(page, addDays(moved, 14))
+    await expect(task(page, 'Aspirar cosas de Cati')).toContainText(`Toca: ${weekendOf(addDays(moved, 14))}`)
   })
 
   test('si la vuelta tenía partes hechas, la vuelta movida empieza con todas por hacer', async ({ page }) => {
