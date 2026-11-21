@@ -4,7 +4,7 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 **La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos. La sesión, el idioma elegido y la app instalada son de cada dirección: en la nueva hay que volver a entrar, y la app instalada desde la anterior sigue en la anterior).
 
-🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso, y ponerle fecha a una puntual. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-38, US-39, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso, ponerle fecha a una puntual y cambiar cuándo toca la próxima vez una de cada N días. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-33, US-34, US-38, US-39, US-41, US-48 y US-52). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
@@ -17,7 +17,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 - **Qué toca:** lo que toca hoy y lo retrasado, con su progreso.
 - **Marcar como hecha** una tarea entera o una parte.
 - **Cambiar cuándo toca:** poner fecha a una puntual, cambiar la próxima vez de una de cada N días o mover una de fin de semana a otro finde.
-- **Añadir** tareas nuevas, con sus partes y el peso de cada una, eligiendo desde qué día tocan las de cada N días, y **cambiar el peso** de las partes después.
+- **Añadir** tareas nuevas, con sus partes y el peso de cada una, eligiendo desde qué día tocan las de cada N días, y, después, **cambiar** su nombre y sus partes, con su peso.
 - **En castellano y en inglés:** la app, las fechas, las tareas por defecto y el email para entrar.
 - **Instalable** como una PWA. Necesita conexión a internet.
 

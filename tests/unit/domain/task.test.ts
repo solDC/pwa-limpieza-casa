@@ -13,14 +13,14 @@ describe('describeFrequency', () => {
   })
 
   it('cada N días desde la última vez', () => {
-    expect(describeFrequency({ kind: 'interval', days: 3 }, 'es')).toBe('Cada 3 días desde la última vez')
-    expect(describeFrequency({ kind: 'interval', days: 30 }, 'es')).toBe(
+    expect(describeFrequency({ kind: 'interval', days: 3, nextDueOn: null }, 'es')).toBe('Cada 3 días desde la última vez')
+    expect(describeFrequency({ kind: 'interval', days: 30, nextDueOn: null }, 'es')).toBe(
       'Cada 30 días desde la última vez',
     )
   })
 
   it('cada día, en singular', () => {
-    expect(describeFrequency({ kind: 'interval', days: 1 }, 'es')).toBe('Cada día desde la última vez')
+    expect(describeFrequency({ kind: 'interval', days: 1, nextDueOn: null }, 'es')).toBe('Cada día desde la última vez')
   })
 
   it('puntual', () => {

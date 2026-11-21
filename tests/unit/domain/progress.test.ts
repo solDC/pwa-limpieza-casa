@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Round } from '../../../src/domain/frequency'
-import { roundProgress, withPartsDone } from '../../../src/domain/progress'
+import { roundProgress, withPartsDone, withRoundDone } from '../../../src/domain/progress'
 import type { Task } from '../../../src/domain/task'
 
-// US-39 · Marcar una parte como hecha (#57)
+// US-39 · Marcar una parte como hecha (#57) y US-41 · Cambiar cuándo toca la próxima vez (#59)
 
 const weekend: Round = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
 
@@ -94,5 +94,38 @@ describe('withPartsDone: la tarea después de marcar partes', () => {
     const task = surfaces()
     withPartsDone(task, weekend, ['kitchen', 'living', 'bedroom'], '2026-11-14')
     expect(task).toEqual(surfaces())
+  })
+})
+
+describe('withRoundDone: la tarea después de terminar la vuelta', () => {
+  // Cocina a fondo, cada 7 días, pasada al 25 nov (US-41).
+  const kitchen = (): Task => ({
+    ...surfaces(),
+    name: 'Cocina a fondo',
+    frequency: { kind: 'interval', days: 7, nextDueOn: '2026-11-25' },
+  })
+  const interval: Round = { startsOn: '2026-10-01', dueBy: null }
+
+  it('apunta el día en que se terminó', () => {
+    expect(withRoundDone(surfaces(), '2026-11-15').lastCompletedOn).toBe('2026-11-15')
+  })
+
+  it('olvida el día elegido para la próxima vez: la siguiente se cuenta desde hoy (US-41)', () => {
+    expect(withRoundDone(kitchen(), '2026-11-15').frequency).toEqual({
+      kind: 'interval',
+      days: 7,
+      nextDueOn: null,
+    })
+  })
+
+  it('también al marcar la última parte', () => {
+    const task = withPartsDone(kitchen(), interval, ['kitchen', 'living', 'bedroom'], '2026-11-15')
+    expect(task.lastCompletedOn).toBe('2026-11-15')
+    expect(task.frequency).toEqual({ kind: 'interval', days: 7, nextDueOn: null })
+  })
+
+  it('con partes por hacer, el día elegido se mantiene', () => {
+    const task = withPartsDone(kitchen(), interval, ['kitchen'], '2026-11-15')
+    expect(task.frequency).toEqual(kitchen().frequency)
   })
 })

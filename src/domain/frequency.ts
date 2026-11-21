@@ -48,6 +48,8 @@ export function currentRound(
       return notBefore(weekendRound(current, 14, lastCompletedOn), firstWeekend(task))
     }
     case 'interval':
+      // Aunque se haya elegido otro día para la próxima vez (US-41): ese día lo dice
+      // `dueDate()`, y la vuelta es la misma, con sus partes hechas.
       return {
         startsOn: lastCompletedOn ? addDays(lastCompletedOn, frequency.days) : task.createdOn,
         dueBy: null,
@@ -97,11 +99,15 @@ function weekendRound(saturday: LocalDate, every: number, lastCompletedOn: Local
 }
 
 /**
- * El día en que toca una vuelta (`null`: sin fecha). El de su inicio o, en las puntuales,
- * su fecha, si tiene (US-38).
+ * El día en que toca una vuelta (`null`: sin fecha). El de su inicio o: en las puntuales, su
+ * fecha, si tiene (US-38); en las de cada N días, el día elegido para la próxima vez, si se
+ * ha cambiado (US-41). La vuelta sigue empezando el día que le tocaba, para que al cambiar el
+ * día no se pierdan sus partes hechas.
  */
 export function dueDate(frequency: Frequency, round: Round): LocalDate | null {
-  return frequency.kind === 'oneOff' ? frequency.dueOn : round.startsOn
+  if (frequency.kind === 'oneOff') return frequency.dueOn
+  if (frequency.kind === 'interval' && frequency.nextDueOn !== null) return frequency.nextDueOn
+  return round.startsOn
 }
 
 /**

@@ -3,6 +3,7 @@ import {
   canMarkDone,
   currentRound,
   describeDue,
+  dueDate,
   dueStatus,
   isWeekend,
 } from '../../../src/domain/frequency'
@@ -106,7 +107,7 @@ describe('fin de semana cada 15 días: un finde sí y otro no, con plazo hasta e
 })
 
 describe('cada N días desde la última vez', () => {
-  const bathroom: Frequency = { kind: 'interval', days: 3 }
+  const bathroom: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
 
   it('la primera vez toca desde el día en que se creó', () => {
     expect(round(bathroom, null, '2026-11-08')).toEqual({ startsOn: '2026-11-08', dueBy: null })
@@ -126,9 +127,54 @@ describe('cada N días desde la última vez', () => {
   })
 
   it('30 días cruzando meses cortos y años bisiestos', () => {
-    const windows: Frequency = { kind: 'interval', days: 30 }
+    const windows: Frequency = { kind: 'interval', days: 30, nextDueOn: null }
     expect(round(windows, '2026-01-30', '2026-01-30')).toEqual({ startsOn: '2026-03-01', dueBy: null })
     expect(round(windows, '2028-02-15', '2028-02-15')).toEqual({ startsOn: '2028-03-16', dueBy: null })
+  })
+})
+
+describe('cada N días con otro día elegido para la próxima vez (US-41)', () => {
+  // Baño, cada 3 días, hecho por última vez el 10 nov: tocaba el 13.
+  const moved = (nextDueOn: string): Frequency => ({ kind: 'interval', days: 3, nextDueOn })
+
+  it('la vuelta no cambia: sigue empezando el día que le tocaba (así no se pierden sus partes)', () => {
+    expect(round(moved('2026-11-20'), '2026-11-10', '2026-11-15')).toEqual({
+      startsOn: '2026-11-13',
+      dueBy: null,
+    })
+    expect(round(moved('2026-11-20'), null, '2026-11-15')).toEqual({ startsOn: createdOn, dueBy: null })
+  })
+
+  it('toca el día elegido, antes o después del que le tocaba', () => {
+    const natural = round(moved('2026-11-20'), '2026-11-10', '2026-11-15')!
+    expect(dueDate(moved('2026-11-20'), natural)).toBe('2026-11-20')
+    expect(dueDate(moved('2026-11-11'), natural)).toBe('2026-11-11')
+    expect(dueDate({ kind: 'interval', days: 3, nextDueOn: null }, natural)).toBe('2026-11-13')
+  })
+
+  it('una tarea retrasada pasada a hoy o a un día futuro deja de ir con retraso', () => {
+    const natural = { startsOn: '2026-11-13', dueBy: null }
+    expect(dueStatus({ kind: 'interval', days: 3, nextDueOn: null }, natural, '2026-11-15')).toEqual({
+      status: 'overdue',
+      days: 2,
+    })
+    expect(dueStatus(moved('2026-11-15'), natural, '2026-11-15')).toEqual({ status: 'today' })
+    expect(dueStatus(moved('2026-11-17'), natural, '2026-11-15')).toEqual({ status: 'upcoming' })
+  })
+
+  it('si llega el día elegido sin hacerla, va con retraso desde el día siguiente', () => {
+    const natural = { startsOn: '2026-11-13', dueBy: null }
+    expect(dueStatus(moved('2026-11-17'), natural, '2026-11-19')).toEqual({ status: 'overdue', days: 2 })
+    expect(describeDue(moved('2026-11-17'), natural, '2026-11-19', 'es')).toBe(
+      'Retrasada 2 días (tocaba el mar 17 nov)',
+    )
+  })
+
+  it('dice el día elegido en «Toca:»', () => {
+    const natural = { startsOn: '2026-11-13', dueBy: null }
+    expect(describeDue(moved('2026-11-15'), natural, '2026-11-15', 'es')).toBe('Toca: hoy')
+    expect(describeDue(moved('2026-11-16'), natural, '2026-11-15', 'es')).toBe('Toca: mañana')
+    expect(describeDue(moved('2026-11-18'), natural, '2026-11-15', 'en')).toBe('Due: Wed 18 Nov')
   })
 })
 
@@ -178,7 +224,7 @@ describe('puntual con fecha', () => {
 
 describe('describeDue: el texto de «Toca:»', () => {
   const weekly: Frequency = { kind: 'weekendWeekly' }
-  const bathroom: Frequency = { kind: 'interval', days: 3 }
+  const bathroom: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
 
   it('las de fin de semana dicen de qué finde son', () => {
     const round = { startsOn: '2026-11-14', dueBy: '2026-11-20' }
@@ -229,7 +275,7 @@ describe('describeDue: el texto de «Toca:»', () => {
 describe('canMarkDone: si se puede marcar como hecha la vuelta que se muestra', () => {
   const weekly: Frequency = { kind: 'weekendWeekly' }
   const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
-  const interval: Frequency = { kind: 'interval', days: 3 }
+  const interval: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
   const oneOff: Frequency = { kind: 'oneOff', dueOn: null }
   const can = (frequency: Frequency, lastCompletedOn: string | null, today: string) => {
     const shown = round(frequency, lastCompletedOn, today)
@@ -280,7 +326,7 @@ describe('isWeekend: si una frecuencia es de fin de semana', () => {
   })
 
   it('no lo son la de cada N días ni la puntual', () => {
-    expect(isWeekend({ kind: 'interval', days: 3 })).toBe(false)
+    expect(isWeekend({ kind: 'interval', days: 3, nextDueOn: null })).toBe(false)
     expect(isWeekend({ kind: 'oneOff', dueOn: null })).toBe(false)
   })
 })
@@ -376,7 +422,7 @@ describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
   })
 
   it('las de cada N días y las puntuales no cambian: tocan desde el día en que se crean', () => {
-    expect(roundOf({ kind: 'interval', days: 3 }, '2026-11-18', '2026-11-18')).toEqual({
+    expect(roundOf({ kind: 'interval', days: 3, nextDueOn: null }, '2026-11-18', '2026-11-18')).toEqual({
       startsOn: '2026-11-18',
       dueBy: null,
     })

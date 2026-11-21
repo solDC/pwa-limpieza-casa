@@ -11,8 +11,11 @@ export type Frequency =
   | { kind: 'weekendWeekly' }
   /** Un fin de semana sí y otro no, desde el sábado `startOn`. */
   | { kind: 'weekendBiweekly'; startOn: LocalDate }
-  /** `days` días después del día en que se terminó la última vez. */
-  | { kind: 'interval'; days: number }
+  /**
+   * `days` días después del día en que se terminó la última vez o, si se ha elegido otro día
+   * para la próxima vez (`nextDueOn`, US-41), ese día.
+   */
+  | { kind: 'interval'; days: number; nextDueOn: LocalDate | null }
   /** Una sola vez; si tiene fecha (`dueOn`, US-38), toca ese día. */
   | { kind: 'oneOff'; dueOn: LocalDate | null }
 
