@@ -39,7 +39,8 @@ Primero las hechas y después las pendientes.
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Pendiente | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
-| US-51 | Cambiar el peso de las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Pendiente | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -274,16 +275,18 @@ para que no me salga como pendiente hoy algo que pienso empezar más adelante.
 
 *Depende de la US-33. Cambiarlo en una tarea que ya existe es la US-41; ponerle fecha a una puntual al crearla, la US-38.*
 
-### US-51 · Cambiar el peso de las partes de una tarea (Must have)
+### US-51 · Cambiar las partes de una tarea (Must have)
 Como usuario,
-quiero cambiar cuánto cuenta cada parte de una tarea que ya existe,
-para ajustar el porcentaje cuando veo que una parte cuesta más o menos de lo que pensaba.
-- En «Tus tareas», una tarea con partes tiene «Cambiar pesos», que muestra el peso de cada parte en %, con lo que suman.
-- Las reglas son las mismas que al crearla (US-34): cada peso de 1 a 100, y no se puede guardar si no suman 100 %.
-- Al guardar, la tarea muestra los pesos nuevos; con «Cancelar», se quedan como estaban.
-- Los pesos nuevos cuentan desde la vuelta en curso; las vueltas ya terminadas conservan el porcentaje que tenían.
+quiero cambiar las partes de una tarea que ya existe: su peso, añadir partes y quitarlas,
+para ajustar la tarea cuando cambia cómo la hago.
+- En «Tus tareas», cada tarea tiene «Cambiar partes», que muestra cada parte con su peso en % y lo que suman.
+- Puedo añadir partes, también a una tarea que no tiene, y quitarlas, también todas; sin partes, la tarea se marca entera.
+- Las reglas son las mismas que al crearla (US-34): cada peso de 1 a 100, como mucho 20 partes, y no se puede guardar si no suman 100 %.
+- Al guardar, la tarea muestra sus partes nuevas; con «Cancelar», se quedan como estaban.
+- Quitar una parte la archiva: deja de salir, y las vueltas pasadas conservan sus partes hechas y su porcentaje.
+- Los cambios cuentan desde la vuelta en curso: sus partes ya hechas siguen hechas. Si al quitar partes ya están hechas todas las que quedan, la vuelta queda completada.
 
-*Depende de la US-34. Añadir, quitar o renombrar partes de una tarea que ya existe no entra aquí. Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
+*Depende de la US-39. No cumple la «S» de INVEST: junta pesos, añadir y quitar, que en la tabla y en la base de datos son lo mismo (las partes de la tarea). Renombrar partes es la US-54. Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
 
 ### US-52 · La app en inglés y en castellano (Must have)
 Como usuario que no habla castellano,
@@ -310,6 +313,18 @@ para adaptarla cuando cambia cómo la hago.
 
 *Depende de la US-30. Cambiar el nombre o las partes de la tarea no entra aquí; cambiar solo el número de días se podría separar en otra historia si esta resulta grande.*
 
+### US-54 · Cambiar el nombre de una tarea y de sus partes (Must have)
+Como usuario,
+quiero cambiar el nombre de una tarea que ya existe y el de sus partes,
+para que se llamen como yo las llamo.
+- En «Tus tareas», cada tarea tiene «Cambiar nombre», con el nombre de la tarea y el de cada parte.
+- Las reglas son las mismas que al crearla (US-33): ningún nombre vacío ni de más de 80 caracteres.
+- Al guardar, la tarea y sus partes muestran los nombres nuevos; con «Cancelar», se quedan como estaban.
+- Una tarea o una parte de las que vienen por defecto que renombro deja de traducirse: se ve como la escribí, en castellano y en inglés. Las que no renombro se siguen traduciendo.
+- El progreso de la vuelta en curso y las vueltas pasadas no cambian.
+
+*Depende de la US-33.*
+
 ## Historias anteriores
 
 Las historias US-04 a US-25 eran del MVP original, más amplio. Así quedan con el MVP acotado:
@@ -318,7 +333,7 @@ Las historias US-04 a US-25 eran del MVP original, más amplio. Así quedan con 
 |---|---|
 | **Absorbidas** por las nuevas | US-05 Partes, US-09 a US-11 Frecuencias → US-28 · US-12 y US-13 Marcar → US-30 · US-16 a US-18 Qué toca → US-29 · US-25 Aviso si falla el guardado → US-30 |
 | **Sustituidas** | US-04 Crear → US-33 · US-07 Borrar → US-32 (cancelar, para conservar el histórico) · US-20 Historial → US-31 · US-22 y US-23 Datos de ejemplo → US-27 (mis tareas por defecto) |
-| **Descartadas** al revisarlas con INVEST | US-06 Editar una tarea (absorbida por la US-33 y las US-38, US-41 y US-42) · US-08 Ver todas mis tareas (cumplida con «Tus tareas», US-27 y US-28) · US-14 Elegir cuándo lo hice · US-15 Deshacer · US-19 Pantalla vacía (con las tareas por defecto no hay hogar vacío) · US-21 Historial de una tarea |
+| **Descartadas** al revisarlas con INVEST | US-06 Editar una tarea (repartida entre la US-33, las de fechas US-38, US-41 y US-42, la US-51 para las partes, la US-53 para la frecuencia y la US-54 para los nombres) · US-08 Ver todas mis tareas (cumplida con «Tus tareas», US-27 y US-28) · US-14 Elegir cuándo lo hice · US-15 Deshacer · US-19 Pantalla vacía (con las tareas por defecto no hay hogar vacío) · US-21 Historial de una tarea |
 | **Ya cumplida** | US-24 Instalar la app: la PWA ya se puede instalar |
 
 ## Backlog
