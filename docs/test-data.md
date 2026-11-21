@@ -74,7 +74,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada».
 
-Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni se han movido a otro finde desde la app (US-42).
+Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni, si son semanales, se han movido a otro finde desde la app (US-42).
 
 ```sql
 update public.tasks t

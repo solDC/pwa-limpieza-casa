@@ -25,7 +25,10 @@ export function MoveWeekendForm({
   onClose: () => void
 }) {
   const { language, t } = useLanguage()
-  const [saturday, setSaturday] = useState(options[0])
+  const [chosen, setChosen] = useState(options[0])
+  // La lista puede cambiar con el formulario abierto (se marca la tarea, o pasa la medianoche):
+  // si el finde elegido ya no está, se usa el primero, el mismo que muestra la lista.
+  const saturday = options.includes(chosen) ? chosen : options[0]
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const select = useRef<HTMLSelectElement>(null)
@@ -55,7 +58,7 @@ export function MoveWeekendForm({
         id={fieldId}
         ref={select}
         value={saturday}
-        onChange={(event) => setSaturday(event.target.value)}
+        onChange={(event) => setChosen(event.target.value)}
         disabled={saving}
       >
         {options.map((option) => (

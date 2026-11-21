@@ -156,6 +156,18 @@ describe('US-42 · los findes a los que se puede mover una tarea', () => {
     expect(moveWeekendOptions(task, shown, '2026-11-18').slice(0, 2)).toEqual(['2026-11-21', '2026-11-28'])
   })
 
+  it('cruza el fin de mes y el cambio de hora', () => {
+    // Una tarea creada a principios de año, para que la vuelta que se muestra sea la de antes.
+    const firstOptions = (today: string) => {
+      const task = { frequency: weekly, createdOn: '2026-01-01', lastCompletedOn: null }
+      return moveWeekendOptions(task, currentRound(task, today)!, today).slice(0, 3)
+    }
+    // Miércoles 24 mar 2027: el domingo 28 cambia la hora.
+    expect(firstOptions('2027-03-24')).toEqual(['2027-03-27', '2027-04-03', '2027-04-10'])
+    // Miércoles 28 oct 2026: la hora cambió el domingo 25, y el mes acaba el sábado 31.
+    expect(firstOptions('2026-10-28')).toEqual(['2026-10-31', '2026-11-07', '2026-11-14'])
+  })
+
   it('el nombre de cada finde', () => {
     expect(describeWeekend('2026-11-28', 'es')).toBe('finde del 28 nov')
     expect(describeWeekend('2026-11-28', 'en')).toBe('weekend of 28 Nov')
