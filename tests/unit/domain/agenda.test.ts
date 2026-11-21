@@ -8,7 +8,7 @@ import type { Frequency, LocalDate } from '../../../src/domain/task'
 const weekly: Frequency = { kind: 'weekendWeekly' }
 const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
 const bathroom: Frequency = { kind: 'interval', days: 3 }
-const oneOff: Frequency = { kind: 'oneOff' }
+const oneOff: Frequency = { kind: 'oneOff', dueOn: null }
 
 const interval = (startsOn: LocalDate): Round => ({ startsOn, dueBy: null })
 // La vuelta de fin de semana que empieza ese sábado.
@@ -92,6 +92,32 @@ describe('dueStatus: las puntuales', () => {
   })
 })
 
+// US-38 · Poner fecha a una tarea puntual (#54)
+describe('dueStatus: las puntuales con fecha, como las de cada N días', () => {
+  const noRound: Round = { startsOn: null, dueBy: null }
+  const due = (dueOn: LocalDate, today: LocalDate) =>
+    dueStatus({ kind: 'oneOff', dueOn }, noRound, today)
+
+  it('antes de la fecha tocan más adelante, y ese día, hoy', () => {
+    expect(due('2026-11-18', '2026-11-17')).toEqual({ status: 'upcoming' })
+    expect(due('2026-11-18', '2026-11-18')).toEqual({ status: 'today' })
+  })
+
+  it('desde el día siguiente van con retraso', () => {
+    expect(due('2026-11-18', '2026-11-19')).toEqual({ status: 'overdue', days: 1 })
+    expect(due('2026-11-18', '2026-11-25')).toEqual({ status: 'overdue', days: 7 })
+  })
+
+  it('el retraso se cuenta bien con fin de mes, año bisiesto y cambio de hora', () => {
+    expect(due('2026-11-30', '2026-12-01')).toEqual({ status: 'overdue', days: 1 })
+    expect(due('2028-02-28', '2028-03-01')).toEqual({ status: 'overdue', days: 2 })
+    expect(due('2027-02-28', '2027-03-01')).toEqual({ status: 'overdue', days: 1 })
+    // El 25 de octubre de 2026 se cambia la hora en Madrid.
+    expect(due('2026-10-24', '2026-10-26')).toEqual({ status: 'overdue', days: 2 })
+    expect(due('2026-03-28', '2026-03-30')).toEqual({ status: 'overdue', days: 2 })
+  })
+})
+
 describe('agenda: el orden de «Tus tareas»', () => {
   // Un miércoles: la vuelta de fin de semana es la del sábado 24 oct (retraso 3 días).
   const today = '2026-10-28'
@@ -136,8 +162,25 @@ describe('agenda: el orden de «Tus tareas»', () => {
     ).toEqual(['Baño', 'Cristales y espejos'])
   })
 
+  // US-38: con fecha, se ordenan por ella como las demás; sin fecha, entre hoy y más adelante.
+  it('las puntuales con fecha van por su fecha, como las de cada N días', () => {
+    expect(
+      names([
+        task('Cepillar suelo', oneOff),
+        task('Horno', { kind: 'oneOff', dueOn: '2026-11-05' }), // más adelante, después de Polvo
+        task('Polvo', { kind: 'interval', days: 7 }, '2026-10-01', '2026-10-25'), // 1 nov
+        task('Nevera', { kind: 'oneOff', dueOn: '2026-10-28' }), // hoy
+        task('Juntas', { kind: 'oneOff', dueOn: '2026-10-20' }), // retrasada 8 días
+        task('Baño', bathroom, '2026-10-01', '2026-10-24'), // retrasada 1 día
+      ]),
+    ).toEqual(['Juntas', 'Baño', 'Nevera', 'Cepillar suelo', 'Polvo', 'Horno'])
+  })
+
   it('no incluye las puntuales ya hechas', () => {
     expect(names([task('Cepillar suelo', oneOff, '2026-10-01', '2026-10-20')])).toEqual([])
+    expect(
+      names([task('Horno', { kind: 'oneOff', dueOn: '2026-10-25' }, '2026-10-01', '2026-10-20')]),
+    ).toEqual([])
   })
 
   it('da la vuelta y el estado de cada tarea', () => {

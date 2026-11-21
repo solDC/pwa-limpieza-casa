@@ -3,6 +3,8 @@ import { formatDayMonth, formatShortDate } from '../../../src/domain/dates'
 import { describeDue } from '../../../src/domain/frequency'
 import { detectLanguage, householdDisplayName } from '../../../src/domain/language'
 import { emptyDraft, validateNewTask } from '../../../src/domain/new-task'
+
+const TODAY = '2026-11-08'
 import { describeFrequency, partDisplayName, taskDisplayName } from '../../../src/domain/task'
 
 // US-52 · La app en inglés y en castellano (#85)
@@ -64,7 +66,7 @@ describe('describeDue en inglés', () => {
   })
 
   it('sin fecha', () => {
-    expect(describeDue({ kind: 'oneOff' }, { startsOn: null, dueBy: null }, '2026-11-08', 'en')).toBe(
+    expect(describeDue({ kind: 'oneOff', dueOn: null }, { startsOn: null, dueBy: null }, '2026-11-08', 'en')).toBe(
       'No date',
     )
   })
@@ -82,7 +84,7 @@ describe('describeFrequency en inglés', () => {
     expect(describeFrequency({ kind: 'interval', days: 30 }, 'en')).toBe(
       'Every 30 days since the last time',
     )
-    expect(describeFrequency({ kind: 'oneOff' }, 'en')).toBe('One-off')
+    expect(describeFrequency({ kind: 'oneOff', dueOn: null }, 'en')).toBe('One-off')
   })
 })
 
@@ -129,7 +131,7 @@ describe('los avisos del formulario de tarea nueva, en inglés', () => {
       partWeights: ['50', '40'],
       weightsEdited: true,
     }
-    expect(validateNewTask(draft, 'en')).toEqual({
+    expect(validateNewTask(draft, 'en', TODAY)).toEqual({
       ok: false,
       errors: {
         name: 'Enter the name of the task.',
@@ -138,18 +140,18 @@ describe('los avisos del formulario de tarea nueva, en inglés', () => {
         weightsTotal: 'The weights must add up to 100 % (now they add up to 90 %).',
       },
     })
-    expect(validateNewTask({ ...emptyDraft(), name: 'a'.repeat(81) }, 'en')).toMatchObject({
+    expect(validateNewTask({ ...emptyDraft(), name: 'a'.repeat(81) }, 'en', TODAY)).toMatchObject({
       errors: {
         name: 'The name can have at most 80 characters.',
         frequency: 'Choose how often it is due.',
       },
     })
     const badWeight = { ...draft, name: 'x', intervalDays: '3', partNames: ['A'], partWeights: ['0'] }
-    expect(validateNewTask(badWeight, 'en')).toMatchObject({
+    expect(validateNewTask(badWeight, 'en', TODAY)).toMatchObject({
       errors: { partWeights: ['Enter a weight from 1 to 100.'] },
     })
     const noWeekend = { ...emptyDraft(), name: 'x', frequencyKind: 'weekendBiweekly' as const }
-    expect(validateNewTask(noWeekend, 'en')).toMatchObject({
+    expect(validateNewTask(noWeekend, 'en', TODAY)).toMatchObject({
       errors: { biweeklyStartOn: 'Choose the first weekend.' },
     })
   })

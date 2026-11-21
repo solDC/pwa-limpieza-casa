@@ -109,3 +109,44 @@ export async function addPastPartCompletions(
     await db.end()
   }
 }
+
+/**
+ * US-38 · Pone la fecha de una tarea puntual del hogar de ese usuario, también una que ya
+ * ha pasado (la app no deja: así se prueba una puntual retrasada).
+ */
+export async function setTaskDueOn(email: string, taskName: string, dueOn: string | null) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `update public.tasks t set due_on = $3
+       from public.household_members m
+       join auth.users u on u.id = m.user_id
+       where m.household_id = t.household_id and u.email = $1 and t.name = $2`,
+      [email, taskName, dueOn],
+    )
+    if (rowCount !== 1) throw new Error(`No se ha encontrado la tarea «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}
+
+/** Marca como hecha una tarea puntual, como si se hubiera hecho desde otro dispositivo. */
+export async function completeOneOffTask(email: string, taskName: string) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `insert into public.task_rounds (household_id, task_id)
+       select t.household_id, t.id
+       from public.tasks t
+       join public.household_members m on m.household_id = t.household_id
+       join auth.users u on u.id = m.user_id
+       where u.email = $1 and t.name = $2`,
+      [email, taskName],
+    )
+    if (rowCount !== 1) throw new Error(`No se ha encontrado la tarea «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}

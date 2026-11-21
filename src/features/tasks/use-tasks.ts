@@ -15,6 +15,7 @@ export type TasksState =
  * - `markCompleted`: una tarea se ha marcado como hecha (ya guardada).
  * - `markPartsDone`: se han marcado partes de una tarea (ya guardadas); si eran las que
  *   faltaban, la vuelta queda terminada.
+ * - `changeDueOn`: se ha puesto, cambiado o quitado la fecha de una puntual (ya guardada).
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -80,10 +81,17 @@ export function useTasks() {
     changeTask(taskId, (task) => withPartsDone(task, round, partIds, completedOn))
   }
 
+  function changeDueOn(taskId: string, dueOn: LocalDate | null) {
+    changeTask(taskId, (task) =>
+      task.frequency.kind === 'oneOff' ? { ...task, frequency: { ...task.frequency, dueOn } } : task,
+    )
+  }
+
   return {
     state,
     markCompleted,
     markPartsDone,
+    changeDueOn,
     refresh: () => load({ keepOnError: true }),
     reloadAfterAdding(onFailed: () => void) {
       localChanges.current++

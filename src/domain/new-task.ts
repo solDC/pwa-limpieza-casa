@@ -20,6 +20,8 @@ export type NewTaskDraft = {
   intervalDays: string
   /** Solo en «fin de semana cada 15 días»: el sábado del primer finde. */
   biweeklyStartOn: LocalDate | null
+  /** Solo en las puntuales, y opcional (US-38): el día en que tocan. */
+  dueOn: LocalDate | null
   partNames: string[]
   /** El peso de cada parte, en %: lo escrito en su campo. */
   partWeights: string[]
@@ -43,6 +45,7 @@ export type NewTaskErrors = {
   frequency?: string
   intervalDays?: string
   biweeklyStartOn?: string
+  dueOn?: string
   parts?: (string | undefined)[]
   partWeights?: (string | undefined)[]
   weightsTotal?: string
@@ -54,6 +57,7 @@ export function emptyDraft(): NewTaskDraft {
     frequencyKind: null,
     intervalDays: '',
     biweeklyStartOn: null,
+    dueOn: null,
     partNames: [],
     partWeights: [],
     weightsEdited: false,
@@ -137,6 +141,7 @@ const VALIDATION_TEXTS = {
     weight: 'Escribe un peso de 1 a 100.',
     weightsTotal: (total: number) => `Los pesos tienen que sumar 100 % (ahora suman ${total} %).`,
     nameTooLong: (max: number) => `El nombre puede tener como mucho ${max} caracteres.`,
+    dueOnNotPast: 'Elige hoy o un día futuro.',
   },
   en: {
     taskNameRequired: 'Enter the name of the task.',
@@ -148,13 +153,32 @@ const VALIDATION_TEXTS = {
     weightsTotal: (total: number) =>
       `The weights must add up to 100 % (now they add up to ${total} %).`,
     nameTooLong: (max: number) => `The name can have at most ${max} characters.`,
+    dueOnNotPast: 'Choose today or a later day.',
   },
 } satisfies Record<Language, unknown>
 
-/** Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`. */
+/**
+ * US-38 · Qué tiene de malo la fecha de una puntual, en el idioma `language`: solo vale
+ * hoy o un día futuro. Sin fecha (`null`), nada. Sirve también al cambiarla después.
+ */
+export function dueOnError(
+  dueOn: LocalDate | null,
+  today: LocalDate,
+  language: Language,
+): string | undefined {
+  if (dueOn === null) return undefined
+  const valid = /^\d{4}-\d{2}-\d{2}$/.test(dueOn) && dueOn >= today
+  return valid ? undefined : VALIDATION_TEXTS[language].dueOnNotPast
+}
+
+/**
+ * Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`;
+ * `today` es para la fecha de las puntuales.
+ */
 export function validateNewTask(
   draft: NewTaskDraft,
   language: Language,
+  today: LocalDate,
 ): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
   const text = VALIDATION_TEXTS[language]
   const errors: NewTaskErrors = {}
@@ -188,9 +212,12 @@ export function validateNewTask(
       }
       break
     }
-    case 'oneOff':
-      frequency = { kind: 'oneOff' }
+    case 'oneOff': {
+      const dueOnProblem = dueOnError(draft.dueOn, today, language)
+      if (dueOnProblem) errors.dueOn = dueOnProblem
+      else frequency = { kind: 'oneOff', dueOn: draft.dueOn }
       break
+    }
   }
 
   const partNames = draft.partNames.map((partName) => partName.trim())

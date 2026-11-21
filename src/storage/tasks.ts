@@ -15,6 +15,8 @@ type TaskRow = {
   frequency: 'weekend_weekly' | 'weekend_biweekly' | 'interval' | 'one_off'
   interval_days: number | null
   biweekly_start_on: string | null
+  // Solo en las puntuales, y opcional (US-38).
+  due_on: string | null
   created_on: string
   cancelled_on: string | null
   task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
@@ -29,7 +31,7 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     .order('position')
@@ -117,8 +119,29 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
     task_biweekly_start_on: frequency.kind === 'weekendBiweekly' ? frequency.startOn : null,
     part_names: task.parts.map((part) => part.name),
     part_weights: task.parts.map((part) => part.weight),
+    task_due_on: frequency.kind === 'oneOff' ? frequency.dueOn : null,
   })
+  // 23514: la fecha de la puntual ya ha pasado para la base de datos (hoy en Madrid),
+  // porque la fecha del dispositivo va mal (US-38).
+  if (error?.code === '23514') throw new AppError('deviceDate')
   if (error) throw new AppError('taskSaveFailed')
+}
+
+/**
+ * US-38 · Pone la fecha de una tarea puntual, la cambia o, con `null`, la quita.
+ * Si ya estaba hecha (por ejemplo, desde otro dispositivo), lanza `AlreadyDoneError`, para
+ * que la pantalla se ponga al día.
+ */
+export async function setTaskDueOn(taskId: string, dueOn: LocalDate | null): Promise<void> {
+  const { error } = await getSupabase().rpc('set_task_due_on', {
+    target_task_id: taskId,
+    new_due_on: dueOn,
+  })
+  // Los códigos de set_task_due_on: 23505, ya está hecha; 23514, la fecha ya ha pasado
+  // para la base de datos (hoy en Madrid), porque la fecha del dispositivo va mal.
+  if (error?.code === '23505') throw new AlreadyDoneError()
+  if (error?.code === '23514') throw new AppError('deviceDate')
+  if (error) throw new AppError('saveFailed')
 }
 
 function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
@@ -166,7 +189,7 @@ function toFrequency(row: TaskRow): Frequency {
     case 'interval':
       return { kind: 'interval', days: required(row.interval_days, row) }
     case 'one_off':
-      return { kind: 'oneOff' }
+      return { kind: 'oneOff', dueOn: row.due_on }
   }
 }
 
