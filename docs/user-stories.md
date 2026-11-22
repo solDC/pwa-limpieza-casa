@@ -40,7 +40,7 @@ Primero las hechas y después las pendientes.
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Hecha | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Hecha | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
-| US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-51 | Cambiar las partes de una tarea | Must have | Hecha | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -79,7 +79,7 @@ Tener más de una casa. Están descritas en la sección «Backlog».
 
 ## Conceptos
 
-- **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: cuando se puedan quitar, quitar una será **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
+- **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: quitar una (US-51) es **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
 - **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o el de una de cada N días, al crearla, US-50, o para la próxima vez, US-41) no cambia la vuelta: conserva sus partes hechas.
 
   | Estado | Cuándo |
@@ -298,7 +298,7 @@ para ajustar la tarea cuando cambia cómo la hago.
 - Quitar una parte la archiva: deja de salir, y las vueltas pasadas conservan sus partes hechas y su porcentaje.
 - Los cambios cuentan desde la vuelta en curso: sus partes ya hechas siguen hechas. Si al quitar partes ya están hechas todas las que quedan, la vuelta queda completada.
 
-*Depende de la US-39. No cumple la «S» de INVEST: junta pesos, añadir y quitar, que en la tabla y en la base de datos son lo mismo (las partes de la tarea). Renombrar partes es la US-54. Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí.*
+*Depende de la US-39. No cumple la «S» de INVEST: junta pesos, añadir y quitar, que en la tabla y en la base de datos son lo mismo (las partes de la tarea). Renombrar partes es la US-54. Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí. Se decidió al implementarla: el nombre de las partes que ya existen se ve, pero se cambia con «Cambiar nombre» (US-54); si los pesos estaban repartidos a partes iguales, al añadir o quitar partes se vuelven a repartir, y si no, se conservan y la nueva empieza en 0; si se quitan todas, la vuelta no se da por terminada (la tarea pasa a marcarse entera); y quitar una parte que nunca se ha hecho también la archiva.*
 
 ### US-52 · La app en inglés y en castellano (Must have)
 Como usuario que no habla castellano,

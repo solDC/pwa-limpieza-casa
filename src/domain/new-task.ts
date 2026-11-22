@@ -2,6 +2,7 @@
 // US-34 · Elegir el peso de las partes.
 // US-38 y US-50 · El día en que toca: la fecha de una puntual o la primera vez de una de cada N días.
 // US-54 · Sin dos tareas con el mismo nombre, al crearlas y al renombrarlas.
+// US-51 · Las partes y sus pesos, también al cambiarlas en una tarea que ya existe.
 
 import { addDays, dayOfWeek } from './dates'
 import type { Language } from './language'
@@ -14,8 +15,30 @@ export const MAX_PARTS = 20
 const MAX_NAME_LENGTH = 80
 const MAX_INTERVAL_DAYS = 365
 
+/**
+ * Las partes del formulario, tal cual se han escrito: las de una tarea nueva (US-33 y US-34)
+ * y las de una que ya existe (US-51).
+ */
+export type PartsDraft = {
+  partNames: string[]
+  /** El peso de cada parte, en %: lo escrito en su campo. */
+  partWeights: string[]
+  /**
+   * Si se ha cambiado algún peso a mano. Mientras no, al añadir o quitar partes los pesos
+   * se vuelven a repartir a partes iguales; después, ya no, para no perder lo puesto.
+   */
+  weightsEdited: boolean
+}
+
+/** Qué falta en las partes, campo a campo (en su orden). */
+export type PartsErrors = {
+  parts?: (string | undefined)[]
+  partWeights?: (string | undefined)[]
+  weightsTotal?: string
+}
+
 /** Lo que se ha escrito en el formulario, tal cual. */
-export type NewTaskDraft = {
+export type NewTaskDraft = PartsDraft & {
   name: string
   frequencyKind: Frequency['kind'] | null
   /** Solo en «cada N días»: lo escrito en el campo. */
@@ -29,14 +52,6 @@ export type NewTaskDraft = {
   biweeklyStartOn: LocalDate | null
   /** Solo en las puntuales, y opcional (US-38): el día en que tocan. */
   dueOn: LocalDate | null
-  partNames: string[]
-  /** El peso de cada parte, en %: lo escrito en su campo. */
-  partWeights: string[]
-  /**
-   * Si se ha cambiado algún peso a mano. Mientras no, al añadir o quitar partes los pesos
-   * se vuelven a repartir a partes iguales; después, ya no, para no perder lo puesto.
-   */
-  weightsEdited: boolean
 }
 
 /** La tarea lista para guardar. */
@@ -47,16 +62,13 @@ export type NewTask = {
 }
 
 /** Qué falta, campo a campo (las partes, en su orden). */
-export type NewTaskErrors = {
+export type NewTaskErrors = PartsErrors & {
   name?: string
   frequency?: string
   intervalDays?: string
   firstDueOn?: string
   biweeklyStartOn?: string
   dueOn?: string
-  parts?: (string | undefined)[]
-  partWeights?: (string | undefined)[]
-  weightsTotal?: string
 }
 
 export function emptyDraft(): NewTaskDraft {
@@ -74,7 +86,7 @@ export function emptyDraft(): NewTaskDraft {
 }
 
 /** Añade una parte sin nombre. Si no se ha cambiado ningún peso, se reparten de nuevo. */
-export function addPart(draft: NewTaskDraft): NewTaskDraft {
+export function addPart<T extends PartsDraft>(draft: T): T {
   const partNames = [...draft.partNames, '']
   const partWeights = draft.weightsEdited
     ? [...draft.partWeights, '0']
@@ -86,7 +98,7 @@ export function addPart(draft: NewTaskDraft): NewTaskDraft {
  * Quita una parte. Si no se ha cambiado ningún peso, se reparten de nuevo. Sin partes, ya
  * no queda ningún peso que conservar: vuelven a repartirse solos.
  */
-export function removePart(draft: NewTaskDraft, index: number): NewTaskDraft {
+export function removePart<T extends PartsDraft>(draft: T, index: number): T {
   const partNames = draft.partNames.filter((_, i) => i !== index)
   const weightsEdited = draft.weightsEdited && partNames.length > 0
   const partWeights = weightsEdited
@@ -95,12 +107,12 @@ export function removePart(draft: NewTaskDraft, index: number): NewTaskDraft {
   return { ...draft, partNames, partWeights, weightsEdited }
 }
 
-export function renamePart(draft: NewTaskDraft, index: number, name: string): NewTaskDraft {
+export function renamePart<T extends PartsDraft>(draft: T, index: number, name: string): T {
   return { ...draft, partNames: draft.partNames.map((partName, i) => (i === index ? name : partName)) }
 }
 
 /** Cambia el peso de una parte: desde entonces, los pesos ya no se reparten solos. */
-export function setPartWeight(draft: NewTaskDraft, index: number, weight: string): NewTaskDraft {
+export function setPartWeight<T extends PartsDraft>(draft: T, index: number, weight: string): T {
   return {
     ...draft,
     partWeights: draft.partWeights.map((current, i) => (i === index ? weight : current)),
@@ -109,7 +121,7 @@ export function setPartWeight(draft: NewTaskDraft, index: number, weight: string
 }
 
 /** Lo que suman los pesos escritos, para verlo mientras se escriben (lo que no vale, 0). */
-export function weightsTotal(draft: NewTaskDraft): number {
+export function weightsTotal(draft: PartsDraft): number {
   return draft.partWeights.reduce((total, weight) => total + (parseWeight(weight) ?? 0), 0)
 }
 
@@ -310,14 +322,34 @@ export function validateNewTask(
     }
   }
 
+  const parts = validateParts(draft, language)
+  Object.assign(errors, parts.errors)
+
+  if (Object.keys(errors).length > 0 || frequency === null || parts.parts === null) {
+    return { ok: false, errors }
+  }
+
+  return { ok: true, task: { name, frequency, parts: parts.parts } }
+}
+
+/**
+ * Comprueba las partes del formulario (US-34 y US-51): cada una con nombre y un peso de 1 a
+ * 100, y los pesos suman 100 % (si hay partes). Devuelve las partes listas para guardar, sin
+ * espacios de más, o `null` si falta algo (y qué, en `errors`).
+ */
+export function validateParts(
+  draft: PartsDraft,
+  language: Language,
+): { parts: { name: string; weight: number }[] | null; errors: PartsErrors } {
+  const text = VALIDATION_TEXTS[language]
+  const errors: PartsErrors = {}
+
   const partNames = draft.partNames.map((partName) => partName.trim())
   const partErrors = partNames.map((partName) => partNameError(partName, language))
   if (partErrors.some(Boolean)) errors.parts = partErrors
 
   const weights = partNames.map((_, index) => parseWeight(draft.partWeights[index] ?? ''))
-  const weightErrors = weights.map((weight) =>
-    weight === null ? text.weight : undefined,
-  )
+  const weightErrors = weights.map((weight) => (weight === null ? text.weight : undefined))
   if (weightErrors.some(Boolean)) {
     errors.partWeights = weightErrors
   } else {
@@ -328,15 +360,10 @@ export function validateNewTask(
     }
   }
 
-  if (Object.keys(errors).length > 0 || frequency === null) return { ok: false, errors }
-
+  if (Object.keys(errors).length > 0) return { parts: null, errors }
   return {
-    ok: true,
-    task: {
-      name,
-      frequency,
-      parts: partNames.map((partName, index) => ({ name: partName, weight: weights[index]! })),
-    },
+    parts: partNames.map((partName, index) => ({ name: partName, weight: weights[index]! })),
+    errors,
   }
 }
 

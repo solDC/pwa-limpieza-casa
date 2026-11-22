@@ -5,19 +5,18 @@ import { errorCode, type ErrorCode } from '../../domain/errors'
 import {
   addPart,
   emptyDraft,
-  MAX_PARTS,
   nextWeekends,
   removePart,
   renamePart,
   setPartWeight,
   validateNewTask,
-  weightsTotal,
   type NewTaskDraft,
 } from '../../domain/new-task'
 import type { Frequency, LocalDate, Task } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { createTask } from '../../storage/tasks'
 import { FieldError } from './FieldError'
+import { PartsFields } from './PartsFields'
 
 const frequencyKinds: Frequency['kind'][] = ['weekendWeekly', 'weekendBiweekly', 'interval', 'oneOff']
 
@@ -85,8 +84,6 @@ export function NewTaskForm({
     setPartKeys(partKeys.filter((_, i) => i !== index))
     apply(removePart(draft, index))
   }
-
-  const total = weightsTotal(draft)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -230,76 +227,19 @@ export function NewTaskForm({
         </fieldset>
       )}
 
-      <fieldset className="stack" disabled={saving}>
-        <legend>{t.newTask.parts}</legend>
-        {draft.partNames.length > 0 && (
-          <p className="muted">{t.newTask.equalWeights}</p>
-        )}
-        {draft.partNames.map((partName, index) => {
-          const id = `new-task-part-${partKeys[index]}`
-          const error = errors?.parts?.[index]
-          const weightError = errors?.partWeights?.[index]
-          return (
-            <div key={partKeys[index]} className="stack">
-              <label htmlFor={id}>{t.newTask.part(index + 1)}</label>
-              <div className="part-row">
-                <input
-                  id={id}
-                  value={partName}
-                  onChange={(event) => apply(renamePart(draft, index, event.target.value))}
-                  aria-invalid={invalid(error)}
-                  aria-describedby={error ? `${id}-error` : undefined}
-                />
-                <button
-                  type="button"
-                  className="button-secondary"
-                  aria-label={t.newTask.removePart(index + 1)}
-                  onClick={() => handleRemovePart(index)}
-                >
-                  {t.newTask.remove}
-                </button>
-              </div>
-              <FieldError id={`${id}-error`} message={error} />
-              <div className="weight-row">
-                <label htmlFor={`${id}-weight`}>{t.newTask.weight}</label>
-                <input
-                  id={`${id}-weight`}
-                  // Lo que lee VoiceOver: «Peso» solo no diría de qué parte es.
-                  aria-label={t.newTask.weightOfPart(index + 1)}
-                  inputMode="numeric"
-                  value={draft.partWeights[index]}
-                  onChange={(event) => apply(setPartWeight(draft, index, event.target.value))}
-                  aria-invalid={invalid(weightError)}
-                  aria-describedby={weightError ? `${id}-weight-error` : undefined}
-                />
-                <span aria-hidden="true">%</span>
-              </div>
-              <FieldError id={`${id}-weight-error`} message={weightError} />
-            </div>
-          )
-        })}
-        {draft.partNames.length > 0 && (
-          <p
-            id="new-task-weights-total"
-            // VoiceOver anuncia la suma (o el aviso) al cambiar, sin salir del campo del peso.
-            aria-live="polite"
-            className={total === 100 ? 'muted' : 'error'}
-            // No es un campo: se marca aparte para llevar el foco aquí si es lo único que falla.
-            data-invalid={errors?.weightsTotal ? true : undefined}
-            tabIndex={errors?.weightsTotal ? -1 : undefined}
-          >
-            {errors?.weightsTotal ?? t.newTask.total(total)}
-          </p>
-        )}
-        <button
-          type="button"
-          className="button-secondary"
-          onClick={handleAddPart}
-          disabled={draft.partNames.length >= MAX_PARTS}
-        >
-          {t.newTask.addPart}
-        </button>
-      </fieldset>
+      <PartsFields
+        idPrefix="new-task"
+        legend={t.newTask.parts}
+        hint={t.newTask.equalWeights}
+        draft={draft}
+        partKeys={partKeys}
+        errors={errors}
+        disabled={saving}
+        onAdd={handleAddPart}
+        onRemove={handleRemovePart}
+        onRename={(index, name) => apply(renamePart(draft, index, name))}
+        onWeight={(index, weight) => apply(setPartWeight(draft, index, weight))}
+      />
 
       {saveError && <ErrorMessage>{t.errors[saveError]}</ErrorMessage>}
 

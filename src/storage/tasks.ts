@@ -1,6 +1,7 @@
 import { AppError } from '../domain/errors'
 import type { Round } from '../domain/frequency'
 import { MAX_PARTS, type NewTask } from '../domain/new-task'
+import type { PartsChange } from '../domain/edit-parts'
 import type { TaskRename } from '../domain/rename-task'
 import type { Frequency, LocalDate, Task } from '../domain/task'
 import { getSupabase } from './supabase-client'
@@ -39,13 +40,17 @@ export async function listTasks(): Promise<Task[]> {
       'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
+    // Las partes quitadas (archivadas, US-51) ya no son de la tarea.
+    .is('task_parts.archived_on', null)
     .order('position')
     .order('position', { referencedTable: 'task_parts' })
     .order('completed_on', { referencedTable: 'task_rounds', ascending: false })
     .limit(1, { referencedTable: 'task_rounds' })
-    // Las partes hechas de la vuelta en curso son siempre las más recientes de la tarea.
+    // Las partes hechas de la vuelta en curso son siempre las más recientes de la tarea. Puede
+    // haber más que partes, si se han quitado algunas ya hechas en la vuelta (US-51): con el
+    // doble de margen se ven siempre las de las partes que quedan.
     .order('created_at', { referencedTable: 'task_part_completions', ascending: false })
-    .limit(MAX_PARTS, { referencedTable: 'task_part_completions' })
+    .limit(MAX_PARTS * 2, { referencedTable: 'task_part_completions' })
   if (error) throw new AppError('tasksLoad')
   return (data as TaskRow[]).map(toTask)
 }
@@ -153,6 +158,44 @@ export async function renameTask(taskId: string, rename: TaskRename): Promise<vo
   // 23505: ya hay otra tarea con ese nombre (añadida o renombrada en otro dispositivo).
   if (error?.code === '23505') throw new AppError('duplicateTaskName')
   if (error) throw new AppError('saveFailed')
+}
+
+/** Las partes de la tarea han cambiado en otro dispositivo (US-51): hay que volver a cargarla. */
+export class StalePartsError extends AppError {
+  constructor() {
+    super('staleParts')
+    this.name = 'StalePartsError'
+  }
+}
+
+/**
+ * US-51 · Cambia las partes de una tarea de una vez: los pesos de las que siguen, las nuevas
+ * al final y las demás se quitan (se archivan). `round` es la vuelta que se muestra: si con
+ * el cambio ya están hechas todas las que quedan, la base de datos la da por terminada.
+ * Devuelve los ids de las partes nuevas, en su orden, y el día en que se ha terminado la
+ * vuelta (`null` si no).
+ */
+export async function setTaskParts(
+  taskId: string,
+  round: Round,
+  change: PartsChange,
+): Promise<{ newPartIds: string[]; completedOn: LocalDate | null }> {
+  const { data, error } = await getSupabase().rpc('set_task_parts', {
+    target_task_id: taskId,
+    kept_part_ids: change.kept.map((part) => part.id),
+    kept_weights: change.kept.map((part) => part.weight),
+    new_part_names: change.added.map((part) => part.name),
+    new_part_weights: change.added.map((part) => part.weight),
+    round_starts_on: round.startsOn,
+    round_due_by: round.dueBy,
+  })
+  // Los códigos de set_task_parts: 22023, alguna parte ya no es de la tarea (se ha cambiado
+  // en otro dispositivo); 23505, la tarea ya se ha terminado hoy (en otro dispositivo).
+  if (error?.code === '22023') throw new StalePartsError()
+  if (error?.code === '23505') throw new AlreadyDoneError()
+  if (error || !data) throw new AppError('saveFailed')
+  const result = data as { new_part_ids: string[]; completed_on: string | null }
+  return { newPartIds: result.new_part_ids, completedOn: result.completed_on }
 }
 
 /**

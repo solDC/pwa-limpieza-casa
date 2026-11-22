@@ -12,6 +12,7 @@ import {
 import { dueOnError, earliestNextDueOn, nextDueOnError } from '../../domain/new-task'
 import { roundProgress } from '../../domain/progress'
 import type { TaskRename } from '../../domain/rename-task'
+import type { PartsChange } from '../../domain/edit-parts'
 import {
   describeFrequency,
   partDisplayName,
@@ -29,6 +30,7 @@ import {
 } from '../../storage/tasks'
 import { DueOnForm } from './DueOnForm'
 import { MoveWeekendForm } from './MoveWeekendForm'
+import { PartsForm } from './PartsForm'
 import { RenameForm } from './RenameForm'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
@@ -36,7 +38,8 @@ import { RenameForm } from './RenameForm'
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
 // vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
 // (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41). Las de
-// fin de semana, «Mover a otro finde» (US-42). Todas, «Cambiar nombre» (US-54).
+// fin de semana, «Mover a otro finde» (US-42). Todas, «Cambiar nombre» (US-54) y «Cambiar
+// partes» (US-51).
 export function TaskItem({
   task,
   otherTasks,
@@ -47,6 +50,7 @@ export function TaskItem({
   onDueOnChanged,
   onMovedWeekend,
   onRenamed,
+  onPartsChanged,
   onStale,
 }: {
   task: Task
@@ -67,6 +71,11 @@ export function TaskItem({
   onMovedWeekend: (taskId: string, saturday: LocalDate) => void
   /** Se ha renombrado la tarea o alguna de sus partes (ya guardado). */
   onRenamed: (taskId: string, rename: TaskRename) => void
+  /**
+   * Se han cambiado las partes (ya guardado), con los ids de las nuevas y, si con el cambio se
+   * ha completado la vuelta, el día (US-51).
+   */
+  onPartsChanged: (taskId: string, change: PartsChange, newPartIds: string[], completedOn: LocalDate | null) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
@@ -111,20 +120,25 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
-  // El formulario abierto: el de la fecha o el finde (US-38, US-41 y US-42) o el del nombre
-  // (US-54). Uno cada vez. Al cerrarlo, el foco vuelve al botón que lo abrió.
-  const [editing, setEditing] = useState<'dueOn' | 'name' | null>(null)
+  // El formulario abierto: el de la fecha o el finde (US-38, US-41 y US-42), el del nombre
+  // (US-54) o el de las partes (US-51). Uno cada vez. Al cerrarlo, el foco vuelve al botón
+  // que lo abrió.
+  const [editing, setEditing] = useState<'dueOn' | 'name' | 'parts' | null>(null)
   const editingDueOn = editing === 'dueOn'
-  const dueOnButton = useRef<HTMLButtonElement>(null)
-  const renameButton = useRef<HTMLButtonElement>(null)
+  const buttons = {
+    dueOn: useRef<HTMLButtonElement>(null),
+    name: useRef<HTMLButtonElement>(null),
+    parts: useRef<HTMLButtonElement>(null),
+  }
+  const dueOnButton = buttons.dueOn
   // Qué botón recibe el foco cuando vuelva a estar en la tarjeta (con el formulario abierto, no está).
-  const focusAfterClosing = useRef<'dueOn' | 'name' | null>(null)
+  const focusAfterClosing = useRef<'dueOn' | 'name' | 'parts' | null>(null)
   useEffect(() => {
     if (editing === null && focusAfterClosing.current) {
-      const button = focusAfterClosing.current === 'name' ? renameButton.current : dueOnButton.current
-      button?.focus()
+      buttons[focusAfterClosing.current].current?.focus()
       focusAfterClosing.current = null
     }
+    // `buttons` son refs: no cambian.
   }, [editing])
   const closeForm = () => {
     focusAfterClosing.current = editing
@@ -269,7 +283,7 @@ export function TaskItem({
         />
       ) : (
         <button
-          ref={renameButton}
+          ref={buttons.name}
           type="button"
           className="button-secondary"
           aria-label={t.tasks.renameLabel(name)}
@@ -277,6 +291,27 @@ export function TaskItem({
           disabled={saving || editing !== null}
         >
           {t.tasks.rename}
+        </button>
+      )}
+      {editing === 'parts' ? (
+        <PartsForm
+          task={task}
+          taskName={name}
+          round={round}
+          onSaved={(change, newPartIds, completedOn) => onPartsChanged(task.id, change, newPartIds, completedOn)}
+          onClose={closeForm}
+          onStale={onStale}
+        />
+      ) : (
+        <button
+          ref={buttons.parts}
+          type="button"
+          className="button-secondary"
+          aria-label={t.tasks.editPartsLabel(name)}
+          onClick={() => setEditing('parts')}
+          disabled={saving || editing !== null}
+        >
+          {t.tasks.editParts}
         </button>
       )}
     </li>
