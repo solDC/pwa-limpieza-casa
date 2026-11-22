@@ -5,7 +5,7 @@ import type { Frequency, LocalDate } from '../../../src/domain/task'
 
 // US-29 · Qué toca (#38): qué está retrasado, qué toca hoy y en qué orden salen las tareas.
 
-const weekly: Frequency = { kind: 'weekendWeekly' }
+const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
 const biweekly: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
 const bathroom: Frequency = { kind: 'interval', days: 3, nextDueOn: null }
 const oneOff: Frequency = { kind: 'oneOff', dueOn: null }

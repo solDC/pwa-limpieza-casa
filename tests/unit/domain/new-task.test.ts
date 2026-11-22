@@ -112,7 +112,7 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
       const result = validateNewTask(draft(changes), 'es', TODAY)
       return result.ok ? result.task.frequency : result.errors
     }
-    expect(frequencyOf({ frequencyKind: 'weekendWeekly' })).toEqual({ kind: 'weekendWeekly' })
+    expect(frequencyOf({ frequencyKind: 'weekendWeekly' })).toEqual({ kind: 'weekendWeekly', startOn: null })
     expect(
       frequencyOf({ frequencyKind: 'weekendBiweekly', biweeklyStartOn: '2026-11-14' }),
     ).toEqual({ kind: 'weekendBiweekly', startOn: '2026-11-14' })

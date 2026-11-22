@@ -7,8 +7,11 @@ import type { Language } from './language'
 export type LocalDate = string
 
 export type Frequency =
-  /** Cada sábado y domingo. */
-  | { kind: 'weekendWeekly' }
+  /**
+   * Cada sábado y domingo; si se ha movido a otro finde (`startOn`, el sábado, US-42), desde
+   * ese finde.
+   */
+  | { kind: 'weekendWeekly'; startOn: LocalDate | null }
   /** Un fin de semana sí y otro no, desde el sábado `startOn`. */
   | { kind: 'weekendBiweekly'; startOn: LocalDate }
   /**

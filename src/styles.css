@@ -77,6 +77,7 @@ label {
 
 /* 16px como mínimo: con menos, el iPhone hace zoom al escribir. */
 input,
+select,
 button {
   font: inherit;
   font-size: max(1rem, 16px);
@@ -84,7 +85,8 @@ button {
   border-radius: 0.5rem;
 }
 
-input {
+input,
+select {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-border);
   background: var(--color-surface);

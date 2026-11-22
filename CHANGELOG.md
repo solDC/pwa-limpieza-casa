@@ -7,6 +7,12 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-42 · Mover una tarea de fin de semana a otro finde** (#60). Las tareas de fin de semana tienen «Mover a otro finde», que abre en la tarjeta la lista «Mover al finde del» con los 8 próximos fines de semana, desde el actual (el de hoy, en sábado o domingo; si no, el siguiente), y «Guardar» y «Cancelar». Así se puede adelantar o retrasar, por ejemplo, Superficies si un finde no se está en casa.
+  - **Semanales:** solo se mueve esa vuelta. Hasta el finde elegido no toca ni va con retraso; desde él, vuelve a tocar cada finde. Una que iba con retraso, movida, deja de estarlo.
+  - **Cada 15 días:** se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.
+  - La lista no ofrece el finde que ya se muestra ni los que ya están hechos. Se elige de una lista, y no con el calendario, porque el del móvil no deja limitar la elección a los sábados.
+  - Si la vuelta tenía partes hechas, se quedan en esa vuelta: la vuelta movida empieza con todas por hacer, como se decidió para cambiar la frecuencia (US-53).
+  - **En la base de datos** (migración nueva): columna `weekly_start_on` en `tasks`, solo en las semanales (el sábado desde el que tocan, como `biweekly_start_on` en las de cada 15 días), y la función `move_weekend_task`, que mueve una tarea de fin de semana del hogar del usuario a un sábado del finde actual o posterior. La app sigue sin poder cambiar `tasks` directamente.
 - **US-50 · Elegir desde qué día toca una tarea de cada N días** (#81). Al añadir una tarea de «cada N días», el formulario pide «Toca por primera vez el», con hoy ya elegido. Así, una tarea que se piensa empezar más adelante no sale como pendiente desde hoy.
   - Solo se puede elegir hoy o un día futuro. Hasta ese día, la tarea dice «Toca: <día>», sin retraso; desde el día siguiente sin hacerla, va con retraso, como las demás. Después, las siguientes se cuentan desde el día en que se termine, como siempre, y el día se puede cambiar con «Cambiar fecha» (US-41).
   - **En la base de datos** (migración nueva): `create_task` guarda ese día en `next_due_on`, la columna de la US-41, con el mismo argumento que la fecha de las puntuales (`task_due_on`). La función se llama igual que antes, así que la versión anterior de la app sigue funcionando. Rechaza un día pasado (hoy en Madrid), y las de fin de semana siguen sin admitir un día.

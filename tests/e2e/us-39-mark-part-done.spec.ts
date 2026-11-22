@@ -102,7 +102,8 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
     // Como al marcar una tarea entera (US-30): pasa al finde siguiente, que aún no se puede marcar.
     await expect(surfaces).toContainText(nextWeekend())
-    await expect(surfaces.getByRole('button')).toHaveCount(0)
+    // (Sí sale «Mover a otro finde», de la US-42.)
+    await expect(surfaces.getByRole('button', { name: /^(Marcar|Hecha)/ })).toHaveCount(0)
     await expect(surfaces).not.toContainText('Llevas')
     // No dice que esté hecha: la tarjeta ya es la del finde siguiente, con sus partes sin hacer.
     // Los lectores de pantalla dicen cuándo vuelve a tocar.
@@ -112,7 +113,8 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
     await page.reload()
     await expect(surfaces).toContainText(nextWeekend())
-    await expect(surfaces.getByRole('button')).toHaveCount(0)
+    // (Sí sale «Mover a otro finde», de la US-42.)
+    await expect(surfaces.getByRole('button', { name: /^(Marcar|Hecha)/ })).toHaveCount(0)
   })
 
   test('con «Marcar todo como hecho» marco de una vez las partes que faltan', async ({ page }) => {
@@ -202,7 +204,8 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     const surfaces = task(page, 'Superficies')
     await expect(surfaces).toContainText(nextWeekend())
     await expect(taskParts(surfaces)).toHaveCount(3)
-    await expect(surfaces.getByRole('button')).toHaveCount(0)
+    // (Sí sale «Mover a otro finde», de la US-42.)
+    await expect(surfaces.getByRole('button', { name: /^(Marcar|Hecha)/ })).toHaveCount(0)
   })
 
   test('si falla el guardado, la app lo dice y la parte no se muestra como hecha', async ({ page }) => {

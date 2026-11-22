@@ -12,7 +12,7 @@ const surfaces = (partCompletions: Task['partCompletions'] = []): Task => ({
   householdId: 'home',
   name: 'Superficies',
   defaultKey: null,
-  frequency: { kind: 'weekendWeekly' },
+  frequency: { kind: 'weekendWeekly', startOn: null },
   parts: [
     { id: 'kitchen', name: 'Cocina', defaultKey: null, weight: 50 },
     { id: 'living', name: 'Salón', defaultKey: null, weight: 25 },
