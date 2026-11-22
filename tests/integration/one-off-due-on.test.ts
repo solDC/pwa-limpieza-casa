@@ -93,10 +93,12 @@ describe('US-38 · al crear una tarea puntual', () => {
     ).rejects.toThrow(/hoy o un día futuro/)
   })
 
+  // En las de cada N días, el mismo argumento es el día en que tocan la primera vez (US-50,
+  // tests/integration/interval-next-due-on.test.ts).
   it('solo las puntuales llevan fecha', async () => {
     const tomorrow = await madridDay(1)
     await expect(
-      asUser(db, ana, (query) => createTask(query, { frequency: 'interval', dueOn: tomorrow })),
+      asUser(db, ana, (query) => createTask(query, { frequency: 'weekend_weekly', dueOn: tomorrow })),
     ).rejects.toThrow(/tasks_due_on_check/)
   })
 })

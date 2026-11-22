@@ -250,3 +250,50 @@ describe('US-41 · seguridad', () => {
     ])
   })
 })
+
+// US-50 · Elegir desde qué día toca una tarea de cada N días (#81): create_task guarda el día
+// en next_due_on, con el mismo argumento que la fecha de las puntuales (task_due_on).
+describe('US-50 · al crear una tarea de cada N días', () => {
+  const createInterval = (query: Query, firstDueOn: string | null) =>
+    query(
+      `select public.create_task($1, 'Cristales', 'interval', 30, null, '{}', '{}', $2) as id`,
+      [anaHousehold, firstDueOn],
+    ).then(({ rows }) => rows[0].id as string)
+
+  it('se guarda el día elegido para la primera vez (y no la fecha de las puntuales)', async () => {
+    const nextWeek = await madridDay(7)
+    const saved = await asUser(db, ana, async (query) => {
+      const id = await createInterval(query, nextWeek)
+      const { rows } = await query(
+        `select to_char(next_due_on, 'YYYY-MM-DD') as next_due_on, due_on from public.tasks where id = $1`,
+        [id],
+      )
+      return rows[0]
+    })
+    expect(saved).toEqual({ next_due_on: nextWeek, due_on: null })
+  })
+
+  it('sin día, toca desde hoy, como antes', async () => {
+    const saved = await asUser(db, ana, async (query) => nextDueOnOf(query, await createInterval(query, null)))
+    expect(saved).toBeNull()
+  })
+
+  it('no se puede elegir un día pasado', async () => {
+    const yesterday = await madridDay(-1)
+    await expect(asUser(db, ana, (query) => createInterval(query, yesterday))).rejects.toThrow(
+      /hoy o un día futuro/,
+    )
+  })
+
+  it('las de fin de semana siguen sin admitir un día', async () => {
+    const tomorrow = await madridDay(1)
+    await expect(
+      asUser(db, ana, (query) =>
+        query(`select public.create_task($1, 'Terraza', 'weekend_weekly', null, null, '{}', '{}', $2)`, [
+          anaHousehold,
+          tomorrow,
+        ]),
+      ),
+    ).rejects.toThrow(/tasks_due_on_check/)
+  })
+})

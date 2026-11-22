@@ -18,7 +18,7 @@ Para empezar de cero, lo más fácil es entrar con otra cuenta (`+prueba2`, `+pr
 
 ## Ver las tareas de una cuenta
 
-Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41) y cuándo se hicieron por última vez.
+Qué tareas tiene, cuándo se crearon, la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41 y US-50) y cuándo se hicieron por última vez.
 
 ```sql
 select t.name, t.frequency, t.created_on, t.due_on, t.next_due_on,
@@ -59,7 +59,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 Para tener una tarea de cada N días retrasada sin esperar: una que nunca se ha hecho toca desde el día en que se creó. Con `- 5`, Baño (cada 3 días) tocaba hace 5 días y sale «Retrasada 5 días».
 
-**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta, ni se le ha cambiado el día desde la app (US-41): cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo, y con un día elegido, toca ese día; en los dos casos, el día de creación no cuenta. Si es así, ejecuta antes «Dejar todas las tareas sin hacer».
+**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta, ni se le ha elegido o cambiado el día desde la app (US-41 y US-50): cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo, y con un día elegido, toca ese día; en los dos casos, el día de creación no cuenta. Si es así, ejecuta antes «Dejar todas las tareas sin hacer».
 
 ```sql
 update public.tasks t

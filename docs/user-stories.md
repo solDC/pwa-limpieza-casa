@@ -38,7 +38,7 @@ Primero las hechas y después las pendientes.
 | US-38 | Poner fecha a una tarea puntual | Must have | Hecha | [#54](https://github.com/solDC/pwa-limpieza-casa/issues/54) |
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Hecha | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Pendiente | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
-| US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Pendiente | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
+| US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Pendiente | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 
@@ -80,7 +80,7 @@ Tener más de una casa. Están descritas en la sección «Backlog».
 ## Conceptos
 
 - **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: cuando se puedan quitar, quitar una será **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
-- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o la próxima vez de una de cada N días, US-41) no cambia la vuelta: conserva sus partes hechas.
+- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o el de una de cada N días, al crearla, US-50, o para la próxima vez, US-41) no cambia la vuelta: conserva sus partes hechas.
 
   | Estado | Cuándo |
   |---|---|
@@ -96,7 +96,7 @@ Tener más de una casa. Están descritas en la sección «Backlog».
   |---|---|---|---|
   | **Semanal, en fin de semana** | Superficies | Cada sábado y domingo | El viernes siguiente, incluido: de lunes a viernes se puede hacer, como retrasada (el lunes, 1 día) |
   | **Fin de semana cada 15 días** | Aspirar cosas de Cati | Un fin de semana sí y otro no, empezando el 5-6 de diciembre de 2026 | El viernes siguiente, incluido, como las semanales |
-  | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez, o el día que se elija para la próxima vez (US-41) | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
+  | **Cada N días desde la última vez** | Baño (3), Cristales y espejos (30) | N días después del día en que se terminó la última vez, o el día que se elija: la primera vez al crearla (US-50) y después para la próxima vez (US-41) | Nunca: si no se hace, aparece como retrasada (X días) hasta que se hace. No hay «no completada» |
   | **Puntual** | Cepillar suelo, Limpiar juntas | Sin fecha, o el día que se le ponga (US-38): pendiente hasta que se hace, y después desaparece | Nunca. Sin fecha no tiene retraso; con fecha, desde el día siguiente aparece como retrasada (X días) hasta que se hace |
 
 - Los días son **fechas locales sin hora**. Llegar a la fecha prevista **nunca** marca una tarea como hecha.
@@ -158,7 +158,7 @@ quiero que cada tarea toque según su propio ritmo,
 para que la app me diga qué hacer cuando de verdad toca.
 - Las cuatro frecuencias funcionan como dice la tabla de «Conceptos».
 - En «cada N días», la próxima fecha se cuenta desde el día en que se terminó la tarea, no desde la fecha prevista.
-- La primera vez, una tarea de «cada N días» toca desde el día en que se crea.
+- La primera vez, una tarea de «cada N días» toca desde el día en que se crea, salvo que se elija otro al añadirla (US-50).
 
 ### US-29 · Qué toca (Must have)
 Como usuario,

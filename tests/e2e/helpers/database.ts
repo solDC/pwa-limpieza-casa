@@ -150,3 +150,25 @@ export async function completeOneOffTask(email: string, taskName: string) {
     await db.end()
   }
 }
+
+/**
+ * US-41 y US-50 · Pone el día en que toca la próxima vez una tarea de cada N días del hogar
+ * de ese usuario, también uno que ya ha pasado (la app no deja: así se prueba que va con
+ * retraso desde el día siguiente).
+ */
+export async function setTaskNextDueOn(email: string, taskName: string, nextDueOn: string | null) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `update public.tasks t set next_due_on = $3
+       from public.household_members m
+       join auth.users u on u.id = m.user_id
+       where m.household_id = t.household_id and u.email = $1 and t.name = $2`,
+      [email, taskName, nextDueOn],
+    )
+    if (rowCount !== 1) throw new Error(`No se ha encontrado la tarea «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}
