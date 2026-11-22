@@ -12,14 +12,13 @@ import {
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import type { Round } from '../../domain/frequency'
 import { renamePart, setPartWeight } from '../../domain/new-task'
-import { partDisplayName, type LocalDate, type Task } from '../../domain/task'
+import type { LocalDate, Task } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { AlreadyDoneError, setTaskParts, StalePartsError } from '../../storage/tasks'
 import { PartsFields } from './PartsFields'
 
-// US-51 · Cambiar las partes de una tarea, dentro de su tarjeta: el peso de cada una, añadir
-// partes y quitarlas, con las mismas reglas que al crearla (US-34). El nombre de las que ya
-// existen se ve, pero se cambia con «Cambiar nombre» (US-54).
+// US-51 · Cambiar las partes de una tarea, dentro de su tarjeta: el nombre y el peso de cada
+// una, añadir partes y quitarlas, con las mismas reglas que al crearla (US-34).
 export function PartsForm({
   task,
   taskName,
@@ -46,15 +45,17 @@ export function PartsForm({
   const nextPartKey = useRef(0)
   // Los avisos salen al intentar guardar, y después se ponen al día solos al corregir.
   const [showErrors, setShowErrors] = useState(false)
-  const validation = validatePartsChange(draft, language)
+  const validation = validatePartsChange(task, draft, language)
   const errors = showErrors && !validation.ok ? validation.errors : null
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const form = useRef<HTMLFormElement>(null)
   // Si las partes de la tarea cambian con el formulario abierto (se han cambiado en otro
   // dispositivo y la lista se ha vuelto a cargar), el formulario se pone al día con ellas: con
-  // las de antes, guardar volvería a fallar. El aviso de por qué se queda.
-  const partsNow = task.parts.map((part) => `${part.id}:${part.weight}`).join()
+  // las de antes, guardar volvería a fallar. El aviso de por qué se queda. También si cambia
+  // el idioma, como en «Cambiar nombre»: los nombres se ven en el idioma elegido, y con los
+  // del otro, guardar renombraría las partes que no se han tocado.
+  const partsNow = JSON.stringify([language, task.parts])
   const [partsShown, setPartsShown] = useState(partsNow)
   if (partsShown !== partsNow) {
     setPartsShown(partsNow)
@@ -63,18 +64,10 @@ export function PartsForm({
     setShowErrors(false)
   }
   const idPrefix = `parts-${task.id}`
-  // Las que ya existen se ven en el idioma elegido, también si se cambia con el formulario abierto.
-  const shown = {
-    ...draft,
-    partNames: draft.partNames.map((name, index) => {
-      const part = task.parts.find((existing) => existing.id === draft.partIds[index])
-      return part ? partDisplayName(part, language) : name
-    }),
-  }
 
   // Al abrirlo, se empieza por el primer campo (también con el teclado o VoiceOver).
   useEffect(() => {
-    form.current?.querySelector<HTMLElement>('input:not([readonly]), button')?.focus()
+    form.current?.querySelector<HTMLElement>('input, button')?.focus()
   }, [])
 
   function handleAdd() {
@@ -129,9 +122,8 @@ export function PartsForm({
       <PartsFields
         idPrefix={idPrefix}
         legend={t.tasks.parts}
-        draft={shown}
+        draft={draft}
         partKeys={partKeys}
-        fixedNames={draft.partIds.map((id) => id !== null)}
         errors={errors}
         disabled={saving}
         onAdd={handleAdd}

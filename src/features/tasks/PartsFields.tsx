@@ -12,7 +12,6 @@ export function PartsFields({
   hint,
   draft,
   partKeys,
-  fixedNames,
   errors,
   disabled,
   onAdd,
@@ -28,11 +27,6 @@ export function PartsFields({
   draft: PartsDraft
   /** Una clave por parte, para que React no confunda los campos al quitar una. */
   partKeys: Key[]
-  /**
-   * Qué partes no se pueden renombrar aquí (las que ya existen, US-51: renombrar es la US-54):
-   * su nombre se ve, pero no se cambia.
-   */
-  fixedNames?: boolean[]
   errors: PartsErrors | null
   disabled: boolean
   onAdd: () => void
@@ -53,7 +47,6 @@ export function PartsFields({
         const id = `${idPrefix}-part-${partKeys[index]}`
         const error = errors?.parts?.[index]
         const weightError = errors?.partWeights?.[index]
-        const fixed = fixedNames?.[index] ?? false
         return (
           <div key={partKeys[index]} className="stack">
             <label htmlFor={id}>{t.newTask.part(index + 1)}</label>
@@ -61,7 +54,6 @@ export function PartsFields({
               <input
                 id={id}
                 value={partName}
-                readOnly={fixed}
                 onChange={(event) => onRename(index, event.target.value)}
                 aria-invalid={invalid(error)}
                 aria-describedby={error ? `${id}-error` : undefined}

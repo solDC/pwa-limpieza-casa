@@ -188,6 +188,8 @@ export async function setTaskParts(
     shown_part_ids: shownPartIds,
     kept_part_ids: change.kept.map((part) => part.id),
     kept_weights: change.kept.map((part) => part.weight),
+    // El nombre nuevo de las renombradas; las demás, vacío (no cambia y se sigue traduciendo).
+    kept_names: change.kept.map((part) => part.name),
     new_part_names: change.added.map((part) => part.name),
     new_part_weights: change.added.map((part) => part.weight),
     round_starts_on: round.startsOn,

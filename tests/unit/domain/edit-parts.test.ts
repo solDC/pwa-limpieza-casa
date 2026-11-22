@@ -85,12 +85,12 @@ describe('validatePartsChange: qué hay que guardar', () => {
     let draft = removeEditedPart(addEditedPart(editPartsDraft(surfaces, 'es')), 1)
     draft = renamePart(draft, 2, '  Fregadero ')
     draft = setPartWeight(setPartWeight(draft, 0, '40'), 2, '35 %')
-    expect(validatePartsChange(draft, 'es')).toEqual({
+    expect(validatePartsChange(surfaces, draft, 'es')).toEqual({
       ok: true,
       change: {
         kept: [
-          { id: 'kitchen', weight: 40 },
-          { id: 'bedroom', weight: 25 },
+          { id: 'kitchen', weight: 40, name: null },
+          { id: 'bedroom', weight: 25, name: null },
         ],
         added: [{ name: 'Fregadero', weight: 35 }],
       },
@@ -99,7 +99,7 @@ describe('validatePartsChange: qué hay que guardar', () => {
 
   it('las mismas reglas que al crearla: nombre en las nuevas, pesos de 1 a 100 que suman 100', () => {
     const draft = addEditedPart(editPartsDraft(surfaces, 'es'))
-    expect(validatePartsChange(draft, 'es')).toEqual({
+    expect(validatePartsChange(surfaces, draft, 'es')).toEqual({
       ok: false,
       errors: {
         parts: [undefined, undefined, undefined, 'Escribe el nombre de la parte o quítala.'],
@@ -107,23 +107,63 @@ describe('validatePartsChange: qué hay que guardar', () => {
       },
     })
     const named = setPartWeight(renamePart(draft, 3, 'Fregadero'), 3, '10')
-    expect(validatePartsChange(named, 'en')).toEqual({
+    expect(validatePartsChange(surfaces, named, 'en')).toEqual({
       ok: false,
       errors: { weightsTotal: 'The weights must add up to 100 % (now they add up to 110 %).' },
     })
   })
 
+  it('también el nombre de las que siguen, solo si se ve distinto (sin espacios de más)', () => {
+    let draft = renamePart(editPartsDraft(surfaces, 'es'), 1, '  Salón comedor ')
+    draft = renamePart(draft, 2, ' Dormitorio ')
+    expect(validatePartsChange(surfaces, draft, 'es')).toEqual({
+      ok: true,
+      change: {
+        kept: [
+          { id: 'kitchen', weight: 50, name: null },
+          { id: 'living', weight: 25, name: 'Salón comedor' },
+          { id: 'bedroom', weight: 25, name: null },
+        ],
+        added: [],
+      },
+    })
+  })
+
+  it('se compara con el nombre en el idioma elegido: guardar en inglés sin cambiar no renombra', () => {
+    const result = validatePartsChange(surfaces, editPartsDraft(surfaces, 'en'), 'en')
+    expect(result.ok && result.change.kept.every((kept) => kept.name === null)).toBe(true)
+    const renamed = validatePartsChange(surfaces, renamePart(editPartsDraft(surfaces, 'en'), 0, 'Kitchen counter'), 'en')
+    expect(renamed.ok && renamed.change.kept[0]).toEqual({ id: 'kitchen', weight: 50, name: 'Kitchen counter' })
+  })
+
+  it('el nombre de las que siguen, con las mismas reglas: ni vacío ni de más de 80 caracteres', () => {
+    let draft = renamePart(editPartsDraft(surfaces, 'es'), 0, '  ')
+    draft = renamePart(draft, 2, 'x'.repeat(81))
+    expect(validatePartsChange(surfaces, draft, 'es')).toEqual({
+      ok: false,
+      errors: {
+        parts: [
+          'Escribe el nombre de la parte o quítala.',
+          undefined,
+          'El nombre puede tener como mucho 80 caracteres.',
+        ],
+      },
+    })
+  })
+
   it('se pueden quitar todas', () => {
     const draft = removeEditedPart(removeEditedPart(editPartsDraft(halves, 'es'), 0), 0)
-    expect(validatePartsChange(draft, 'es')).toEqual({ ok: true, change: { kept: [], added: [] } })
+    expect(validatePartsChange(halves, draft, 'es')).toEqual({ ok: true, change: { kept: [], added: [] } })
   })
 
   it('sin cambios, no hay nada que guardar', () => {
-    const result = validatePartsChange(editPartsDraft(surfaces, 'es'), 'es')
+    const result = validatePartsChange(surfaces, editPartsDraft(surfaces, 'es'), 'es')
     expect(result.ok && isEmptyPartsChange(surfaces, result.change)).toBe(true)
-    const changed = validatePartsChange(setPartWeight(editPartsDraft(surfaces, 'es'), 0, '50'), 'es')
+    const changed = validatePartsChange(surfaces, setPartWeight(editPartsDraft(surfaces, 'es'), 0, '50'), 'es')
     expect(changed.ok && isEmptyPartsChange(surfaces, changed.change)).toBe(true)
-    const removed = validatePartsChange(removeEditedPart(editPartsDraft(halves, 'es'), 0), 'es')
+    const renamed = validatePartsChange(surfaces, renamePart(editPartsDraft(surfaces, 'es'), 0, 'Encimera'), 'es')
+    expect(renamed.ok && isEmptyPartsChange(surfaces, renamed.change)).toBe(false)
+    const removed = validatePartsChange(halves, removeEditedPart(editPartsDraft(halves, 'es'), 0), 'es')
     expect(removed.ok && isEmptyPartsChange(halves, removed.change)).toBe(false)
   })
 })
@@ -132,7 +172,13 @@ describe('withPartsChanged: la tarea después de guardar', () => {
   it('las que siguen con su peso nuevo y las nuevas al final; las hechas siguen hechas', () => {
     const changed = withPartsChanged(
       surfaces,
-      { kept: [{ id: 'kitchen', weight: 40 }, { id: 'bedroom', weight: 30 }], added: [{ name: 'Fregadero', weight: 30 }] },
+      {
+        kept: [
+          { id: 'kitchen', weight: 40, name: null },
+          { id: 'bedroom', weight: 30, name: null },
+        ],
+        added: [{ name: 'Fregadero', weight: 30 }],
+      },
       ['sink'],
       null,
     )
@@ -147,8 +193,30 @@ describe('withPartsChanged: la tarea después de guardar', () => {
     expect(changed.lastCompletedOn).toBeNull()
   })
 
+  it('las renombradas, con su nombre nuevo, dejan de traducirse; el progreso no cambia', () => {
+    const changed = withPartsChanged(
+      surfaces,
+      {
+        kept: [
+          { id: 'kitchen', weight: 50, name: 'Encimera' },
+          { id: 'living', weight: 25, name: null },
+          { id: 'bedroom', weight: 25, name: null },
+        ],
+        added: [],
+      },
+      [],
+      null,
+    )
+    expect(changed.parts).toEqual([
+      { id: 'kitchen', name: 'Encimera', defaultKey: null, weight: 50 },
+      { id: 'living', name: 'Salón', defaultKey: 'living_room', weight: 25 },
+      { id: 'bedroom', name: 'Dormitorio', defaultKey: 'bedroom', weight: 25 },
+    ])
+    expect(roundProgress(changed, weekend).percent).toBe(50)
+  })
+
   it('si la vuelta ha quedado completada, la próxima vez se cuenta desde ese día', () => {
-    const changed = withPartsChanged(surfaces, { kept: [{ id: 'kitchen', weight: 100 }], added: [] }, [], '2026-11-22')
+    const changed = withPartsChanged(surfaces, { kept: [{ id: 'kitchen', weight: 100, name: null }], added: [] }, [], '2026-11-22')
     expect(changed.parts.map((part) => part.id)).toEqual(['kitchen'])
     expect(changed.lastCompletedOn).toBe('2026-11-22')
   })

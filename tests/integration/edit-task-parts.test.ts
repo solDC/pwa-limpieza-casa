@@ -61,20 +61,26 @@ async function setParts(
   added: [string, number][] = [],
   // Las partes que se veían: por defecto, las que tiene ahora la tarea.
   shown?: string[],
+  // El nombre nuevo de cada parte que sigue (null, sin renombrar). Sin él, la llamada de
+  // antes, sin nombres.
+  names?: (string | null)[],
 ): Promise<{ new_part_ids: string[]; completed_on: string | null }> {
   const shownIds =
     shown ??
     (await query('select id from public.task_parts where task_id = $1 and archived_on is null', [taskId])).rows.map(
       (row) => row.id,
     )
-  const { rows } = await query('select public.set_task_parts($1, $2, $3, $4, $5, $6, null, null) as result', [
+  const params = [
     taskId,
     shownIds,
     kept.map(([id]) => id),
     kept.map(([, weight]) => weight),
     added.map(([name]) => name),
     added.map(([, weight]) => weight),
-  ])
+  ]
+  const { rows } = await (names === undefined
+    ? query('select public.set_task_parts($1, $2, $3, $4, $5, $6, null, null) as result', params)
+    : query('select public.set_task_parts($1, $2, $3, $4, $5, $6, null, null, $7) as result', [...params, names]))
   await query('set constraints all immediate')
   return rows[0].result
 }
@@ -245,6 +251,51 @@ describe('US-51 · cambiar las partes de una tarea', () => {
         }),
       ).rejects.toThrow(/no es de esa tarea/)
     }
+  })
+
+  it('cambia también el nombre de las partes que siguen: lo renombrado deja de traducirse', async () => {
+    const parts = await asUser(db, ana, async (query) => {
+      const { rows: task } = await query(`select id from public.tasks where household_id = $1 and name = 'Superficies'`, [
+        anaHousehold,
+      ])
+      const { rows: before } = await query('select id from public.task_parts where task_id = $1 order by position', [
+        task[0].id,
+      ])
+      const [kitchen, living, bedroom] = before.map((row) => row.id as string)
+      await setParts(
+        query,
+        task[0].id,
+        [[kitchen!, 40], [living!, 30], [bedroom!, 30]],
+        [],
+        undefined,
+        [null, ' Salón comedor ', null],
+      )
+      const { rows } = await query(
+        'select name, weight, default_key from public.task_parts where task_id = $1 order by position',
+        [task[0].id],
+      )
+      return rows
+    })
+    expect(parts).toEqual([
+      { name: 'Cocina', weight: 40, default_key: 'kitchen' },
+      { name: 'Salón comedor', weight: 30, default_key: null },
+      { name: 'Dormitorio', weight: 30, default_key: 'bedroom' },
+    ])
+  })
+
+  it('un nombre por cada parte que sigue, y que valga', async () => {
+    await expect(
+      asUser(db, ana, async (query) => {
+        const task = await kitchenTask(query)
+        await setParts(query, task.id, [[task.oven, 50], [task.fridge, 50]], [], undefined, ['Horno grande'])
+      }),
+    ).rejects.toThrow(/Cada parte que sigue necesita su nombre/)
+    await expect(
+      asUser(db, ana, async (query) => {
+        const task = await kitchenTask(query)
+        await setParts(query, task.id, [[task.oven, 50], [task.fridge, 50]], [], undefined, ['  ', null])
+      }),
+    ).rejects.toThrow(/task_parts_name_check/)
   })
 
   it('si las partes ya no son las que se veían (cambiadas en otro dispositivo), no guarda nada', async () => {
