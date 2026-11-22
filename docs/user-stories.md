@@ -39,8 +39,8 @@ Primero las hechas y después las pendientes.
 | US-41 | Cambiar cuándo toca la próxima vez | Must have | Hecha | [#59](https://github.com/solDC/pwa-limpieza-casa/issues/59) |
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Hecha | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
-| US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Hecha | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
+| US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -308,7 +308,7 @@ para entender qué toca y qué he hecho sin traducir nada.
 - Puedo cambiar el idioma desde la app, en la pantalla de entrar y junto a «Cerrar sesión», y se mantiene al volver a abrirla.
 - Todos los textos de la app salen en el idioma elegido: pantallas, botones, avisos y errores.
 - Las fechas también: «Due: weekend of 14 Nov», «Wed 18 Nov».
-- Las tareas por defecto y sus partes se ven en el idioma elegido («Superficies» / «Surfaces»); las que añado yo, como las escribí.
+- Las tareas por defecto y sus partes se ven en el idioma elegido («Superficies» / «Surfaces»); las que añado yo, como las escribí (y también las que renombro, US-54).
 - El email para entrar llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app.
 
 *Dentro de la app se llama «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «My House Cleaning».*

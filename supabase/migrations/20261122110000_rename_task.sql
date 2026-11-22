@@ -129,7 +129,7 @@ grant execute on function public.create_task(uuid, text, text, integer, date, te
 -- Renombrar una tarea y sus partes
 -- ---------------------------------------------------------------------------
 
--- Cambia el nombre de una tarea no cancelada del hogar del usuario (new_name; vacío si no
+-- Cambia el nombre de una tarea no cancelada del hogar del usuario (new_name; null si no
 -- cambia) y el de algunas de sus partes (part_ids, con su nombre nuevo en part_names, en el
 -- mismo orden). Lo renombrado pierde su clave de tarea por defecto.
 -- Es security definer porque la app no puede cambiar tasks ni task_parts directamente: así

@@ -103,7 +103,7 @@ const DEFAULT_NAMES_IN_ENGLISH: Record<string, string> = {
 
 /**
  * El nombre de una tarea para mostrarlo: las de por defecto, en el idioma elegido; las que
- * añade el usuario, como las escribió.
+ * añade el usuario, o las que renombra (US-54), como las escribió.
  */
 export function taskDisplayName(task: Pick<Task, 'name' | 'defaultKey'>, language: Language): string {
   if (language === 'en' && task.defaultKey) {
