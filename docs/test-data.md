@@ -30,9 +30,24 @@ where u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
 order by t.position;
 ```
 
+## Ver las partes de una tarea
+
+Las partes de una tarea con su peso y su orden, también las quitadas desde la app (US-51), que no se borran: se archivan (`archived_on`, el día en que se quitaron). Cambia el nombre de la tarea (`'Superficies'`) por la que quieras ver.
+
+```sql
+select p.name, p.weight, p.position, p.archived_on
+from public.task_parts p
+join public.tasks t on t.id = p.task_id
+join public.household_members m on m.household_id = t.household_id
+join auth.users u on u.id = m.user_id
+where u.email = 'mariasol.dc+prueba1@gmail.com' and u.email like '%+prueba%'
+  and t.name = 'Superficies'
+order by p.position;
+```
+
 ## Dejar todas las tareas sin hacer
 
-Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41).
+Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas: para tener las partes de antes, entra con otra cuenta.
 
 ```sql
 delete from public.task_rounds r

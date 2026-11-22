@@ -59,9 +59,17 @@ async function setParts(
   taskId: string,
   kept: [string, number][],
   added: [string, number][] = [],
+  // Las partes que se veían: por defecto, las que tiene ahora la tarea.
+  shown?: string[],
 ): Promise<{ new_part_ids: string[]; completed_on: string | null }> {
-  const { rows } = await query('select public.set_task_parts($1, $2, $3, $4, $5, null, null) as result', [
+  const shownIds =
+    shown ??
+    (await query('select id from public.task_parts where task_id = $1 and archived_on is null', [taskId])).rows.map(
+      (row) => row.id,
+    )
+  const { rows } = await query('select public.set_task_parts($1, $2, $3, $4, $5, $6, null, null) as result', [
     taskId,
+    shownIds,
     kept.map(([id]) => id),
     kept.map(([, weight]) => weight),
     added.map(([name]) => name),
@@ -239,6 +247,27 @@ describe('US-51 · cambiar las partes de una tarea', () => {
     }
   })
 
+  it('si las partes ya no son las que se veían (cambiadas en otro dispositivo), no guarda nada', async () => {
+    // Con una parte añadida en otro dispositivo: no se quita sin avisar.
+    await expect(
+      asUser(db, ana, async (query) => {
+        const task = await kitchenTask(query)
+        const shown = [task.oven, task.fridge, task.cupboards]
+        await setParts(query, task.id, [[task.oven, 50], [task.fridge, 25], [task.cupboards, 15]], [['Fregadero', 10]])
+        await setParts(query, task.id, [[task.oven, 50], [task.fridge, 50]], [], shown)
+      }),
+    ).rejects.toThrow(/han cambiado/)
+    // Con una parte quitada en otro dispositivo.
+    await expect(
+      asUser(db, ana, async (query) => {
+        const task = await kitchenTask(query)
+        const shown = [task.oven, task.fridge, task.cupboards]
+        await setParts(query, task.id, [[task.oven, 50], [task.fridge, 50]])
+        await setParts(query, task.id, [[task.oven, 100]], [], shown)
+      }),
+    ).rejects.toThrow(/han cambiado/)
+  })
+
   it('no en una tarea cancelada', async () => {
     await expect(
       asUser(db, ana, async (query) => {
@@ -279,8 +308,9 @@ describe('US-51 · seguridad', () => {
   it('sin sesión no se pueden cambiar', async () => {
     await expect(
       asUser(db, null, (query) =>
-        query('select public.set_task_parts($1, $2, $3, $4, $5, null, null)', [
+        query('select public.set_task_parts($1, $2, $3, $4, $5, $6, null, null)', [
           '00000000-0000-0000-0000-000000000000',
+          [],
           [],
           [],
           ['Mío'],

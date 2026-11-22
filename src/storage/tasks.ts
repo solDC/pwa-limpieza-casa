@@ -172,16 +172,20 @@ export class StalePartsError extends AppError {
  * US-51 · Cambia las partes de una tarea de una vez: los pesos de las que siguen, las nuevas
  * al final y las demás se quitan (se archivan). `round` es la vuelta que se muestra: si con
  * el cambio ya están hechas todas las que quedan, la base de datos la da por terminada.
+ * `shownPartIds` son las partes que se veían en el formulario: si ya no son las de la tarea
+ * (se han cambiado en otro dispositivo), no se guarda nada y lanza `StalePartsError`.
  * Devuelve los ids de las partes nuevas, en su orden, y el día en que se ha terminado la
  * vuelta (`null` si no).
  */
 export async function setTaskParts(
   taskId: string,
+  shownPartIds: string[],
   round: Round,
   change: PartsChange,
 ): Promise<{ newPartIds: string[]; completedOn: LocalDate | null }> {
   const { data, error } = await getSupabase().rpc('set_task_parts', {
     target_task_id: taskId,
+    shown_part_ids: shownPartIds,
     kept_part_ids: change.kept.map((part) => part.id),
     kept_weights: change.kept.map((part) => part.weight),
     new_part_names: change.added.map((part) => part.name),
@@ -189,8 +193,8 @@ export async function setTaskParts(
     round_starts_on: round.startsOn,
     round_due_by: round.dueBy,
   })
-  // Los códigos de set_task_parts: 22023, alguna parte ya no es de la tarea (se ha cambiado
-  // en otro dispositivo); 23505, la tarea ya se ha terminado hoy (en otro dispositivo);
+  // Los códigos de set_task_parts: 22023, las partes ya no son las que se veían (se han
+  // cambiado en otro dispositivo); 23505, la tarea ya se ha terminado hoy (en otro dispositivo);
   // 23514, al terminar la vuelta, la fecha del dispositivo no es la de la vuelta (los pesos
   // que no suman 100 también lo dan, pero el formulario ya lo comprueba).
   if (error?.code === '22023') throw new StalePartsError()

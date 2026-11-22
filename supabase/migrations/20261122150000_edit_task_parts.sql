@@ -183,6 +183,9 @@ grant execute on function public.rename_task(uuid, text, uuid[], text[]) to auth
 -- ---------------------------------------------------------------------------
 
 -- Cambia las partes de una tarea no cancelada del hogar del usuario, de una vez:
+-- - shown_part_ids: las partes que veía el formulario al abrirlo. Si ya no son las de la
+--   tarea (se han quitado o añadido en otro dispositivo), no se guarda nada: si no, se
+--   quitarían sin avisar las añadidas en el otro.
 -- - kept_part_ids / kept_weights: las partes que siguen, cada una con su peso (en el mismo
 --   orden). Conservan su sitio.
 -- - new_part_names / new_part_weights: las partes nuevas, que van al final, en ese orden.
@@ -195,13 +198,14 @@ grant execute on function public.rename_task(uuid, text, uuid[], text[]) to auth
 -- directamente: así solo puede hacer esto, en una tarea de su hogar.
 -- Errores:
 -- - 42501: la tarea no existe o es de otro hogar (no se distingue, para no dar pistas).
--- - 22023: está cancelada, alguna parte no es de esa tarea (o está archivada o repetida),
---   falta un peso o hay más de 20 partes.
+-- - 22023: está cancelada, las partes ya no son las que se veían, alguna parte no es de
+--   esa tarea (o está archivada o repetida), falta un peso o hay más de 20 partes.
 -- - 23514: los pesos no suman 100, un peso o un nombre que no valen (las reglas de la
 --   tabla), o la fecha del dispositivo no es la de la vuelta.
 -- - 23505: la tarea ya se ha terminado hoy (en otro dispositivo).
 create function public.set_task_parts(
   target_task_id uuid,
+  shown_part_ids uuid[],
   kept_part_ids uuid[],
   kept_weights integer[],
   new_part_names text[],
@@ -224,6 +228,12 @@ declare
   completed date;
   today date := (now() at time zone 'Europe/Madrid')::date;
 begin
+  -- Mientras se cambian, nadie marca partes de esta tarea (el mismo cerrojo que al marcar).
+  -- Se pide antes de bloquear la fila de la tarea, en el mismo orden que al marcar una parte
+  -- (que pide este cerrojo y después la fila): en el orden contrario, uno esperaría al otro
+  -- y la base de datos rechazaría uno de los dos.
+  perform pg_advisory_xact_lock(hashtextextended(target_task_id::text, 0));
+
   -- Solo bloquea la fila si es del hogar del usuario: una tarea de otro hogar ni se bloquea.
   select * into target
   from public.tasks
@@ -238,6 +248,19 @@ begin
     raise exception using errcode = '22023', message = 'No se pueden cambiar las partes de una tarea cancelada.';
   end if;
 
+  -- Las partes de la tarea son las que se veían al abrir el formulario.
+  if exists (
+    select id from public.task_parts where task_id = target_task_id and archived_on is null
+    except
+    select unnest(coalesce(shown_part_ids, '{}'))
+  ) or exists (
+    select unnest(coalesce(shown_part_ids, '{}'))
+    except
+    select id from public.task_parts where task_id = target_task_id and archived_on is null
+  ) then
+    raise exception using errcode = '22023', message = 'Las partes de la tarea han cambiado.';
+  end if;
+
   if kept_count <> coalesce(cardinality(kept_weights), 0)
     or new_count <> coalesce(cardinality(new_part_weights), 0) then
     raise exception using errcode = '22023', message = 'Cada parte necesita su peso.';
@@ -246,9 +269,6 @@ begin
   if kept_count + new_count > 20 then
     raise exception using errcode = '22023', message = 'Como mucho 20 partes por tarea.';
   end if;
-
-  -- Mientras se cambian, nadie marca partes de esta tarea (el mismo cerrojo que al marcar).
-  perform pg_advisory_xact_lock(hashtextextended(target_task_id::text, 0));
 
   -- Las que siguen son partes de esta tarea, sin archivar y sin repetir.
   select count(*) into matching
@@ -303,7 +323,7 @@ begin
 end;
 $$;
 
-revoke execute on function public.set_task_parts(uuid, uuid[], integer[], text[], integer[], date, date)
+revoke execute on function public.set_task_parts(uuid, uuid[], uuid[], integer[], text[], integer[], date, date)
   from public, anon;
-grant execute on function public.set_task_parts(uuid, uuid[], integer[], text[], integer[], date, date)
+grant execute on function public.set_task_parts(uuid, uuid[], uuid[], integer[], text[], integer[], date, date)
   to authenticated;

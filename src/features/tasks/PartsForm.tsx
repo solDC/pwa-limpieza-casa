@@ -103,7 +103,12 @@ export function PartsForm({
     if (isEmptyPartsChange(task, change)) return onClose()
     setSaving(true)
     try {
-      const { newPartIds, completedOn } = await setTaskParts(task.id, round, change)
+      const { newPartIds, completedOn } = await setTaskParts(
+        task.id,
+        task.parts.map((part) => part.id),
+        round,
+        change,
+      )
       onSaved(change, newPartIds, completedOn)
       onClose()
     } catch (saveFailure) {
