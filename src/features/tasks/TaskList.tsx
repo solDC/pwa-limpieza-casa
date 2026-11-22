@@ -20,6 +20,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
     changeDueOn,
     moveWeekend,
     rename,
+    changeParts,
     refresh,
     reloadAfterAdding,
   } = useTasks()
@@ -103,6 +104,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
               onDueOnChanged={changeDueOn}
               onMovedWeekend={moveWeekend}
               onRenamed={rename}
+              onPartsChanged={changeParts}
               onStale={refresh}
             />
           ))}

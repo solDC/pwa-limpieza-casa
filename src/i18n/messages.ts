@@ -77,6 +77,13 @@ const es = {
     renameForm: (name: string) => `Nombre de ${name}`,
     taskName: 'Nombre de la tarea',
     part: (number: number) => `Parte ${number}`,
+    editParts: 'Cambiar partes',
+    editPartsLabel: (name: string) => `Cambiar partes de ${name}`,
+    // El mismo botón, en una tarea sin partes.
+    addParts: 'Añadir partes',
+    addPartsLabel: (name: string) => `Añadir partes a ${name}`,
+    partsForm: (name: string) => `Partes de ${name}`,
+    noParts: 'Sin partes, la tarea se marca entera.',
   },
 
   newTask: {
@@ -133,6 +140,7 @@ const es = {
     saveFailed: 'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.',
     taskSaveFailed: 'No se ha podido guardar la tarea. Revisa la conexión e inténtalo de nuevo.',
     duplicateTaskName: 'Ya tienes una tarea con ese nombre.',
+    staleParts: 'Las partes de esta tarea han cambiado en otro dispositivo. Revísalas y vuelve a intentarlo.',
   } satisfies Record<ErrorCode, string>,
 }
 
@@ -210,6 +218,12 @@ const en: Messages = {
     renameForm: (name: string) => `Name of ${name}`,
     taskName: 'Task name',
     part: (number: number) => `Part ${number}`,
+    editParts: 'Change parts',
+    editPartsLabel: (name: string) => `Change parts of ${name}`,
+    addParts: 'Add parts',
+    addPartsLabel: (name: string) => `Add parts to ${name}`,
+    partsForm: (name: string) => `Parts of ${name}`,
+    noParts: 'Without parts, the task is marked as a whole.',
   },
 
   newTask: {
@@ -266,6 +280,7 @@ const en: Messages = {
     saveFailed: 'It could not be saved. Check your connection and try again.',
     taskSaveFailed: 'The task could not be saved. Check your connection and try again.',
     duplicateTaskName: 'You already have a task with that name.',
+    staleParts: 'The parts of this task have changed on another device. Check them and try again.',
   },
 }
 
