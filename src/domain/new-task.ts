@@ -1,5 +1,6 @@
 // US-33 · Añadir una tarea: qué hace falta para guardarla. TypeScript puro.
 // US-34 · Elegir el peso de las partes.
+// US-38 y US-50 · El día en que toca: la fecha de una puntual o la primera vez de una de cada N días.
 
 import { addDays, dayOfWeek } from './dates'
 import type { Language } from './language'
@@ -18,6 +19,11 @@ export type NewTaskDraft = {
   frequencyKind: Frequency['kind'] | null
   /** Solo en «cada N días»: lo escrito en el campo. */
   intervalDays: string
+  /**
+   * Solo en «cada N días» (US-50): el día en que toca la primera vez. `null`, sin cambiar
+   * (hoy); '', el campo vacío.
+   */
+  firstDueOn: LocalDate | null
   /** Solo en «fin de semana cada 15 días»: el sábado del primer finde. */
   biweeklyStartOn: LocalDate | null
   /** Solo en las puntuales, y opcional (US-38): el día en que tocan. */
@@ -44,6 +50,7 @@ export type NewTaskErrors = {
   name?: string
   frequency?: string
   intervalDays?: string
+  firstDueOn?: string
   biweeklyStartOn?: string
   dueOn?: string
   parts?: (string | undefined)[]
@@ -56,6 +63,7 @@ export function emptyDraft(): NewTaskDraft {
     name: '',
     frequencyKind: null,
     intervalDays: '',
+    firstDueOn: null,
     biweeklyStartOn: null,
     dueOn: null,
     partNames: [],
@@ -202,7 +210,7 @@ export function nextDueOnError(
 
 /**
  * Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`;
- * `today` es para la fecha de las puntuales.
+ * `today` es para la fecha de las puntuales y la primera vez de las de cada N días.
  */
 export function validateNewTask(
   draft: NewTaskDraft,
@@ -234,10 +242,15 @@ export function validateNewTask(
     case 'interval': {
       const written = draft.intervalDays.trim()
       const days = Number(written)
-      if (/^\d+$/.test(written) && days >= 1 && days <= MAX_INTERVAL_DAYS) {
-        frequency = { kind: 'interval', days, nextDueOn: null }
-      } else {
-        errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
+      const validDays = /^\d+$/.test(written) && days >= 1 && days <= MAX_INTERVAL_DAYS
+      if (!validDays) errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
+      // US-50 · Sin cambiar, toca hoy. Hoy es lo mismo que no elegir ningún día: una tarea
+      // nueva de cada N días toca desde el día en que se crea.
+      const firstDueOn = draft.firstDueOn ?? today
+      const firstDueOnProblem = dueOnError(firstDueOn, today, language)
+      if (firstDueOnProblem) errors.firstDueOn = firstDueOnProblem
+      if (validDays && !firstDueOnProblem) {
+        frequency = { kind: 'interval', days, nextDueOn: firstDueOn === today ? null : firstDueOn }
       }
       break
     }

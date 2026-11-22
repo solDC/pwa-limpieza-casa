@@ -123,12 +123,14 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
     task_biweekly_start_on: frequency.kind === 'weekendBiweekly' ? frequency.startOn : null,
     part_names: task.parts.map((part) => part.name),
     part_weights: task.parts.map((part) => part.weight),
-    task_due_on: frequency.kind === 'oneOff' ? frequency.dueOn : null,
+    // El día en que toca: la fecha de una puntual (US-38) o la primera vez de una de cada N
+    // días (US-50). Es el mismo argumento.
+    task_due_on: dueOnOf(frequency),
   })
-  // 23514 con fecha: la de la puntual ya ha pasado para la base de datos (hoy en Madrid),
-  // porque la fecha del dispositivo va mal (US-38). Sin fecha, 23514 es otra regla de la
-  // tabla (el formulario ya la comprueba): un fallo general, no uno de la fecha.
-  const hasDueOn = frequency.kind === 'oneOff' && frequency.dueOn !== null
+  // 23514 con fecha: ya ha pasado para la base de datos (hoy en Madrid), porque la fecha del
+  // dispositivo va mal (US-38 y US-50). Sin fecha, 23514 es otra regla de la tabla (el
+  // formulario ya la comprueba): un fallo general, no uno de la fecha.
+  const hasDueOn = dueOnOf(frequency) !== null
   if (error?.code === '23514' && hasDueOn) throw new AppError('deviceDate')
   if (error) throw new AppError('taskSaveFailed')
 }
@@ -183,6 +185,13 @@ export async function moveWeekendTask(taskId: string, saturday: LocalDate): Prom
   // dispositivo va mal.
   if (error?.code === '23514') throw new AppError('deviceDate')
   if (error) throw new AppError('saveFailed')
+}
+
+/** El día en que toca al crear la tarea, si se ha elegido (`null` si no). */
+function dueOnOf(frequency: Frequency): LocalDate | null {
+  if (frequency.kind === 'oneOff') return frequency.dueOn
+  if (frequency.kind === 'interval') return frequency.nextDueOn
+  return null
 }
 
 function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
