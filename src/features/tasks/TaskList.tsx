@@ -13,8 +13,19 @@ import { useToday } from './use-today'
 // `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
 export function TaskList({ householdId }: { householdId?: string }) {
   const { t } = useLanguage()
-  const { state, markCompleted, markPartsDone, changeDueOn, moveWeekend, refresh, reloadAfterAdding } =
-    useTasks()
+  const {
+    state,
+    markCompleted,
+    markPartsDone,
+    changeDueOn,
+    moveWeekend,
+    rename,
+    refresh,
+    reloadAfterAdding,
+  } = useTasks()
+  // Las tareas del hogar, para no repetir un nombre (US-54). Hasta que se cargan, ninguna:
+  // la base de datos lo comprueba igual.
+  const tasks = state.status === 'loaded' ? state.tasks : []
   const today = useToday()
   const [adding, setAdding] = useState(false)
   // Si una tarea nueva se ha guardado pero la lista no se ha podido poner al día.
@@ -46,6 +57,7 @@ export function TaskList({ householdId }: { householdId?: string }) {
           <NewTaskForm
             householdId={householdId}
             today={today}
+            otherTasks={tasks}
             onSaved={(name) => {
               closeForm()
               setAddedName(name)
@@ -83,12 +95,14 @@ export function TaskList({ householdId }: { householdId?: string }) {
             <TaskItem
               key={task.id}
               task={task}
+              otherTasks={tasks}
               round={round}
               today={today}
               onCompleted={markCompleted}
               onPartsDone={markPartsDone}
               onDueOnChanged={changeDueOn}
               onMovedWeekend={moveWeekend}
+              onRenamed={rename}
               onStale={refresh}
             />
           ))}

@@ -22,6 +22,8 @@ export type ErrorCode =
   | 'deviceDate'
   | 'saveFailed'
   | 'taskSaveFailed'
+  // US-33 y US-54: el hogar ya tiene otra tarea con ese nombre (guardada en otro dispositivo).
+  | 'duplicateTaskName'
 
 /** Un fallo con su código, para que la pantalla lo explique en el idioma elegido. */
 export class AppError extends Error {

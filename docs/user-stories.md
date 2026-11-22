@@ -40,7 +40,7 @@ Primero las hechas y después las pendientes.
 | US-42 | Mover una tarea de fin de semana a otro finde | Must have | Hecha | [#60](https://github.com/solDC/pwa-limpieza-casa/issues/60) |
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-51 | Cambiar las partes de una tarea | Must have | Pendiente | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
-| US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Pendiente | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
+| US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Hecha | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -216,6 +216,7 @@ para que la app incluya otras cosas que tengo que mantener.
 - No se puede guardar una tarea sin nombre o sin frecuencia (una de las cuatro de «Conceptos»).
 - Las partes son opcionales.
 - Si tiene partes, todas cuentan lo mismo: los pesos se reparten a partes iguales (elegirlos es la US-34).
+- No puede llamarse como otra de mis tareas (sin distinguir mayúsculas ni espacios al principio y al final); las partes sí pueden repetirse. *Añadido con la US-54.*
 
 ### US-34 · Elegir el peso de las partes (Must have)
 Como usuario,
@@ -329,12 +330,12 @@ Como usuario,
 quiero cambiar el nombre de una tarea que ya existe y el de sus partes,
 para que se llamen como yo las llamo.
 - En «Tus tareas», cada tarea tiene «Cambiar nombre», con el nombre de la tarea y el de cada parte.
-- Las reglas son las mismas que al crearla (US-33): ningún nombre vacío ni de más de 80 caracteres.
+- Las reglas son las mismas que al crearla (US-33): ningún nombre vacío ni de más de 80 caracteres, y la tarea no puede llamarse como otra de mis tareas; las partes sí pueden repetirse.
 - Al guardar, la tarea y sus partes muestran los nombres nuevos; con «Cancelar», se quedan como estaban.
 - Una tarea o una parte de las que vienen por defecto que renombro deja de traducirse: se ve como la escribí, en castellano y en inglés. Las que no renombro se siguen traduciendo.
 - El progreso de la vuelta en curso y las vueltas pasadas no cambian.
 
-*Depende de la US-33.*
+*Depende de la US-33. Al implementarla se decidió que no puede haber dos tareas con el mismo nombre, tampoco al añadirlas (criterio nuevo en la US-33). Cuenta como el mismo nombre sin distinguir mayúsculas ni espacios al principio y al final; solo entre las tareas no canceladas; y se compara el nombre guardado, no el traducido (una tarea propia llamada «Surfaces» no choca con «Superficies»). Si ya había dos tareas iguales, se quedan. Renombrar es escribir algo distinto de lo que se ve en el idioma elegido: guardar sin cambiar nada no quita la traducción.*
 
 ## Historias anteriores
 

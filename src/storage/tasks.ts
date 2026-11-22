@@ -1,6 +1,7 @@
 import { AppError } from '../domain/errors'
 import type { Round } from '../domain/frequency'
 import { MAX_PARTS, type NewTask } from '../domain/new-task'
+import type { TaskRename } from '../domain/rename-task'
 import type { Frequency, LocalDate, Task } from '../domain/task'
 import { getSupabase } from './supabase-client'
 
@@ -132,7 +133,26 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
   // formulario ya la comprueba): un fallo general, no uno de la fecha.
   const hasDueOn = dueOnOf(frequency) !== null
   if (error?.code === '23514' && hasDueOn) throw new AppError('deviceDate')
+  // 23505: ya hay otra tarea con ese nombre (US-54). El formulario ya lo comprueba con la
+  // lista; llega aquí si se ha añadido en otro dispositivo.
+  if (error?.code === '23505') throw new AppError('duplicateTaskName')
   if (error) throw new AppError('taskSaveFailed')
+}
+
+/**
+ * US-54 · Cambia el nombre de una tarea (`rename.name`, si no es `null`) y el de algunas de
+ * sus partes. Lo renombrado deja de traducirse: la base de datos le quita la clave.
+ */
+export async function renameTask(taskId: string, rename: TaskRename): Promise<void> {
+  const { error } = await getSupabase().rpc('rename_task', {
+    target_task_id: taskId,
+    new_name: rename.name,
+    part_ids: rename.parts.map((part) => part.id),
+    part_names: rename.parts.map((part) => part.name),
+  })
+  // 23505: ya hay otra tarea con ese nombre (añadida o renombrada en otro dispositivo).
+  if (error?.code === '23505') throw new AppError('duplicateTaskName')
+  if (error) throw new AppError('saveFailed')
 }
 
 /**

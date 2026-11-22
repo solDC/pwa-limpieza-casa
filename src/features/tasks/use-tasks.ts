@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import type { Round } from '../../domain/frequency'
 import { withPartsDone, withRoundDone } from '../../domain/progress'
+import { withRenamed, type TaskRename } from '../../domain/rename-task'
 import type { LocalDate, Task } from '../../domain/task'
 import { listTasks } from '../../storage/tasks'
 
@@ -18,6 +19,7 @@ export type TasksState =
  * - `changeDueOn`: se ha puesto, cambiado o quitado la fecha de una puntual (US-38), o se ha
  *   cambiado cuándo toca la próxima vez una de cada N días (US-41), ya guardada.
  * - `moveWeekend`: se ha movido una tarea de fin de semana a otro finde (ya guardado).
+ * - `rename`: se ha renombrado una tarea o alguna de sus partes (ya guardado).
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -103,9 +105,15 @@ export function useTasks() {
     })
   }
 
+  /** US-54 · Se ha renombrado la tarea o alguna de sus partes (ya guardado). */
+  function rename(taskId: string, changes: TaskRename) {
+    changeTask(taskId, (task) => withRenamed(task, changes))
+  }
+
   return {
     state,
     moveWeekend,
+    rename,
     markCompleted,
     markPartsDone,
     changeDueOn,

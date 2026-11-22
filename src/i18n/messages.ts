@@ -71,6 +71,11 @@ const es = {
     moveWeekendLabel: (name: string) => `Mover ${name} a otro finde`,
     moveWeekendForm: (name: string) => `Mover ${name}`,
     moveWeekendTo: 'Mover al finde del',
+    rename: 'Cambiar nombre',
+    renameLabel: (name: string) => `Cambiar nombre de ${name}`,
+    renameForm: (name: string) => `Nombre de ${name}`,
+    taskName: 'Nombre de la tarea',
+    part: (number: number) => `Parte ${number}`,
   },
 
   newTask: {
@@ -126,6 +131,7 @@ const es = {
       'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
     saveFailed: 'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.',
     taskSaveFailed: 'No se ha podido guardar la tarea. Revisa la conexión e inténtalo de nuevo.',
+    duplicateTaskName: 'Ya tienes una tarea con ese nombre.',
   } satisfies Record<ErrorCode, string>,
 }
 
@@ -198,6 +204,11 @@ const en: Messages = {
     moveWeekendLabel: (name: string) => `Move ${name} to another weekend`,
     moveWeekendForm: (name: string) => `Move ${name}`,
     moveWeekendTo: 'Move to the weekend of',
+    rename: 'Rename',
+    renameLabel: (name: string) => `Rename ${name}`,
+    renameForm: (name: string) => `Name of ${name}`,
+    taskName: 'Task name',
+    part: (number: number) => `Part ${number}`,
   },
 
   newTask: {
@@ -253,6 +264,7 @@ const en: Messages = {
       'It could not be saved: the date on this device is not today’s date. Check the date and time.',
     saveFailed: 'It could not be saved. Check your connection and try again.',
     taskSaveFailed: 'The task could not be saved. Check your connection and try again.',
+    duplicateTaskName: 'You already have a task with that name.',
   },
 }
 

@@ -7,6 +7,11 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
+- **US-54 · Cambiar el nombre de una tarea y de sus partes** (#96). Cada tarea tiene «Cambiar nombre», que abre en la tarjeta el nombre de la tarea y el de cada parte, con «Guardar» y «Cancelar». Así cada tarea se llama como la llama quien la hace.
+  - Las mismas reglas que al crearla: ningún nombre vacío ni de más de 80 caracteres. El progreso de la vuelta en curso no cambia: las partes son las mismas.
+  - Lo que se renombra de las tareas por defecto deja de traducirse y se ve como se escribió, en castellano y en inglés; lo demás se sigue traduciendo. Renombrar es escribir algo distinto de lo que se ve: guardar sin cambiar nada, también en inglés, no quita la traducción.
+  - **Sin dos tareas con el mismo nombre** (también al añadirlas, US-33): «Ya tienes una tarea con ese nombre.». Cuenta como el mismo sin distinguir mayúsculas ni espacios al principio y al final («baño » es «Baño»), solo entre las tareas no canceladas, y con el nombre guardado, no el traducido. Las partes sí pueden repetirse. Si ya había dos tareas iguales, se quedan.
+  - **En la base de datos** (migración nueva): la función `rename_task`, que cambia los nombres de una tarea del hogar del usuario y de sus partes y les quita la clave de tarea por defecto, y la comprobación del nombre repetido en `rename_task` y `create_task` (que se llama igual que antes). Lo comprueban las funciones y no un índice único, para que la migración no falle en un hogar que ya tenga dos tareas iguales. La app sigue sin poder cambiar `tasks` ni `task_parts` directamente.
 - **US-42 · Mover una tarea de fin de semana a otro finde** (#60). Las tareas de fin de semana tienen «Mover a otro finde», que abre en la tarjeta la lista «Mover al finde del» con los 8 próximos fines de semana, desde el actual (el de hoy, en sábado o domingo; si no, el siguiente), y «Guardar» y «Cancelar». Así se puede adelantar o retrasar, por ejemplo, Superficies si un finde no se está en casa.
   - **Semanales:** solo se mueve esa vuelta. Hasta el finde elegido no toca ni va con retraso; desde él, vuelve a tocar cada finde. Una que iba con retraso, movida, deja de estarlo.
   - **Cada 15 días:** se mueve todo el calendario: las siguientes son cada 15 días desde el finde nuevo.

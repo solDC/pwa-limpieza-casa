@@ -89,14 +89,16 @@ describe('US-33 · un miembro puede añadir una tarea a su hogar', () => {
 
   it('las cuatro frecuencias', async () => {
     await asUser(db, ana, async (query) => {
-      await createTask(query, { frequency: 'weekend_weekly', intervalDays: null })
+      // Con nombres distintos: no puede haber dos tareas iguales (US-54).
+      await createTask(query, { name: 'Semanal', frequency: 'weekend_weekly', intervalDays: null })
       await createTask(query, {
+        name: 'Cada 15 días',
         frequency: 'weekend_biweekly',
         intervalDays: null,
         biweeklyStartOn: '2026-11-14',
       })
-      await createTask(query, { frequency: 'interval', intervalDays: 30 })
-      await createTask(query, { frequency: 'one_off', intervalDays: null })
+      await createTask(query, { name: 'Cada 30 días', frequency: 'interval', intervalDays: 30 })
+      await createTask(query, { name: 'Puntual', frequency: 'one_off', intervalDays: null })
     })
   })
 

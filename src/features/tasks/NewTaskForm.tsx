@@ -14,7 +14,7 @@ import {
   weightsTotal,
   type NewTaskDraft,
 } from '../../domain/new-task'
-import type { Frequency, LocalDate } from '../../domain/task'
+import type { Frequency, LocalDate, Task } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { createTask } from '../../storage/tasks'
 import { FieldError } from './FieldError'
@@ -24,14 +24,18 @@ const frequencyKinds: Frequency['kind'][] = ['weekendWeekly', 'weekendBiweekly',
 // US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes.
 // US-34 · Elegir el peso de las partes: si no se cambian, cuentan lo mismo.
 // US-38 · Las puntuales, con fecha si se quiere.
+// US-54 · Sin repetir el nombre de otra tarea.
 export function NewTaskForm({
   householdId,
   today,
+  otherTasks,
   onSaved,
   onCancel,
 }: {
   householdId: string
   today: LocalDate
+  /** Las tareas del hogar, para no repetir un nombre (US-54). */
+  otherTasks: Pick<Task, 'name'>[]
   /** Se ha guardado: recibe el nombre de la tarea. */
   onSaved: (name: string) => void
   onCancel: () => void
@@ -44,7 +48,7 @@ export function NewTaskForm({
   // Los errores de cada campo salen al intentar guardar, no mientras se escribe. Después
   // se ponen al día solos al corregir (y al cambiar de idioma): se calculan cada vez.
   const [showErrors, setShowErrors] = useState(false)
-  const validation = validateNewTask(draft, language, today)
+  const validation = validateNewTask(draft, language, today, otherTasks)
   const errors = showErrors && !validation.ok ? validation.errors : null
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)

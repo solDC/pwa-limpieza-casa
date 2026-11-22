@@ -131,7 +131,7 @@ describe('los avisos del formulario de tarea nueva, en inglés', () => {
       partWeights: ['50', '40'],
       weightsEdited: true,
     }
-    expect(validateNewTask(draft, 'en', TODAY)).toEqual({
+    expect(validateNewTask(draft, 'en', TODAY, [])).toEqual({
       ok: false,
       errors: {
         name: 'Enter the name of the task.',
@@ -140,18 +140,18 @@ describe('los avisos del formulario de tarea nueva, en inglés', () => {
         weightsTotal: 'The weights must add up to 100 % (now they add up to 90 %).',
       },
     })
-    expect(validateNewTask({ ...emptyDraft(), name: 'a'.repeat(81) }, 'en', TODAY)).toMatchObject({
+    expect(validateNewTask({ ...emptyDraft(), name: 'a'.repeat(81) }, 'en', TODAY, [])).toMatchObject({
       errors: {
         name: 'The name can have at most 80 characters.',
         frequency: 'Choose how often it is due.',
       },
     })
     const badWeight = { ...draft, name: 'x', intervalDays: '3', partNames: ['A'], partWeights: ['0'] }
-    expect(validateNewTask(badWeight, 'en', TODAY)).toMatchObject({
+    expect(validateNewTask(badWeight, 'en', TODAY, [])).toMatchObject({
       errors: { partWeights: ['Enter a weight from 1 to 100.'] },
     })
     const noWeekend = { ...emptyDraft(), name: 'x', frequencyKind: 'weekendBiweekly' as const }
-    expect(validateNewTask(noWeekend, 'en', TODAY)).toMatchObject({
+    expect(validateNewTask(noWeekend, 'en', TODAY, [])).toMatchObject({
       errors: { biweeklyStartOn: 'Choose the first weekend.' },
     })
   })

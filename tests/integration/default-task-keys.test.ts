@@ -73,6 +73,14 @@ describe('US-52 · las tareas por defecto llevan su clave', () => {
 
   it('una tarea que añade el usuario no lleva clave, ni sus partes, aunque se llame igual', async () => {
     const saved = await asUser(db, ana, async (query) => {
+      // Con la de por defecto cancelada: no puede haber dos tareas con el mismo nombre (US-54).
+      await query('reset role')
+      await query(
+        `update public.tasks set cancelled_on = (now() at time zone 'Europe/Madrid')::date
+         where household_id = $1 and name = 'Baño'`,
+        [household],
+      )
+      await query('set local role authenticated')
       const { rows } = await query(
         `select public.create_task($1, 'Baño', 'one_off', null, null, '{Cocina}', '{100}') as id`,
         [household],

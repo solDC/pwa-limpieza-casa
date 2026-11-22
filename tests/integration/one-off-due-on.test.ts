@@ -44,14 +44,17 @@ async function madridDay(days: number): Promise<string> {
   return rows[0].day
 }
 
+// Cada tarea con su nombre: no puede haber dos iguales en un hogar (US-54).
+let created = 0
+
 /** Crea una tarea como la app (con la fecha como octavo argumento) y devuelve su id. */
 async function createTask(
   query: Query,
   { household = anaHousehold, frequency = 'one_off', dueOn = null as string | null } = {},
 ): Promise<string> {
   const { rows } = await query(
-    `select public.create_task($1, 'Limpiar el horno', $2, $3, null, '{}', '{}', $4) as id`,
-    [household, frequency, frequency === 'interval' ? 7 : null, dueOn],
+    `select public.create_task($1, $5, $2, $3, null, '{}', '{}', $4) as id`,
+    [household, frequency, frequency === 'interval' ? 7 : null, dueOn, `Limpiar el horno ${++created}`],
   )
   return rows[0].id
 }
@@ -78,7 +81,7 @@ describe('US-38 · al crear una tarea puntual', () => {
   it('sin fecha, queda sin fecha (y valen las llamadas de antes, sin el argumento)', async () => {
     const saved = await asUser(db, ana, async (query) => {
       const { rows } = await query(
-        `select public.create_task($1, 'Limpiar el horno', 'one_off', null, null, '{}', '{}') as id`,
+        `select public.create_task($1, 'Limpiar el horno (antes)', 'one_off', null, null, '{}', '{}') as id`,
         [anaHousehold],
       )
       return [await dueOnOf(query, rows[0].id), await dueOnOf(query, await createTask(query))]
