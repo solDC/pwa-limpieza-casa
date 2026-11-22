@@ -79,6 +79,9 @@ const es = {
     part: (number: number) => `Parte ${number}`,
     editParts: 'Cambiar partes',
     editPartsLabel: (name: string) => `Cambiar partes de ${name}`,
+    // El mismo botón, en una tarea sin partes.
+    addParts: 'Añadir partes',
+    addPartsLabel: (name: string) => `Añadir partes a ${name}`,
     partsForm: (name: string) => `Partes de ${name}`,
     noParts: 'Sin partes, la tarea se marca entera.',
   },
@@ -217,6 +220,8 @@ const en: Messages = {
     part: (number: number) => `Part ${number}`,
     editParts: 'Change parts',
     editPartsLabel: (name: string) => `Change parts of ${name}`,
+    addParts: 'Add parts',
+    addPartsLabel: (name: string) => `Add parts to ${name}`,
     partsForm: (name: string) => `Parts of ${name}`,
     noParts: 'Without parts, the task is marked as a whole.',
   },

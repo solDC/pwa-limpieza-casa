@@ -307,11 +307,12 @@ export function TaskItem({
           ref={buttons.parts}
           type="button"
           className="button-secondary"
-          aria-label={t.tasks.editPartsLabel(name)}
+          // Sin partes, no hay nada que cambiar: se añaden.
+          aria-label={task.parts.length > 0 ? t.tasks.editPartsLabel(name) : t.tasks.addPartsLabel(name)}
           onClick={() => setEditing('parts')}
           disabled={saving || editing !== null}
         >
-          {t.tasks.editParts}
+          {task.parts.length > 0 ? t.tasks.editParts : t.tasks.addParts}
         </button>
       )}
     </li>

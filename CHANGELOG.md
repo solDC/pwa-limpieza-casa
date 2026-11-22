@@ -7,7 +7,7 @@ Los tipos de [Conventional Commits](https://www.conventionalcommits.org/) corres
 ## [Unreleased]
 
 ### Added
-- **US-51 · Cambiar las partes de una tarea** (#83). Cada tarea tiene «Cambiar partes», que abre en la tarjeta sus partes con su nombre, su peso y lo que suman, «Quitar» en cada una, «Añadir parte», «Guardar» y «Cancelar». Así una tarea se ajusta cuando cambia cómo se hace: otro nombre, otro reparto de pesos, una parte más o una menos.
+- **US-51 · Cambiar las partes de una tarea** (#83). Cada tarea tiene «Cambiar partes» («Añadir partes» si no tiene), que abre en la tarjeta sus partes con su nombre, su peso y lo que suman, «Quitar» en cada una, «Añadir parte», «Guardar» y «Cancelar». Así una tarea se ajusta cuando cambia cómo se hace: otro nombre, otro reparto de pesos, una parte más o una menos.
   - Las mismas reglas que al crearla (US-34): cada peso de 1 a 100, como mucho 20 partes, y no se puede guardar si no suman 100 %. Si los pesos estaban repartidos a partes iguales, al añadir o quitar partes se vuelven a repartir; si no, se conservan y la nueva empieza en 0. El nombre de las partes que ya existen también se cambia aquí, como con «Cambiar nombre» (US-54): solo cuenta como renombrada la que se ve distinta, y la de una tarea por defecto que se renombra deja de traducirse.
   - Se pueden añadir partes a una tarea que no tiene y quitarlas todas: sin partes, la tarea se marca entera.
   - Los cambios cuentan desde la vuelta en curso: sus partes hechas siguen hechas. Si al quitar partes ya están hechas todas las que quedan, la vuelta queda completada, como al marcar la última. Si se quitan todas, no: si no, quitarlas sin haber hecho ninguna daría la tarea por hecha.

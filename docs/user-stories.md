@@ -291,7 +291,7 @@ para que no me salga como pendiente hoy algo que pienso empezar más adelante.
 Como usuario,
 quiero cambiar las partes de una tarea que ya existe: su nombre, su peso, añadir partes y quitarlas,
 para ajustar la tarea cuando cambia cómo la hago.
-- En «Tus tareas», cada tarea tiene «Cambiar partes», que muestra cada parte con su nombre, su peso en % y lo que suman.
+- En «Tus tareas», cada tarea tiene «Cambiar partes» («Añadir partes» si no tiene), que muestra cada parte con su nombre, su peso en % y lo que suman.
 - Puedo cambiar el nombre de las partes que ya existen, como con «Cambiar nombre» (US-54): ninguno vacío ni de más de 80 caracteres, y la parte de una tarea por defecto que renombro deja de traducirse.
 - Puedo añadir partes, también a una tarea que no tiene, y quitarlas, también todas; sin partes, la tarea se marca entera.
 - Las reglas son las mismas que al crearla (US-34): cada peso de 1 a 100, como mucho 20 partes, y no se puede guardar si no suman 100 %.
