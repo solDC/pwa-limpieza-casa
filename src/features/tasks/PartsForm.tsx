@@ -41,8 +41,9 @@ export function PartsForm({
   const { language, t } = useLanguage()
   const [draft, setDraft] = useState<EditPartsDraft>(() => editPartsDraft(task, language))
   // Una clave por parte: la de las que ya existen es su id; las nuevas, un número.
-  const [partKeys, setPartKeys] = useState<string[]>(() => task.parts.map((part) => part.id))
   const nextPartKey = useRef(0)
+  const keysOf = (shown: EditPartsDraft) => shown.partIds.map((id) => id ?? `new-${nextPartKey.current++}`)
+  const [partKeys, setPartKeys] = useState<string[]>(() => keysOf(draft))
   // Los avisos salen al intentar guardar, y después se ponen al día solos al corregir.
   const [showErrors, setShowErrors] = useState(false)
   const validation = validatePartsChange(task, draft, language)
@@ -59,8 +60,9 @@ export function PartsForm({
   const [partsShown, setPartsShown] = useState(partsNow)
   if (partsShown !== partsNow) {
     setPartsShown(partsNow)
-    setDraft(editPartsDraft(task, language))
-    setPartKeys(task.parts.map((part) => part.id))
+    const reset = editPartsDraft(task, language)
+    setDraft(reset)
+    setPartKeys(keysOf(reset))
     setShowErrors(false)
   }
   const idPrefix = `parts-${task.id}`

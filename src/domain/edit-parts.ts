@@ -23,11 +23,15 @@ export type PartsChange = {
 /**
  * El formulario al abrirlo, con las partes de la tarea. Si sus pesos están repartidos a
  * partes iguales, al añadir o quitar partes se vuelven a repartir solos, como al crearla;
- * si no, se conservan.
+ * si no, se conservan. Una tarea sin partes empieza con una nueva, sin nombre y al 100 %
+ * («Añadir partes»): así se empieza a escribir sin pulsar antes «Añadir parte».
  */
 export function editPartsDraft(task: Pick<Task, 'parts'>, language: Language): EditPartsDraft {
   const weights = task.parts.map((part) => part.weight)
   const equal = equalWeights(weights.length)
+  if (task.parts.length === 0) {
+    return addEditedPart({ partIds: [], partNames: [], partWeights: [], weightsEdited: false })
+  }
   return {
     partIds: task.parts.map((part) => part.id),
     partNames: task.parts.map((part) => partDisplayName(part, language)),

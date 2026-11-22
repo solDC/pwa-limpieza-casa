@@ -72,10 +72,19 @@ describe('editPartsDraft: el formulario al abrirlo', () => {
     })
   })
 
-  it('una tarea sin partes empieza sin ninguna', () => {
-    expect(addEditedPart(editPartsDraft(bathroom, 'es'))).toMatchObject({
-      partIds: [null],
-      partWeights: ['100'],
+  it('una tarea sin partes empieza con una, vacía y al 100 %, para escribir su nombre', () => {
+    const draft = editPartsDraft(bathroom, 'es')
+    expect(draft).toEqual({ partIds: [null], partNames: [''], partWeights: ['100'], weightsEdited: false })
+    // Si se añade otra, los pesos se reparten; si se quita, no queda nada que guardar.
+    expect(addEditedPart(draft).partWeights).toEqual(['50', '50'])
+    const removed = validatePartsChange(bathroom, removeEditedPart(draft, 0), 'es')
+    expect(removed.ok && isEmptyPartsChange(bathroom, removed.change)).toBe(true)
+  })
+
+  it('sin escribir su nombre, no se puede guardar', () => {
+    expect(validatePartsChange(bathroom, editPartsDraft(bathroom, 'es'), 'es')).toEqual({
+      ok: false,
+      errors: { parts: ['Escribe el nombre de la parte o quítala.'] },
     })
   })
 })

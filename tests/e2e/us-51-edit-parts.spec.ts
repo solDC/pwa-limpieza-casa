@@ -134,10 +134,13 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await expect(partsButton(page, 'Baño')).toHaveCount(0)
     await addPartsButton(page, 'Baño').click()
     const form = partsForm(page, 'Baño')
-    for (const [index, name] of ['Ducha', 'Lavabo'].entries()) {
-      await form.getByRole('button', { name: 'Añadir parte' }).click()
-      await form.getByLabel(`Parte ${index + 1}`, { exact: true }).fill(name)
-    }
+    // El formulario empieza con una parte, sin nombre y al 100 %, lista para escribir.
+    await expect(form.getByLabel('Parte 1', { exact: true })).toBeFocused()
+    await expect(form.getByLabel('Parte 1', { exact: true })).toHaveValue('')
+    await expect(form.getByLabel('Peso de la parte 1')).toHaveValue('100')
+    await form.getByLabel('Parte 1', { exact: true }).fill('Ducha')
+    await form.getByRole('button', { name: 'Añadir parte' }).click()
+    await form.getByLabel('Parte 2', { exact: true }).fill('Lavabo')
     // Sin cambiar los pesos, cuentan lo mismo.
     await expect(form.getByLabel('Peso de la parte 1')).toHaveValue('50')
     await save(page, 'Baño')
@@ -145,6 +148,19 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     // Ya tiene partes: el botón pasa a «Cambiar partes», y el foco vuelve a él.
     await expect(partsButton(page, 'Baño')).toHaveText('Cambiar partes')
     await expect(partsButton(page, 'Baño')).toBeFocused()
+  })
+
+  test('en una tarea sin partes, si no escribo ninguna, no se guarda nada', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    await addPartsButton(page, 'Baño').click()
+    const form = partsForm(page, 'Baño')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toContainText('Escribe el nombre de la parte o quítala.')
+    // Si la quito, no hay nada que guardar: se cierra y sigue sin partes.
+    await form.getByRole('button', { name: 'Quitar parte 1' }).click()
+    await save(page, 'Baño')
+    await expect(taskParts(task(page, 'Baño'))).toHaveCount(0)
+    await expect(addPartsButton(page, 'Baño')).toBeFocused()
   })
 
   test('puedo quitarlas todas: la tarea se marca entera', async ({ page }) => {
