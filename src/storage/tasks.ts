@@ -147,6 +147,8 @@ export async function createTask(householdId: string, task: NewTask): Promise<vo
 /**
  * US-54 · Cambia el nombre de una tarea (`rename.name`, si no es `null`) y el de algunas de
  * sus partes. Lo renombrado deja de traducirse: la base de datos le quita la clave.
+ * Si alguna parte ya no es de la tarea (se ha quitado en otro dispositivo), lanza
+ * `StalePartsError`, para que la pantalla se ponga al día.
  */
 export async function renameTask(taskId: string, rename: TaskRename): Promise<void> {
   const { error } = await getSupabase().rpc('rename_task', {
@@ -157,6 +159,9 @@ export async function renameTask(taskId: string, rename: TaskRename): Promise<vo
   })
   // 23505: ya hay otra tarea con ese nombre (añadida o renombrada en otro dispositivo).
   if (error?.code === '23505') throw new AppError('duplicateTaskName')
+  // 22023: alguna parte ya no es de la tarea (se ha quitado en otro dispositivo, US-51), o
+  // la tarea se ha cancelado: hay que volver a cargarla.
+  if (error?.code === '22023') throw new StalePartsError()
   if (error) throw new AppError('saveFailed')
 }
 

@@ -280,6 +280,7 @@ export function TaskItem({
           otherTasks={otherTasks}
           onSaved={(rename) => onRenamed(task.id, rename)}
           onClose={closeForm}
+          onStale={onStale}
         />
       ) : (
         <button
