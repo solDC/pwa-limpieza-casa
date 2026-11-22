@@ -203,3 +203,25 @@ export async function archivePart(email: string, taskName: string, partName: str
     await db.end()
   }
 }
+
+/**
+ * US-51 · Cambia el peso de dos partes de una tarea del hogar de ese usuario, como si se
+ * hiciera desde otro dispositivo: pasa `amount` puntos de una parte a la otra (siguen sumando 100).
+ */
+export async function movePartWeight(email: string, taskName: string, from: string, to: string, amount: number) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `update public.task_parts p
+       set weight = p.weight + case when p.name = $4 then $5::int else -$5::int end
+       from public.tasks t, public.household_members m, auth.users u
+       where t.id = p.task_id and m.household_id = t.household_id and u.id = m.user_id
+         and u.email = $1 and t.name = $2 and p.archived_on is null and p.name in ($3, $4)`,
+      [email, taskName, from, to, amount],
+    )
+    if (rowCount !== 2) throw new Error(`No se han encontrado las partes de «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}

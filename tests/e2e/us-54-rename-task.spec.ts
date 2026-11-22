@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays } from '../../src/domain/dates'
 import { newTaskForm, signIn, task, taskNames, taskParts, todayInMadrid } from './helpers/app'
-import { archivePart, setAllTasksCreatedOn } from './helpers/database'
+import { archivePart, movePartWeight, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-54 · Cambiar el nombre de una tarea y de sus partes (#96)
@@ -267,5 +267,31 @@ test.describe('US-54 · Partes cambiadas en otro dispositivo', () => {
     await form.getByRole('button', { name: 'Guardar' }).click()
     await expect(form).toHaveCount(0)
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Dormitorio 50 %/])
+  })
+
+  test('si en otro dispositivo solo cambian los pesos, no se pierde lo que estoy escribiendo', async ({ page }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await renameButton(page, 'Superficies').click()
+    const form = renameForm(page, 'Superficies')
+    await form.getByLabel('Parte 2').fill('Salón comedor')
+
+    // En otro dispositivo se pasan 5 puntos de Cocina a Salón; aquí se añade una tarea, y la
+    // lista se vuelve a cargar.
+    await movePartWeight(email, 'Superficies', 'Cocina', 'Salón', 5)
+    await page.getByRole('button', { name: 'Añadir tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Terraza')
+    await newTaskForm(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 45 %/, /^Salón 30 %/, /^Dormitorio 25 %/])
+
+    await expect(form.getByLabel('Parte 2')).toHaveValue('Salón comedor')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toHaveCount(0)
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([
+      /^Cocina 45 %/,
+      /^Salón comedor 30 %/,
+      /^Dormitorio 25 %/,
+    ])
   })
 })

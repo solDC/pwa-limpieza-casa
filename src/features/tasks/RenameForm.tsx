@@ -34,11 +34,17 @@ export function RenameForm({
   const { language, t } = useLanguage()
   // Los nombres como se ven al abrirlo. Si se cambia de idioma con el formulario abierto, se
   // vuelven a poner como se ven en el nuevo: renombrar es escribir algo distinto de lo que se
-  // ve, y con los del idioma anterior se renombraría sin querer. También si la tarea cambia
-  // (la lista se ha vuelto a cargar con partes quitadas o añadidas en otro dispositivo): los
-  // nombres van por posición, y con las partes de antes se renombraría otra parte.
+  // ve, y con los del idioma anterior se renombraría sin querer. También si cambian los
+  // nombres o las partes (la lista se ha vuelto a cargar con cambios de otro dispositivo): los
+  // nombres van por posición, y con las partes de antes se renombraría otra parte. Si solo
+  // cambian los pesos, no: lo escrito se queda.
   const [draft, setDraft] = useState<RenameDraft>(() => renameDraft(task, language))
-  const taskNow = JSON.stringify([language, task.name, task.defaultKey, task.parts])
+  const taskNow = JSON.stringify([
+    language,
+    task.name,
+    task.defaultKey,
+    task.parts.map((part) => [part.id, part.name, part.defaultKey]),
+  ])
   const [taskShown, setTaskShown] = useState(taskNow)
   if (taskShown !== taskNow) {
     setTaskShown(taskNow)
