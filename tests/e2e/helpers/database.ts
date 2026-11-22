@@ -172,3 +172,34 @@ export async function setTaskNextDueOn(email: string, taskName: string, nextDueO
     await db.end()
   }
 }
+
+/**
+ * US-51 · Quita una parte de una tarea del hogar de ese usuario, como si se hiciera desde
+ * otro dispositivo: la archiva y pone a otra parte el peso que haga falta para sumar 100.
+ */
+export async function archivePart(email: string, taskName: string, partName: string, otherPart: string) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    await db.query('begin')
+    const { rows } = await db.query(
+      `select p.id, p.name, p.weight from public.task_parts p
+       join public.tasks t on t.id = p.task_id
+       join public.household_members m on m.household_id = t.household_id
+       join auth.users u on u.id = m.user_id
+       where u.email = $1 and t.name = $2 and p.archived_on is null and p.name in ($3, $4)`,
+      [email, taskName, partName, otherPart],
+    )
+    const removed = rows.find((row) => row.name === partName)
+    const kept = rows.find((row) => row.name === otherPart)
+    if (!removed || !kept) throw new Error(`No se han encontrado las partes de «${taskName}» de ${email}`)
+    await db.query('update public.task_parts set archived_on = current_date where id = $1', [removed.id])
+    await db.query('update public.task_parts set weight = $2 where id = $1', [kept.id, kept.weight + removed.weight])
+    await db.query('commit')
+  } catch (error) {
+    await db.query('rollback')
+    throw error
+  } finally {
+    await db.end()
+  }
+}

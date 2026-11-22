@@ -190,9 +190,12 @@ export async function setTaskParts(
     round_due_by: round.dueBy,
   })
   // Los códigos de set_task_parts: 22023, alguna parte ya no es de la tarea (se ha cambiado
-  // en otro dispositivo); 23505, la tarea ya se ha terminado hoy (en otro dispositivo).
+  // en otro dispositivo); 23505, la tarea ya se ha terminado hoy (en otro dispositivo);
+  // 23514, al terminar la vuelta, la fecha del dispositivo no es la de la vuelta (los pesos
+  // que no suman 100 también lo dan, pero el formulario ya lo comprueba).
   if (error?.code === '22023') throw new StalePartsError()
   if (error?.code === '23505') throw new AlreadyDoneError()
+  if (error?.code === '23514') throw new AppError('deviceDate')
   if (error || !data) throw new AppError('saveFailed')
   const result = data as { new_part_ids: string[]; completed_on: string | null }
   return { newPartIds: result.new_part_ids, completedOn: result.completed_on }

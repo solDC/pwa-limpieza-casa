@@ -51,6 +51,17 @@ export function PartsForm({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<ErrorCode | null>(null)
   const form = useRef<HTMLFormElement>(null)
+  // Si las partes de la tarea cambian con el formulario abierto (se han cambiado en otro
+  // dispositivo y la lista se ha vuelto a cargar), el formulario se pone al día con ellas: con
+  // las de antes, guardar volvería a fallar. El aviso de por qué se queda.
+  const partsNow = task.parts.map((part) => `${part.id}:${part.weight}`).join()
+  const [partsShown, setPartsShown] = useState(partsNow)
+  if (partsShown !== partsNow) {
+    setPartsShown(partsNow)
+    setDraft(editPartsDraft(task, language))
+    setPartKeys(task.parts.map((part) => part.id))
+    setShowErrors(false)
+  }
   const idPrefix = `parts-${task.id}`
   // Las que ya existen se ven en el idioma elegido, también si se cambia con el formulario abierto.
   const shown = {

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays } from '../../src/domain/dates'
 import { signIn, task, taskParts, todayInMadrid } from './helpers/app'
-import { setAllTasksCreatedOn } from './helpers/database'
+import { archivePart, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
 // US-51 · Cambiar las partes de una tarea (#83)
@@ -218,6 +218,50 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     )
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
     await expect(form.getByRole('button', { name: 'Guardar' })).toBeEnabled()
+  })
+
+  test('si las partes han cambiado en otro dispositivo, la app lo dice y el formulario se pone al día', async ({
+    page,
+  }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await partsButton(page, 'Superficies').click()
+    const form = partsForm(page, 'Superficies')
+    await form.getByLabel('Peso de la parte 1').fill('40')
+    await form.getByLabel('Peso de la parte 2').fill('35')
+
+    // Mientras, en otro dispositivo, se quita Dormitorio (y Salón pasa a 50).
+    await archivePart(email, 'Superficies', 'Dormitorio', 'Salón')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form.getByRole('alert')).toHaveText(
+      'Las partes de esta tarea han cambiado en otro dispositivo. Revísalas y vuelve a intentarlo.',
+    )
+    // El formulario muestra las partes de ahora, y ya se puede guardar.
+    await expect(form.getByLabel(/^Peso de la parte/)).toHaveCount(2)
+    await expect(form.getByLabel('Peso de la parte 2')).toHaveValue('50')
+    await form.getByLabel('Peso de la parte 1').fill('60')
+    await form.getByLabel('Peso de la parte 2').fill('40')
+    await save(page, 'Superficies')
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 60 %/, /^Salón 40 %/])
+  })
+
+  test('si la fecha del dispositivo va mal, la app lo dice', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    await page.route('**/rest/v1/rpc/set_task_parts*', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: '23514', message: 'task_rounds_completed_on_check' }),
+      }),
+    )
+    await partsButton(page, 'Superficies').click()
+    const form = partsForm(page, 'Superficies')
+    await form.getByRole('button', { name: 'Quitar parte 3' }).click()
+    await form.getByLabel('Peso de la parte 2').fill('50')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form.getByRole('alert')).toHaveText(
+      'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
+    )
   })
 
   test.describe('en inglés', () => {
