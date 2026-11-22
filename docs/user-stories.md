@@ -335,7 +335,7 @@ para que se llamen como yo las llamo.
 - Una tarea o una parte de las que vienen por defecto que renombro deja de traducirse: se ve como la escribí, en castellano y en inglés. Las que no renombro se siguen traduciendo.
 - El progreso de la vuelta en curso y las vueltas pasadas no cambian.
 
-*Depende de la US-33. Al implementarla se decidió que no puede haber dos tareas con el mismo nombre, tampoco al añadirlas (criterio nuevo en la US-33). Cuenta como el mismo nombre sin distinguir mayúsculas ni espacios al principio y al final; solo entre las tareas no canceladas; y se compara el nombre guardado, no el traducido (una tarea propia llamada «Surfaces» no choca con «Superficies»). Si ya había dos tareas iguales, se quedan. Renombrar es escribir algo distinto de lo que se ve en el idioma elegido: guardar sin cambiar nada no quita la traducción.*
+*Depende de la US-33. Al implementarla se decidió que no puede haber dos tareas con el mismo nombre, tampoco al añadirlas (criterio nuevo en la US-33). Cuenta como el mismo nombre sin distinguir mayúsculas ni espacios al principio y al final; solo entre las que salen en la lista (una cancelada o una puntual ya hecha no bloquean su nombre); y se compara el nombre guardado, no el traducido (una tarea propia llamada «Surfaces» no choca con «Superficies»). Si ya había dos tareas iguales, se quedan. Renombrar es escribir algo distinto de lo que se ve en el idioma elegido: guardar sin cambiar nada no quita la traducción.*
 
 ## Historias anteriores
 

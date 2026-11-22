@@ -198,4 +198,44 @@ test.describe('US-33 · Añadir una tarea', () => {
     await page.reload()
     await expect(task(page, 'Regar las plantas')).toBeVisible()
   })
+
+  // Criterio añadido con la US-54: no puede haber dos tareas con el mismo nombre.
+  test('no puede llamarse como otra de mis tareas, aunque cambien las mayúsculas o los espacios', async ({
+    page,
+  }) => {
+    await signIn(page, uniqueEmail())
+    await openForm(page)
+    const form = newTaskForm(page)
+    await form.getByLabel('Nombre').fill(' cristales Y espejos')
+    await form.getByLabel('Puntual').check()
+    await form.getByRole('button', { name: 'Guardar tarea' }).click()
+
+    await expect(form).toContainText('Ya tienes una tarea con ese nombre.')
+    await expect(form.getByLabel('Nombre')).toBeFocused()
+
+    await form.getByLabel('Nombre').fill('Cristales del salón')
+    await form.getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(task(page, 'Cristales del salón')).toBeVisible()
+  })
+
+  test('si ya hay una tarea con ese nombre (añadida en otro dispositivo), la app lo dice al guardar', async ({
+    page,
+  }) => {
+    await signIn(page, uniqueEmail())
+    await page.route('**/rest/v1/rpc/create_task*', (route) =>
+      route.fulfill({
+        status: 409,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: '23505', message: 'Ya tienes una tarea con ese nombre.' }),
+      }),
+    )
+    await openForm(page)
+    const form = newTaskForm(page)
+    await form.getByLabel('Nombre').fill('Regar las plantas')
+    await form.getByLabel('Puntual').check()
+    await form.getByRole('button', { name: 'Guardar tarea' }).click()
+
+    await expect(form.getByRole('alert')).toHaveText('Ya tienes una tarea con ese nombre.')
+    await expect(form.getByRole('button', { name: 'Guardar tarea' })).toBeEnabled()
+  })
 })

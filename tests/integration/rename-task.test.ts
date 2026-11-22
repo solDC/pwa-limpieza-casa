@@ -173,6 +173,33 @@ describe('US-33 y US-54 · no hay dos tareas con el mismo nombre', () => {
     expect(id).toBeTruthy()
   })
 
+  it('una puntual ya hecha no bloquea su nombre, y una sin hacer sí', async () => {
+    await expect(asUser(db, ana, (query) => createTask(query, 'Cepillar suelo'))).rejects.toThrow(
+      /Ya tienes una tarea con ese nombre/,
+    )
+    const markDone = async (query: Query) => {
+      const task = await taskOf(query, 'Cepillar suelo')
+      await query(
+        'insert into public.task_rounds (household_id, task_id, starts_on, due_by) values ($1, $2, null, null)',
+        [anaHousehold, task.id],
+      )
+    }
+    // Hecha, se puede añadir otra con ese nombre…
+    const id = await asUser(db, ana, async (query) => {
+      await markDone(query)
+      return (await createTask(query, 'Cepillar suelo')).rows[0].id
+    })
+    expect(id).toBeTruthy()
+    // … o renombrar otra tarea con él.
+    const renamed = await asUser(db, ana, async (query) => {
+      await markDone(query)
+      const task = await taskOf(query, 'Limpiar juntas')
+      await rename(query, task.id, 'cepillar SUELO')
+      return taskById(query, task.id)
+    })
+    expect(renamed.name).toBe('cepillar SUELO')
+  })
+
   it('el nombre de una tarea de otro hogar no cuenta', async () => {
     const id = await asUser(db, bruno, async (query) => {
       const { rows } = await query(

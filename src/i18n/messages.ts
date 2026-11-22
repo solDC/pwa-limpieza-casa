@@ -64,7 +64,8 @@ const es = {
     changeDueOnLabel: (name: string) => `Cambiar fecha de ${name}`,
     dueOnForm: (name: string) => `Fecha de ${name}`,
     dueOn: 'Fecha',
-    saveDueOn: 'Guardar',
+    // El botón de guardar de los formularios de la tarjeta (fecha, finde, nombre).
+    save: 'Guardar',
     removeDueOn: 'Quitar fecha',
     cancel: 'Cancelar',
     moveWeekend: 'Mover a otro finde',
@@ -197,7 +198,7 @@ const en: Messages = {
     changeDueOnLabel: (name: string) => `Change date of ${name}`,
     dueOnForm: (name: string) => `Date of ${name}`,
     dueOn: 'Date',
-    saveDueOn: 'Save',
+    save: 'Save',
     removeDueOn: 'Remove date',
     cancel: 'Cancel',
     moveWeekend: 'Move to another weekend',

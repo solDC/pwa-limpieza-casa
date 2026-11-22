@@ -73,7 +73,7 @@ export function MoveWeekendForm({
           {t.tasks.cancel}
         </button>
         <button type="submit" disabled={saving}>
-          {saving ? t.tasks.saving : t.tasks.saveDueOn}
+          {saving ? t.tasks.saving : t.tasks.save}
         </button>
       </div>
     </form>

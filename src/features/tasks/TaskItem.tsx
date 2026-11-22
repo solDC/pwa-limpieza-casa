@@ -51,7 +51,7 @@ export function TaskItem({
 }: {
   task: Task
   /** Las tareas del hogar, para no repetir un nombre al renombrarla (US-54). */
-  otherTasks: Pick<Task, 'id' | 'name'>[]
+  otherTasks: Task[]
   /** La vuelta que se muestra (las puntuales ya hechas no llegan aquí). */
   round: Round
   today: LocalDate

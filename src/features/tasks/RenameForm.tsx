@@ -23,7 +23,7 @@ export function RenameForm({
 }: {
   task: Task
   /** Las tareas del hogar, para no repetir un nombre. */
-  otherTasks: Pick<Task, 'id' | 'name'>[]
+  otherTasks: Task[]
   /** Se ha guardado (solo lo renombrado). */
   onSaved: (rename: TaskRename) => void
   onClose: () => void
@@ -124,7 +124,7 @@ export function RenameForm({
           {t.tasks.cancel}
         </button>
         <button type="submit" disabled={saving}>
-          {saving ? t.tasks.saving : t.tasks.saveDueOn}
+          {saving ? t.tasks.saving : t.tasks.save}
         </button>
       </div>
     </form>

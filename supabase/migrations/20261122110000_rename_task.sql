@@ -8,7 +8,8 @@
 -- Además, no puede haber dos tareas con el mismo nombre en un hogar (US-33 y US-54), ni al
 -- añadirlas (create_task) ni al renombrarlas. Se compara el nombre guardado sin espacios al
 -- principio y al final y sin distinguir mayúsculas («baño » es «Baño»), solo con las tareas
--- no canceladas: una cancelada no bloquea su nombre. Las partes sí pueden repetirse.
+-- que se ven en la lista: una cancelada o una puntual ya hecha no bloquean su nombre (si no,
+-- una puntual hecha lo bloquearía para siempre sin poder verla). Las partes sí pueden repetirse.
 --
 -- Lo comprueban las funciones, no un índice único: así la migración no falla en un hogar que
 -- ya tenga dos tareas iguales (se quedan, pero no se pueden crear más).
@@ -19,7 +20,8 @@
 -- Nombre repetido
 -- ---------------------------------------------------------------------------
 
--- Falla (23505) si el hogar ya tiene otra tarea no cancelada con ese nombre. Bloquea los
+-- Falla (23505) si el hogar ya tiene otra tarea con ese nombre, no cancelada y, si es
+-- puntual, sin hacer. Bloquea los
 -- nombres del hogar hasta el final de la transacción, para que dos móviles que guardan a la
 -- vez el mismo nombre no lo consigan los dos.
 -- Sin security definer: solo la llaman create_task y rename_task, que ya lo son.
@@ -36,11 +38,13 @@ begin
   perform pg_advisory_xact_lock(hashtextextended('task_names:' || target_household_id::text, 0));
   if exists (
     select 1
-    from public.tasks
-    where household_id = target_household_id
-      and cancelled_on is null
-      and id is distinct from except_task_id
-      and lower(btrim(name)) = lower(btrim(task_name))
+    from public.tasks t
+    where t.household_id = target_household_id
+      and t.cancelled_on is null
+      -- Una puntual con su vuelta apuntada ya está hecha: ya no sale en la lista.
+      and not (t.frequency = 'one_off' and exists (select 1 from public.task_rounds r where r.task_id = t.id))
+      and t.id is distinct from except_task_id
+      and lower(btrim(t.name)) = lower(btrim(task_name))
   ) then
     raise exception using errcode = '23505', message = 'Ya tienes una tarea con ese nombre.';
   end if;

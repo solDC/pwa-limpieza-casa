@@ -2,7 +2,7 @@
 // cómo queda la tarea. TypeScript puro.
 
 import type { Language } from './language'
-import { partNameError, taskNameError } from './new-task'
+import { partNameError, taskNameError, type NamedTask } from './new-task'
 import { partDisplayName, taskDisplayName, type Task } from './task'
 
 /** Lo que se ha escrito en el formulario, tal cual: el nombre y el de cada parte, en orden. */
@@ -41,7 +41,7 @@ export function renameDraft(task: Pick<Task, 'name' | 'defaultKey' | 'parts'>, l
 export function validateRename(
   task: Pick<Task, 'id' | 'name' | 'defaultKey' | 'parts'>,
   draft: RenameDraft,
-  otherTasks: Pick<Task, 'id' | 'name'>[],
+  otherTasks: (NamedTask & Pick<Task, 'id'>)[],
   language: Language,
 ): { ok: true; rename: TaskRename } | { ok: false; errors: RenameErrors } {
   const before = renameDraft(task, language)

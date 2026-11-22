@@ -1,15 +1,15 @@
 import { expect, test, type Page } from '@playwright/test'
-import { newTaskForm, signIn, task, taskNames, taskParts } from './helpers/app'
+import { addDays } from '../../src/domain/dates'
+import { signIn, task, taskNames, taskParts, todayInMadrid } from './helpers/app'
 import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
-import { addDays } from '../../src/domain/dates'
-import { todayInMadrid } from './helpers/app'
 
 // US-54 · Cambiar el nombre de una tarea y de sus partes (#96)
 //
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
 // Lo que no se puede guardar se prueba también en tests/unit/domain/rename-task.test.ts (el
-// formulario) y tests/integration/rename-task.test.ts (la base de datos).
+// formulario) y tests/integration/rename-task.test.ts (la base de datos). Al añadir una tarea,
+// el nombre repetido se prueba en tests/e2e/us-33-add-task.spec.ts.
 
 function renameButton(page: Page, taskName: string) {
   return task(page, taskName).getByRole('button', { name: `Cambiar nombre de ${taskName}` })
@@ -204,24 +204,8 @@ test.describe('US-54 · Cambiar el nombre de una tarea y de sus partes', () => {
   })
 })
 
-test.describe('US-33 y US-54 · No hay dos tareas con el mismo nombre', () => {
-  test('al añadir una tarea, no puede llamarse como otra', async ({ page }) => {
-    await signIn(page, uniqueEmail())
-    await page.getByRole('button', { name: 'Añadir tarea' }).click()
-    const form = newTaskForm(page)
-    await form.getByLabel('Nombre').fill(' cristales Y espejos')
-    await form.getByLabel('Puntual').check()
-    await form.getByRole('button', { name: 'Guardar tarea' }).click()
-
-    await expect(form).toContainText('Ya tienes una tarea con ese nombre.')
-    await expect(form.getByLabel('Nombre')).toBeFocused()
-
-    await form.getByLabel('Nombre').fill('Cristales del salón')
-    await form.getByRole('button', { name: 'Guardar tarea' }).click()
-    await expect(task(page, 'Cristales del salón')).toBeVisible()
-  })
-
-  test('si otra tarea con ese nombre se ha añadido en otro dispositivo, la app lo dice', async ({ page }) => {
+test.describe('US-54 · No hay dos tareas con el mismo nombre', () => {
+  test('si otra tarea ya tiene ese nombre (cambiado en otro dispositivo), la app lo dice al guardar', async ({ page }) => {
     await signIn(page, uniqueEmail())
     await page.route('**/rest/v1/rpc/rename_task*', (route) =>
       route.fulfill({

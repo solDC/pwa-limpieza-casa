@@ -35,7 +35,7 @@ export function NewTaskForm({
   householdId: string
   today: LocalDate
   /** Las tareas del hogar, para no repetir un nombre (US-54). */
-  otherTasks: Pick<Task, 'name'>[]
+  otherTasks: Task[]
   /** Se ha guardado: recibe el nombre de la tarea. */
   onSaved: (name: string) => void
   onCancel: () => void

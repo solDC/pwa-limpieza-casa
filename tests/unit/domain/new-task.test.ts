@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { Task } from '../../../src/domain/task'
 import { addDays } from '../../../src/domain/dates'
 import {
   addPart,
@@ -101,8 +102,14 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
   })
 
   // US-54 · No puede haber dos tareas con el mismo nombre.
+  const other = (name: string, frequency: Task['frequency'] = { kind: 'interval', days: 3, nextDueOn: null }) => ({
+    name,
+    frequency,
+    lastCompletedOn: null as string | null,
+  })
+
   it('con el nombre de otra tarea no vale, sin distinguir mayúsculas ni espacios', () => {
-    const tasks = [{ name: 'Baño' }, { name: 'Regar las plantas' }]
+    const tasks = [other('Baño'), other('Regar las plantas')]
     expect(validateNewTask(draft({ name: '  regar LAS plantas ' }), 'es', TODAY, tasks)).toEqual({
       ok: false,
       errors: { name: 'Ya tienes una tarea con ese nombre.' },
@@ -112,7 +119,17 @@ describe('validateNewTask: qué hace falta para guardar una tarea', () => {
 
   it('se compara con el nombre guardado, no con el traducido', () => {
     // Superficies se ve «Surfaces» en inglés, pero se guarda «Superficies».
-    expect(validateNewTask(draft({ name: 'Surfaces' }), 'en', TODAY, [{ name: 'Superficies' }]).ok).toBe(true)
+    expect(validateNewTask(draft({ name: 'Surfaces' }), 'en', TODAY, [other('Superficies')]).ok).toBe(true)
+  })
+
+  it('una puntual ya hecha no bloquea su nombre (ya no sale en la lista); sin hacer, sí', () => {
+    const oneOff = other('Cepillar suelo', { kind: 'oneOff', dueOn: null })
+    expect(validateNewTask(draft({ name: 'Cepillar suelo' }), 'es', TODAY, [oneOff]).ok).toBe(false)
+    const done = { ...oneOff, lastCompletedOn: '2026-11-01' }
+    expect(validateNewTask(draft({ name: 'Cepillar suelo' }), 'es', TODAY, [done]).ok).toBe(true)
+    // Una de cada N días ya hecha sigue en la lista: sí lo bloquea.
+    const interval = { ...other('Baño'), lastCompletedOn: '2026-11-01' }
+    expect(validateNewTask(draft({ name: 'Baño' }), 'es', TODAY, [interval]).ok).toBe(false)
   })
 
   it('sin frecuencia no vale', () => {

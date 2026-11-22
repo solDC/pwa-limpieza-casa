@@ -27,7 +27,7 @@ const surfaces: Task = {
   partCompletions: [{ partId: 'kitchen', startsOn: '2026-11-21' }],
 }
 
-const bathroom = { id: 'bathroom', name: 'Baño' }
+const bathroom = { id: 'bathroom', name: 'Baño', frequency: { kind: 'interval', days: 3, nextDueOn: null }, lastCompletedOn: null } as const
 const others = [surfaces, bathroom]
 
 describe('renameDraft: el formulario al abrirlo', () => {

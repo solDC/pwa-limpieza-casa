@@ -219,22 +219,33 @@ export function sameTaskName(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase()
 }
 
+/** Lo que hace falta de las demás tareas para saber si un nombre ya está en uso. */
+export type NamedTask = Pick<Task, 'name' | 'frequency' | 'lastCompletedOn'>
+
+/**
+ * Si una tarea (no cancelada) bloquea su nombre: todas menos las puntuales ya hechas, que
+ * ya no salen en la lista y lo bloquearían para siempre. Como en la base de datos.
+ */
+export function blocksItsName(task: Pick<Task, 'frequency' | 'lastCompletedOn'>): boolean {
+  return !(task.frequency.kind === 'oneOff' && task.lastCompletedOn !== null)
+}
+
 /**
  * El aviso del nombre de una tarea, o `undefined` si vale: no vacío, como mucho 80
  * caracteres y distinto del de las demás tareas del hogar (`otherTasks`, sin la que se
- * renombra). Se compara con el nombre guardado, no con el traducido (US-54). Sirve al
- * crearla (US-33) y al renombrarla (US-54).
+ * renombra; las canceladas no llegan). Se compara con el nombre guardado, no con el
+ * traducido (US-54). Sirve al crearla (US-33) y al renombrarla (US-54).
  */
 export function taskNameError(
   name: string,
-  otherTasks: Pick<Task, 'name'>[],
+  otherTasks: NamedTask[],
   language: Language,
 ): string | undefined {
   const text = VALIDATION_TEXTS[language]
   const problem = nameProblem(name.trim(), text.taskNameRequired, text.nameTooLong)
   if (problem) return problem
-  if (otherTasks.some((other) => sameTaskName(other.name, name))) return text.duplicateTaskName
-  return undefined
+  const inUse = otherTasks.some((other) => blocksItsName(other) && sameTaskName(other.name, name))
+  return inUse ? text.duplicateTaskName : undefined
 }
 
 /** El aviso del nombre de una parte, o `undefined` si vale. Las partes pueden repetirse. */
@@ -252,7 +263,7 @@ export function validateNewTask(
   draft: NewTaskDraft,
   language: Language,
   today: LocalDate,
-  otherTasks: Pick<Task, 'name'>[],
+  otherTasks: NamedTask[],
 ): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
   const text = VALIDATION_TEXTS[language]
   const errors: NewTaskErrors = {}

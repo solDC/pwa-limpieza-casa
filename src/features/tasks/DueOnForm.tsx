@@ -110,7 +110,7 @@ export function DueOnForm({
           </button>
         )}
         <button type="submit" disabled={saving !== null}>
-          {saving === 'save' ? t.tasks.saving : t.tasks.saveDueOn}
+          {saving === 'save' ? t.tasks.saving : t.tasks.save}
         </button>
       </div>
     </form>
