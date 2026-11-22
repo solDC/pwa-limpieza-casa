@@ -209,7 +209,7 @@ describe('US-39 · dos dispositivos marcan a la vez las últimas partes', () => 
   })
 })
 
-// Las vueltas pasadas conservan sus partes hechas: quitar una parte será archivarla, no
+// Las vueltas pasadas conservan sus partes hechas: quitar una parte es archivarla (US-51), no
 // borrarla (ver «Conceptos» en docs/user-stories.md).
 describe('US-39 · las partes hechas no se pierden', () => {
   it('no se puede borrar una parte que se ha hecho alguna vez, ni como administrador', async () => {
