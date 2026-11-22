@@ -283,6 +283,28 @@ describe('US-51 · cambiar las partes de una tarea', () => {
     ])
   })
 
+  it('sin nombres (la llamada de antes), no renombra ninguna: siguen traduciéndose', async () => {
+    const parts = await asUser(db, ana, async (query) => {
+      const { rows: task } = await query(`select id from public.tasks where household_id = $1 and name = 'Superficies'`, [
+        anaHousehold,
+      ])
+      const { rows: before } = await query('select id from public.task_parts where task_id = $1 order by position', [
+        task[0].id,
+      ])
+      const [kitchen, living, bedroom] = before.map((row) => row.id as string)
+      await setParts(query, task[0].id, [[kitchen!, 40], [living!, 30], [bedroom!, 30]])
+      const { rows } = await query('select name, default_key from public.task_parts where task_id = $1 order by position', [
+        task[0].id,
+      ])
+      return rows
+    })
+    expect(parts).toEqual([
+      { name: 'Cocina', default_key: 'kitchen' },
+      { name: 'Salón', default_key: 'living_room' },
+      { name: 'Dormitorio', default_key: 'bedroom' },
+    ])
+  })
+
   it('un nombre por cada parte que sigue, y que valga', async () => {
     await expect(
       asUser(db, ana, async (query) => {
