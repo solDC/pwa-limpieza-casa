@@ -11,6 +11,7 @@ import {
 } from '../../domain/frequency'
 import { dueOnError, earliestNextDueOn, nextDueOnError } from '../../domain/new-task'
 import { roundProgress } from '../../domain/progress'
+import type { TaskRename } from '../../domain/rename-task'
 import {
   describeFrequency,
   partDisplayName,
@@ -28,24 +29,29 @@ import {
 } from '../../storage/tasks'
 import { DueOnForm } from './DueOnForm'
 import { MoveWeekendForm } from './MoveWeekendForm'
+import { RenameForm } from './RenameForm'
 
 // La tarjeta de una tarea: su frecuencia y cuándo toca (US-28 y US-29). Sin partes, el botón
 // para marcarla como hecha (US-30). Con partes, cada una con su peso y su botón («Marcar» o,
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
 // vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
 // (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41). Las de
-// fin de semana, «Mover a otro finde» (US-42).
+// fin de semana, «Mover a otro finde» (US-42). Todas, «Cambiar nombre» (US-54).
 export function TaskItem({
   task,
+  otherTasks,
   round,
   today,
   onCompleted,
   onPartsDone,
   onDueOnChanged,
   onMovedWeekend,
+  onRenamed,
   onStale,
 }: {
   task: Task
+  /** Las tareas del hogar, para no repetir un nombre al renombrarla (US-54). */
+  otherTasks: Task[]
   /** La vuelta que se muestra (las puntuales ya hechas no llegan aquí). */
   round: Round
   today: LocalDate
@@ -59,6 +65,8 @@ export function TaskItem({
   onDueOnChanged: (taskId: string, dueOn: LocalDate | null) => void
   /** Se ha movido una tarea de fin de semana al finde de ese sábado (ya guardado). */
   onMovedWeekend: (taskId: string, saturday: LocalDate) => void
+  /** Se ha renombrado la tarea o alguna de sus partes (ya guardado). */
+  onRenamed: (taskId: string, rename: TaskRename) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
@@ -103,17 +111,25 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
-  // US-38, US-41 y US-42 · El formulario de la fecha o del finde. Al cerrarlo, el foco
-  // vuelve a su botón.
-  const [editingDueOn, setEditingDueOn] = useState(false)
+  // El formulario abierto: el de la fecha o el finde (US-38, US-41 y US-42) o el del nombre
+  // (US-54). Uno cada vez. Al cerrarlo, el foco vuelve al botón que lo abrió.
+  const [editing, setEditing] = useState<'dueOn' | 'name' | null>(null)
+  const editingDueOn = editing === 'dueOn'
   const dueOnButton = useRef<HTMLButtonElement>(null)
-  const focusDueOnButton = useRef(false)
+  const renameButton = useRef<HTMLButtonElement>(null)
+  // Qué botón recibe el foco cuando vuelva a estar en la tarjeta (con el formulario abierto, no está).
+  const focusAfterClosing = useRef<'dueOn' | 'name' | null>(null)
   useEffect(() => {
-    if (!editingDueOn && focusDueOnButton.current) {
-      focusDueOnButton.current = false
-      dueOnButton.current?.focus()
+    if (editing === null && focusAfterClosing.current) {
+      const button = focusAfterClosing.current === 'name' ? renameButton.current : dueOnButton.current
+      button?.focus()
+      focusAfterClosing.current = null
     }
-  }, [editingDueOn])
+  }, [editing])
+  const closeForm = () => {
+    focusAfterClosing.current = editing
+    setEditing(null)
+  }
 
   const canMark = canMarkDone(task, round, today)
   const hasParts = task.parts.length > 0
@@ -208,10 +224,7 @@ export function TaskItem({
             // Solo la fecha de una puntual se puede quitar: una de cada N días siempre toca algún día.
             remove={frequency.kind === 'oneOff' ? () => setTaskDueOn(task.id, null) : undefined}
             onSaved={(dueOn) => onDueOnChanged(task.id, dueOn)}
-            onClose={() => {
-              focusDueOnButton.current = true
-              setEditingDueOn(false)
-            }}
+            onClose={closeForm}
             onStale={onStale}
           />
         ) : (
@@ -220,8 +233,8 @@ export function TaskItem({
             type="button"
             className="button-secondary"
             aria-label={hasNoDate ? t.tasks.setDueOnLabel(name) : t.tasks.changeDueOnLabel(name)}
-            onClick={() => setEditingDueOn(true)}
-            disabled={saving}
+            onClick={() => setEditing('dueOn')}
+            disabled={saving || editing !== null}
           >
             {hasNoDate ? t.tasks.setDueOn : t.tasks.changeDueOn}
           </button>
@@ -233,10 +246,7 @@ export function TaskItem({
             taskName={name}
             options={moveWeekendOptions(task, round, today)}
             onSaved={(saturday) => onMovedWeekend(task.id, saturday)}
-            onClose={() => {
-              focusDueOnButton.current = true
-              setEditingDueOn(false)
-            }}
+            onClose={closeForm}
           />
         ) : (
           <button
@@ -244,12 +254,31 @@ export function TaskItem({
             type="button"
             className="button-secondary"
             aria-label={t.tasks.moveWeekendLabel(name)}
-            onClick={() => setEditingDueOn(true)}
-            disabled={saving}
+            onClick={() => setEditing('dueOn')}
+            disabled={saving || editing !== null}
           >
             {t.tasks.moveWeekend}
           </button>
         ))}
+      {editing === 'name' ? (
+        <RenameForm
+          task={task}
+          otherTasks={otherTasks}
+          onSaved={(rename) => onRenamed(task.id, rename)}
+          onClose={closeForm}
+        />
+      ) : (
+        <button
+          ref={renameButton}
+          type="button"
+          className="button-secondary"
+          aria-label={t.tasks.renameLabel(name)}
+          onClick={() => setEditing('name')}
+          disabled={saving || editing !== null}
+        >
+          {t.tasks.rename}
+        </button>
+      )}
     </li>
   )
 }

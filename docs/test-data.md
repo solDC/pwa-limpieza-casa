@@ -4,7 +4,7 @@ Consultas SQL para preparar los datos de una prueba en el **proyecto de pruebas*
 
 > ⚠️ **Solo en el proyecto de pruebas.** Antes de pegar nada, comprueba arriba a la izquierda del panel de Supabase que estás en el proyecto de pruebas, no en el de producción.
 
-> En las consultas, las tareas por defecto van siempre con su nombre en castellano (`'Baño'`), aunque la app esté en inglés: así se guardan en la base de datos. Los textos de ejemplo («Retrasada 5 días») son los de la app en castellano; en inglés se ve «Bathroom» y «Overdue 5 days».
+> En las consultas, las tareas por defecto van siempre con su nombre en castellano (`'Baño'`), aunque la app esté en inglés: así se guardan en la base de datos. Si has renombrado la tarea desde la app (US-54), pon el nombre nuevo, tal como lo escribiste. Los textos de ejemplo («Retrasada 5 días») son los de la app en castellano; en inglés se ve «Bathroom» y «Overdue 5 days».
 
 ## Cómo usarlas
 

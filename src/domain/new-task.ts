@@ -1,10 +1,11 @@
 // US-33 · Añadir una tarea: qué hace falta para guardarla. TypeScript puro.
 // US-34 · Elegir el peso de las partes.
 // US-38 y US-50 · El día en que toca: la fecha de una puntual o la primera vez de una de cada N días.
+// US-54 · Sin dos tareas con el mismo nombre, al crearlas y al renombrarlas.
 
 import { addDays, dayOfWeek } from './dates'
 import type { Language } from './language'
-import type { Frequency, LocalDate } from './task'
+import type { Frequency, LocalDate, Task } from './task'
 
 /** Como mucho, para que cada parte cuente algo (los pesos son % enteros). */
 export const MAX_PARTS = 20
@@ -151,6 +152,7 @@ const VALIDATION_TEXTS = {
     nameTooLong: (max: number) => `El nombre puede tener como mucho ${max} caracteres.`,
     dueOnNotPast: 'Elige hoy o un día futuro.',
     nextDueOnDoneToday: 'Ya está hecha hoy: elige mañana o un día futuro.',
+    duplicateTaskName: 'Ya tienes una tarea con ese nombre.',
   },
   en: {
     taskNameRequired: 'Enter the name of the task.',
@@ -164,6 +166,7 @@ const VALIDATION_TEXTS = {
     nameTooLong: (max: number) => `The name can have at most ${max} characters.`,
     dueOnNotPast: 'Choose today or a later day.',
     nextDueOnDoneToday: 'Already done today: choose tomorrow or a later day.',
+    duplicateTaskName: 'You already have a task with that name.',
   },
 } satisfies Record<Language, unknown>
 
@@ -209,19 +212,64 @@ export function nextDueOnError(
 }
 
 /**
+ * Si dos nombres de tarea son el mismo: sin espacios al principio y al final y sin distinguir
+ * mayúsculas («baño » es «Baño»), como lo compara la base de datos (US-54).
+ */
+export function sameTaskName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase()
+}
+
+/** Lo que hace falta de las demás tareas para saber si un nombre ya está en uso. */
+export type NamedTask = Pick<Task, 'name' | 'frequency' | 'lastCompletedOn'>
+
+/**
+ * Si una tarea (no cancelada) bloquea su nombre: todas menos las puntuales ya hechas, que
+ * ya no salen en la lista y lo bloquearían para siempre. Como en la base de datos.
+ */
+export function blocksItsName(task: Pick<Task, 'frequency' | 'lastCompletedOn'>): boolean {
+  return !(task.frequency.kind === 'oneOff' && task.lastCompletedOn !== null)
+}
+
+/**
+ * El aviso del nombre de una tarea, o `undefined` si vale: no vacío, como mucho 80
+ * caracteres y distinto del de las demás tareas del hogar (`otherTasks`, sin la que se
+ * renombra; las canceladas no llegan). Se compara con el nombre guardado, no con el
+ * traducido (US-54). Sirve al crearla (US-33) y al renombrarla (US-54).
+ */
+export function taskNameError(
+  name: string,
+  otherTasks: NamedTask[],
+  language: Language,
+): string | undefined {
+  const text = VALIDATION_TEXTS[language]
+  const problem = nameProblem(name.trim(), text.taskNameRequired, text.nameTooLong)
+  if (problem) return problem
+  const inUse = otherTasks.some((other) => blocksItsName(other) && sameTaskName(other.name, name))
+  return inUse ? text.duplicateTaskName : undefined
+}
+
+/** El aviso del nombre de una parte, o `undefined` si vale. Las partes pueden repetirse. */
+export function partNameError(name: string, language: Language): string | undefined {
+  const text = VALIDATION_TEXTS[language]
+  return nameProblem(name.trim(), text.partNameRequired, text.nameTooLong)
+}
+
+/**
  * Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`;
- * `today` es para la fecha de las puntuales y la primera vez de las de cada N días.
+ * `today` es para la fecha de las puntuales y la primera vez de las de cada N días;
+ * `otherTasks`, las tareas del hogar, para no repetir un nombre.
  */
 export function validateNewTask(
   draft: NewTaskDraft,
   language: Language,
   today: LocalDate,
+  otherTasks: NamedTask[],
 ): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
   const text = VALIDATION_TEXTS[language]
   const errors: NewTaskErrors = {}
 
   const name = draft.name.trim()
-  const nameError = nameProblem(name, text.taskNameRequired, text.nameTooLong)
+  const nameError = taskNameError(name, otherTasks, language)
   if (nameError) errors.name = nameError
 
   let frequency: Frequency | null = null
@@ -263,9 +311,7 @@ export function validateNewTask(
   }
 
   const partNames = draft.partNames.map((partName) => partName.trim())
-  const partErrors = partNames.map((partName) =>
-    nameProblem(partName, text.partNameRequired, text.nameTooLong),
-  )
+  const partErrors = partNames.map((partName) => partNameError(partName, language))
   if (partErrors.some(Boolean)) errors.parts = partErrors
 
   const weights = partNames.map((_, index) => parseWeight(draft.partWeights[index] ?? ''))
