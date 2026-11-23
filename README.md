@@ -82,6 +82,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 │   │   ├── auth/           Entrar con el código o el enlace del email, y la sesión
 │   │   ├── home/           Pantalla de Inicio
 │   │   ├── tasks/          «Tus tareas»: la lista, cada tarea, sus formularios (fecha, mover de finde, nombre, partes) y el de tarea nueva
+│   │   ├── history/        «Histórico»: cómo acabó cada vuelta, por días
 │   │   └── app-update/     El aviso de que hay una versión nueva de la app
 │   ├── components/         Componentes visuales comunes a varias pantallas
 │   ├── i18n/               Los textos en castellano y en inglés, y el idioma elegido
