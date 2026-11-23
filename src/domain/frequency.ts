@@ -67,6 +67,16 @@ function saturdayOnOrBefore(day: LocalDate): LocalDate {
 }
 
 /**
+ * El sábado del finde de hoy, si es sábado o domingo; si no, el del siguiente. Es el primer
+ * finde que se puede elegir al crear una tarea de cada 15 días (US-33) o al mover una de fin
+ * de semana (US-42).
+ */
+export function thisOrNextWeekend(today: LocalDate): LocalDate {
+  const saturday = saturdayOnOrBefore(today)
+  return addDays(today, -1) <= saturday ? saturday : addDays(saturday, 7)
+}
+
+/**
  * US-48 · El sábado de la primera vuelta de una tarea de fin de semana: el primer finde de
  * su calendario cuyo sábado o domingo es el día en que se creó o después. Así, una tarea
  * creada entre semana no empieza con retraso por un finde que ya había pasado.
@@ -115,8 +125,7 @@ export function moveWeekendOptions(
   round: Round,
   today: LocalDate,
 ): LocalDate[] {
-  const thisWeekend = saturdayOnOrBefore(today)
-  const first = addDays(today, -1) <= thisWeekend ? thisWeekend : addDays(thisWeekend, 7)
+  const first = thisOrNextWeekend(today)
   const { lastCompletedOn } = task
   const options: LocalDate[] = []
   for (let saturday = first; options.length < MOVE_WEEKEND_OPTIONS; saturday = addDays(saturday, 7)) {
@@ -206,7 +215,7 @@ export function describeDue(
     const when = weekend
       ? text.theWeekendOf(formatDayMonth(date, language))
       : formatShortDate(date, language)
-    return text.overdue(due.days, when, weekend)
+    return text.overdue(due.days, when)
   }
   if (weekend) return text.due(text.weekendOf(formatDayMonth(date, language)))
   const days = daysBetween(today, date)
@@ -225,7 +234,7 @@ const DUE_TEXTS = {
     weekendOf: (date: string) => `finde del ${date}`,
     theWeekendOf: (date: string) => `finde del ${date}`,
     due: (when: string) => `Toca: ${when}`,
-    overdue: (days: number, date: string, _weekend: boolean) =>
+    overdue: (days: number, date: string) =>
       `Retrasada ${days === 1 ? '1 día' : `${days} días`} (tocaba el ${date})`,
   },
   en: {
@@ -235,7 +244,7 @@ const DUE_TEXTS = {
     weekendOf: (date: string) => `weekend of ${date}`,
     theWeekendOf: (date: string) => `the weekend of ${date}`,
     due: (when: string) => `Due: ${when}`,
-    overdue: (days: number, date: string, _weekend: boolean) =>
+    overdue: (days: number, date: string) =>
       `Overdue ${days === 1 ? '1 day' : `${days} days`} (was due ${date})`,
   },
 } satisfies Record<Language, unknown>

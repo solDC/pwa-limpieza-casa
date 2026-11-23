@@ -8,6 +8,7 @@ import {
   dueStatus,
   isWeekend,
   moveWeekendOptions,
+  thisOrNextWeekend,
 } from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
 
@@ -537,5 +538,19 @@ describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
       startsOn: null,
       dueBy: null,
     })
+  })
+})
+
+describe('thisOrNextWeekend: el primer finde que se puede elegir', () => {
+  it('en sábado o domingo, ese finde; entre semana, el siguiente', () => {
+    expect(thisOrNextWeekend('2026-11-21')).toBe('2026-11-21') // sábado
+    expect(thisOrNextWeekend('2026-11-22')).toBe('2026-11-21') // domingo
+    expect(thisOrNextWeekend('2026-11-23')).toBe('2026-11-28') // lunes
+    expect(thisOrNextWeekend('2026-11-27')).toBe('2026-11-28') // viernes
+  })
+
+  it('a fin de mes y de año', () => {
+    expect(thisOrNextWeekend('2026-12-30')).toBe('2027-01-02') // miércoles
+    expect(thisOrNextWeekend('2027-01-03')).toBe('2027-01-02') // domingo
   })
 })
