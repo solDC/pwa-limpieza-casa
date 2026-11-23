@@ -53,6 +53,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-55 | La lista se pone al día al volver a la app | Nice to have | Pendiente | [#98](https://github.com/solDC/pwa-limpieza-casa/issues/98) |
+| US-56 | Volver con el botón atrás | Must have | Pendiente | — |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
 | US-44 | Deshacer una parte marcada como hecha | Backlog | Pendiente | [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63) |
@@ -349,6 +350,16 @@ para saber cómo voy con la limpieza.
 - Sale lo de las últimas 4 semanas, agrupado por día, de lo más reciente a lo más antiguo; «Ver más» carga 4 semanas más.
 
 *Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas.*
+
+### US-56 · Volver con el botón atrás (Must have)
+Como usuario,
+quiero volver del histórico a «Tus tareas» con el botón atrás del móvil o del navegador,
+para moverme por la app como en cualquier otra.
+- Desde el histórico, el botón atrás de Android y el del navegador vuelven a «Tus tareas», como «Volver».
+- Al volver así, «Tus tareas» sigue como estaba: lo que se estaba escribiendo y el sitio de la página.
+- En «Tus tareas», atrás hace lo de siempre: sale de la app o de la página.
+
+*Depende de la US-31. En el iPhone, la app instalada no tiene botón atrás: allí se vuelve con «Volver».*
 
 ## Historias anteriores
 
