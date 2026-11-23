@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek } from '../../src/domain/dates'
 import { describeHistoryDay, describeWeekendDays } from '../../src/domain/history'
-import { signIn, task, todayInMadrid } from './helpers/app'
+import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
 import { addPastPartCompletions, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
@@ -63,6 +63,17 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await page.getByRole('button', { name: 'Volver' }).click()
     await expect(task(page, 'Superficies')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Histórico' })).toBeFocused()
+  })
+
+  test('al volver del histórico, sigue lo que estaba escribiendo en «Tus tareas»', async ({ page }) => {
+    await signIn(page, uniqueEmail())
+    await page.getByRole('button', { name: 'Añadir tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Limpiar el horno')
+
+    await openHistory(page)
+    await page.getByRole('button', { name: 'Volver' }).click()
+
+    await expect(newTaskForm(page).getByLabel('Nombre')).toHaveValue('Limpiar el horno')
   })
 
   test('lo que marco como hecho sale como completado, el día en que lo hice: también las puntuales, que desaparecen de la lista', async ({
