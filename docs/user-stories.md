@@ -41,7 +41,7 @@ Primero las hechas y después las pendientes.
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Hecha | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 | US-51 | Cambiar las partes de una tarea | Must have | Hecha | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
-| US-31 | Histórico de cada vuelta | Must have | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
+| US-31 | Histórico de cada vuelta | Must have | Hecha | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -348,7 +348,7 @@ para saber cómo voy con la limpieza.
 - Las completadas salen con el día en que se hicieron; las parciales y las no completadas, con su fin de semana («Finde del 14-15 nov»).
 - Sale lo de las últimas 4 semanas, agrupado por día, de lo más reciente a lo más antiguo; «Ver más» carga 4 semanas más.
 
-*Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza después de crearla (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas.*
+*Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas.*
 
 ## Historias anteriores
 

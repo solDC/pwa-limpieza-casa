@@ -4,6 +4,7 @@ import {
   dayOfWeek,
   daysBetween,
   formatDayMonth,
+  formatLongDate,
   formatShortDate,
   localDateIn,
 } from '../../../src/domain/dates'
@@ -77,5 +78,13 @@ describe('formato en español', () => {
   it('día y mes', () => {
     expect(formatDayMonth('2026-11-14', 'es')).toBe('14 nov')
     expect(formatDayMonth('2026-12-05', 'es')).toBe('5 dic')
+  })
+})
+
+describe('US-31 · fecha larga', () => {
+  it('con el día de la semana y el mes enteros', () => {
+    expect(formatLongDate('2026-11-21', 'es')).toBe('sábado 21 de noviembre')
+    expect(formatLongDate('2026-11-21', 'en')).toBe('Saturday 21 November')
+    expect(formatLongDate('2028-02-29', 'es')).toBe('martes 29 de febrero')
   })
 })

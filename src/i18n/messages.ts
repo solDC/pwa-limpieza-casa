@@ -43,6 +43,17 @@ const es = {
     signingOut: 'Cerrando sesión…',
   },
 
+  history: {
+    open: 'Histórico',
+    title: 'Histórico',
+    back: 'Volver',
+    loading: 'Cargando el histórico…',
+    empty: 'Aún no hay nada en el histórico.',
+    emptyPage: 'Nada en estas 4 semanas.',
+    more: 'Ver más',
+    loadingMore: 'Cargando…',
+  },
+
   tasks: {
     title: 'Tus tareas',
     loading: 'Cargando tus tareas…',
@@ -134,6 +145,7 @@ const es = {
     signOutFailed: 'No se ha podido cerrar la sesión. Inténtalo de nuevo.',
     householdLoad: 'No se ha podido cargar tu hogar.',
     tasksLoad: 'No se han podido cargar tus tareas.',
+    historyLoad: 'No se ha podido cargar el histórico.',
     alreadyDone: 'Ya estaba marcada como hecha.',
     deviceDate:
       'No se ha podido guardar: la fecha de este dispositivo no es la de hoy. Revisa la fecha y la hora.',
@@ -183,6 +195,17 @@ const en: Messages = {
     loadingHousehold: 'Loading your home…',
     signOut: 'Sign out',
     signingOut: 'Signing out…',
+  },
+
+  history: {
+    open: 'History',
+    title: 'History',
+    back: 'Back',
+    loading: 'Loading the history…',
+    empty: 'There is nothing in the history yet.',
+    emptyPage: 'Nothing in these 4 weeks.',
+    more: 'See more',
+    loadingMore: 'Loading…',
   },
 
   tasks: {
@@ -274,6 +297,7 @@ const en: Messages = {
     signOutFailed: 'You could not be signed out. Try again.',
     householdLoad: 'Your home could not be loaded.',
     tasksLoad: 'Your tasks could not be loaded.',
+    historyLoad: 'The history could not be loaded.',
     alreadyDone: 'It was already marked as done.',
     deviceDate:
       'It could not be saved: the date on this device is not today’s date. Check the date and time.',

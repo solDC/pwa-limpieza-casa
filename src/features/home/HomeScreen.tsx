@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { LanguageSwitch } from '../../components/LanguageSwitch'
 import { Screen } from '../../components/Screen'
@@ -7,6 +7,7 @@ import { householdDisplayName } from '../../domain/language'
 import { useLanguage } from '../../i18n/language-context'
 import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
+import { HistoryScreen } from '../history/HistoryScreen'
 import { TaskList } from '../tasks/TaskList'
 
 type HouseholdState =
@@ -16,11 +17,22 @@ type HouseholdState =
 
 // Pantalla de Inicio: dice con qué email has entrado (US-01), muestra tu hogar (US-02) y
 // sus tareas (src/features/tasks/), y deja cerrar la sesión (US-03) y cambiar el idioma (US-52).
+// Desde «Tus tareas» se abre el histórico (US-31), en lugar del Inicio, hasta «Volver».
 export function HomeScreen({ session }: { session: Session }) {
   const { language, t } = useLanguage()
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<ErrorCode | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  // Al volver del histórico, el foco vuelve a «Histórico» en lugar de perderse.
+  const historyButtonRef = useRef<HTMLButtonElement>(null)
+  const focusHistoryButton = useRef(false)
+  useEffect(() => {
+    if (!showHistory && focusHistoryButton.current) {
+      focusHistoryButton.current = false
+      historyButtonRef.current?.focus()
+    }
+  }, [showHistory])
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -44,6 +56,19 @@ export function HomeScreen({ session }: { session: Session }) {
     }
   }, [])
 
+  if (showHistory) {
+    return (
+      <Screen>
+        <HistoryScreen
+          onBack={() => {
+            focusHistoryButton.current = true
+            setShowHistory(false)
+          }}
+        />
+      </Screen>
+    )
+  }
+
   return (
     <Screen>
       <p>{t.home.signedInAs(session.email)}</p>
@@ -58,6 +83,8 @@ export function HomeScreen({ session }: { session: Session }) {
 
       <TaskList
         householdId={state.status === 'loaded' ? state.household?.id : undefined}
+        historyButtonRef={historyButtonRef}
+        onOpenHistory={() => setShowHistory(true)}
       />
 
       <div className="stack account">

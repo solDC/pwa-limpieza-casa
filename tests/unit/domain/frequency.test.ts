@@ -8,6 +8,7 @@ import {
   dueStatus,
   isWeekend,
   moveWeekendOptions,
+  pastWeekendRounds,
   thisOrNextWeekend,
 } from '../../../src/domain/frequency'
 import type { Frequency } from '../../../src/domain/task'
@@ -552,5 +553,42 @@ describe('thisOrNextWeekend: el primer finde que se puede elegir', () => {
   it('a fin de mes y de año', () => {
     expect(thisOrNextWeekend('2026-12-30')).toBe('2027-01-02') // miércoles
     expect(thisOrNextWeekend('2027-01-03')).toBe('2027-01-02') // domingo
+  })
+})
+
+describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => {
+  const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
+  const task = { frequency: weekly, createdOn: '2026-10-31' }
+
+  it('las que acaban entre los dos días y antes de hoy, desde la primera de la tarea', () => {
+    expect(pastWeekendRounds(task, '2026-11-01', '2026-11-30', '2026-11-21')).toEqual([
+      { startsOn: '2026-10-31', dueBy: '2026-11-06' },
+      { startsOn: '2026-11-07', dueBy: '2026-11-13' },
+      { startsOn: '2026-11-14', dueBy: '2026-11-20' },
+    ])
+  })
+
+  it('el viernes, la vuelta de esa semana aún no ha pasado', () => {
+    expect(pastWeekendRounds(task, '2026-11-01', '2026-11-30', '2026-11-20')).toHaveLength(2)
+  })
+
+  it('solo las que acaban desde el primer día que se pide', () => {
+    expect(pastWeekendRounds(task, '2026-11-13', '2026-11-30', '2026-11-21')).toEqual([
+      { startsOn: '2026-11-07', dueBy: '2026-11-13' },
+      { startsOn: '2026-11-14', dueBy: '2026-11-20' },
+    ])
+  })
+
+  it('las de cada 15 días, cada 14 días desde su primer finde, también a fin de año', () => {
+    const biweekly = { frequency: { kind: 'weekendBiweekly', startOn: '2026-12-19' } as Frequency, createdOn: '2026-12-01' }
+    expect(pastWeekendRounds(biweekly, '2026-12-01', '2027-01-31', '2027-01-20')).toEqual([
+      { startsOn: '2026-12-19', dueBy: '2026-12-25' },
+      { startsOn: '2027-01-02', dueBy: '2027-01-08' },
+    ])
+  })
+
+  it('las de cada N días y las puntuales no tienen plazo: ninguna', () => {
+    const interval = { frequency: { kind: 'interval', days: 3, nextDueOn: null } as Frequency, createdOn: '2026-10-31' }
+    expect(pastWeekendRounds(interval, '2026-11-01', '2026-11-30', '2026-11-21')).toEqual([])
   })
 })

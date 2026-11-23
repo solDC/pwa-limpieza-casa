@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { agenda } from '../../domain/agenda'
 import { useLanguage } from '../../i18n/language-context'
@@ -11,7 +11,16 @@ import { useToday } from './use-today'
 // puntuales y las de más adelante (US-29, src/domain/agenda.ts), y «Añadir tarea» (US-33),
 // que abre el formulario encima de la lista.
 // `householdId` es el hogar donde se añaden (hasta que se carga, no se puede añadir).
-export function TaskList({ householdId }: { householdId?: string }) {
+// «Histórico» (US-31) abre el histórico con `onOpenHistory`.
+export function TaskList({
+  householdId,
+  historyButtonRef,
+  onOpenHistory,
+}: {
+  householdId?: string
+  historyButtonRef: RefObject<HTMLButtonElement | null>
+  onOpenHistory: () => void
+}) {
   const { t } = useLanguage()
   const {
     state,
@@ -51,7 +60,12 @@ export function TaskList({ householdId }: { householdId?: string }) {
 
   return (
     <section className="stack tasks" aria-labelledby="tasks-heading">
-      <h2 id="tasks-heading">{t.tasks.title}</h2>
+      <div className="tasks-header">
+        <h2 id="tasks-heading">{t.tasks.title}</h2>
+        <button ref={historyButtonRef} type="button" className="button-link" onClick={onOpenHistory}>
+          {t.history.open}
+        </button>
+      </div>
 
       {householdId &&
         (adding ? (

@@ -97,6 +97,34 @@ function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
   return startOn !== null && startOn > first ? startOn : first
 }
 
+/**
+ * US-31 · Las vueltas de una tarea de fin de semana cuyo plazo (el viernes) está entre `from`
+ * y `to` y ya ha pasado (antes de `today`), según el calendario que tiene ahora la tarea:
+ * desde su primer finde (US-48, o el finde al que se movió, US-42), cada 7 o 14 días. En las
+ * demás tareas, ninguna: no tienen plazo.
+ */
+export function pastWeekendRounds(
+  task: Pick<Task, 'frequency' | 'createdOn'>,
+  from: LocalDate,
+  to: LocalDate,
+  today: LocalDate,
+): Round[] {
+  const { frequency } = task
+  if (!isWeekend(frequency)) return []
+  const every = frequency.kind === 'weekendBiweekly' ? 14 : 7
+  const first = firstWeekend(task)
+  const lastDueBy = to < today ? to : addDays(today, -1)
+  // El primer sábado cuyo viernes no es anterior a `from`.
+  const skip = Math.max(0, Math.ceil(daysBetween(first, addDays(from, -(WEEKEND_ROUND_DAYS - 1))) / every))
+  const rounds: Round[] = []
+  for (let saturday = addDays(first, skip * every); ; saturday = addDays(saturday, every)) {
+    const dueBy = addDays(saturday, WEEKEND_ROUND_DAYS - 1)
+    if (dueBy > lastDueBy) break
+    rounds.push({ startsOn: saturday, dueBy })
+  }
+  return rounds
+}
+
 /** La vuelta, o la que empieza el sábado `first` si es anterior a ese día. */
 function notBefore(round: Round, first: LocalDate): Round {
   if (round.startsOn !== null && round.startsOn >= first) return round
