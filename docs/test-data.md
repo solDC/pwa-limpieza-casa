@@ -4,7 +4,7 @@ Consultas SQL para preparar los datos de una prueba en el **proyecto de pruebas*
 
 > ⚠️ **Solo en el proyecto de pruebas.** Antes de pegar nada, comprueba arriba a la izquierda del panel de Supabase que estás en el proyecto de pruebas, no en el de producción.
 
-> En las consultas, las tareas por defecto van siempre con su nombre en castellano (`'Baño'`), aunque la app esté en inglés: así se guardan en la base de datos. Si has renombrado la tarea desde la app (US-54), pon el nombre nuevo, tal como lo escribiste. Los textos de ejemplo («Retrasada 5 días») son los de la app en castellano; en inglés se ve «Bathroom» y «Overdue 5 days».
+> En las consultas, las tareas por defecto van siempre con su nombre en castellano (`'Baño'`), aunque la app esté en inglés: así se guardan en la base de datos. Si has renombrado la tarea o sus partes desde la app (con «Cambiar nombre», US-54, o «Cambiar partes», US-51), pon el nombre nuevo, tal como lo escribiste. Los textos de ejemplo («Retrasada 5 días») son los de la app en castellano; en inglés se ve «Bathroom» y «Overdue 5 days».
 
 ## Cómo usarlas
 
@@ -47,7 +47,7 @@ order by p.position;
 
 ## Dejar todas las tareas sin hacer
 
-Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas: para tener las partes de antes, entra con otra cuenta.
+Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas, ni deshace el cambio de finde de una tarea movida (US-42): para tener las tareas como al principio, entra con otra cuenta.
 
 ```sql
 delete from public.task_rounds r

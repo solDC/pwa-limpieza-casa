@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays } from '../../src/domain/dates'
-import { signIn, task, taskNames, taskParts, todayInMadrid } from './helpers/app'
-import { setAllTasksCreatedOn } from './helpers/database'
+import { newTaskForm, signIn, task, taskNames, taskParts, todayInMadrid } from './helpers/app'
+import { archivePart, movePartWeight, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-54 · Cambiar el nombre de una tarea y de sus partes (#96)
@@ -219,5 +219,79 @@ test.describe('US-54 · No hay dos tareas con el mismo nombre', () => {
     await form.getByLabel('Nombre de la tarea').fill('Baño de arriba')
     await form.getByRole('button', { name: 'Guardar' }).click()
     await expect(form.getByRole('alert')).toHaveText('Ya tienes una tarea con ese nombre.')
+  })
+})
+
+test.describe('US-54 · Partes cambiadas en otro dispositivo', () => {
+  test('si la parte que renombro se ha quitado en otro dispositivo, la app lo dice y el formulario se pone al día', async ({
+    page,
+  }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await renameButton(page, 'Superficies').click()
+    const form = renameForm(page, 'Superficies')
+    await form.getByLabel('Parte 2').fill('Salón comedor')
+
+    // Mientras, en otro dispositivo, se quita Salón (y Dormitorio pasa a 50).
+    await archivePart(email, 'Superficies', 'Salón', 'Dormitorio')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form.getByRole('alert')).toHaveText(
+      'Las partes de esta tarea han cambiado en otro dispositivo. Revísalas y vuelve a intentarlo.',
+    )
+    // El formulario muestra las partes de ahora, y ya se puede guardar.
+    await expect(form.getByLabel(/^Parte/)).toHaveCount(2)
+    await expect(form.getByLabel('Parte 2')).toHaveValue('Dormitorio')
+    await form.getByLabel('Parte 2').fill('Dormitorio grande')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toHaveCount(0)
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Dormitorio grande 50 %/])
+  })
+
+  test('si la lista se vuelve a cargar con el formulario abierto, no renombra otra parte', async ({ page }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await renameButton(page, 'Superficies').click()
+    const form = renameForm(page, 'Superficies')
+
+    // En otro dispositivo se quita Salón; aquí se añade una tarea, y la lista se vuelve a cargar.
+    await archivePart(email, 'Superficies', 'Salón', 'Dormitorio')
+    await page.getByRole('button', { name: 'Añadir tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Terraza')
+    await newTaskForm(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(task(page, 'Terraza')).toBeVisible()
+
+    // El formulario se pone al día: cada parte con su nombre.
+    await expect(form.getByLabel(/^Parte/)).toHaveCount(2)
+    await expect(form.getByLabel('Parte 2')).toHaveValue('Dormitorio')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toHaveCount(0)
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Dormitorio 50 %/])
+  })
+
+  test('si en otro dispositivo solo cambian los pesos, no se pierde lo que estoy escribiendo', async ({ page }) => {
+    const email = uniqueEmail()
+    await signIn(page, email)
+    await renameButton(page, 'Superficies').click()
+    const form = renameForm(page, 'Superficies')
+    await form.getByLabel('Parte 2').fill('Salón comedor')
+
+    // En otro dispositivo se pasan 5 puntos de Cocina a Salón; aquí se añade una tarea, y la
+    // lista se vuelve a cargar.
+    await movePartWeight(email, 'Superficies', 'Cocina', 'Salón', 5)
+    await page.getByRole('button', { name: 'Añadir tarea' }).click()
+    await newTaskForm(page).getByLabel('Nombre').fill('Terraza')
+    await newTaskForm(page).getByLabel('Puntual').check()
+    await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 45 %/, /^Salón 30 %/, /^Dormitorio 25 %/])
+
+    await expect(form.getByLabel('Parte 2')).toHaveValue('Salón comedor')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(form).toHaveCount(0)
+    await expect(taskParts(task(page, 'Superficies'))).toHaveText([
+      /^Cocina 45 %/,
+      /^Salón comedor 30 %/,
+      /^Dormitorio 25 %/,
+    ])
   })
 })

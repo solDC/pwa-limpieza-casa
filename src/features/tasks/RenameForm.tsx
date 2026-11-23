@@ -10,7 +10,7 @@ import {
 } from '../../domain/rename-task'
 import type { Task } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
-import { renameTask } from '../../storage/tasks'
+import { renameTask, StalePartsError } from '../../storage/tasks'
 import { FieldError } from './FieldError'
 
 // US-54 · Cambiar el nombre de una tarea y de sus partes, dentro de su tarjeta. Sale con los
@@ -20,6 +20,7 @@ export function RenameForm({
   otherTasks,
   onSaved,
   onClose,
+  onStale,
 }: {
   task: Task
   /** Las tareas del hogar, para no repetir un nombre. */
@@ -27,15 +28,26 @@ export function RenameForm({
   /** Se ha guardado (solo lo renombrado). */
   onSaved: (rename: TaskRename) => void
   onClose: () => void
+  /** La lista no está al día (las partes se cambiaron en otro dispositivo): hay que volver a cargarla. */
+  onStale: () => void
 }) {
   const { language, t } = useLanguage()
   // Los nombres como se ven al abrirlo. Si se cambia de idioma con el formulario abierto, se
   // vuelven a poner como se ven en el nuevo: renombrar es escribir algo distinto de lo que se
-  // ve, y con los del idioma anterior se renombraría sin querer.
+  // ve, y con los del idioma anterior se renombraría sin querer. También si cambian los
+  // nombres o las partes (la lista se ha vuelto a cargar con cambios de otro dispositivo): los
+  // nombres van por posición, y con las partes de antes se renombraría otra parte. Si solo
+  // cambian los pesos, no: lo escrito se queda.
   const [draft, setDraft] = useState<RenameDraft>(() => renameDraft(task, language))
-  const [draftLanguage, setDraftLanguage] = useState(language)
-  if (draftLanguage !== language) {
-    setDraftLanguage(language)
+  const taskNow = JSON.stringify([
+    language,
+    task.name,
+    task.defaultKey,
+    task.parts.map((part) => [part.id, part.name, part.defaultKey]),
+  ])
+  const [taskShown, setTaskShown] = useState(taskNow)
+  if (taskShown !== taskNow) {
+    setTaskShown(taskNow)
     setDraft(renameDraft(task, language))
   }
   // Los avisos salen al intentar guardar, y después se ponen al día solos al corregir.
@@ -73,6 +85,7 @@ export function RenameForm({
     } catch (renameError) {
       setSaveError(errorCode(renameError, 'saveFailed'))
       setSaving(false)
+      if (renameError instanceof StalePartsError) onStale()
     }
   }
 

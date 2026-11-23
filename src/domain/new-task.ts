@@ -4,7 +4,8 @@
 // US-54 · Sin dos tareas con el mismo nombre, al crearlas y al renombrarlas.
 // US-51 · Las partes y sus pesos, también al cambiarlas en una tarea que ya existe.
 
-import { addDays, dayOfWeek } from './dates'
+import { addDays } from './dates'
+import { thisOrNextWeekend } from './frequency'
 import type { Language } from './language'
 import type { Frequency, LocalDate, Task } from './task'
 
@@ -147,8 +148,7 @@ export function equalWeights(count: number): number[] {
  * «cada 15 días». En sábado o domingo, el primero es ese mismo finde.
  */
 export function nextWeekends(today: LocalDate): [LocalDate, LocalDate] {
-  const day = dayOfWeek(today) // 0 = domingo … 6 = sábado
-  const first = day === 0 ? addDays(today, -1) : addDays(today, 6 - day)
+  const first = thisOrNextWeekend(today)
   return [first, addDays(first, 7)]
 }
 

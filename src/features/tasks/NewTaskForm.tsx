@@ -59,11 +59,7 @@ export function NewTaskForm({
   useEffect(() => nameRef.current?.focus(), [])
 
   function update(changes: Partial<NewTaskDraft>) {
-    apply({ ...draft, ...changes })
-  }
-
-  function apply(next: NewTaskDraft) {
-    setDraft(next)
+    setDraft({ ...draft, ...changes })
   }
 
   function chooseFrequency(kind: Frequency['kind']) {
@@ -77,12 +73,12 @@ export function NewTaskForm({
 
   function handleAddPart() {
     setPartKeys([...partKeys, nextPartKey.current++])
-    apply(addPart(draft))
+    setDraft(addPart(draft))
   }
 
   function handleRemovePart(index: number) {
     setPartKeys(partKeys.filter((_, i) => i !== index))
-    apply(removePart(draft, index))
+    setDraft(removePart(draft, index))
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -237,8 +233,8 @@ export function NewTaskForm({
         disabled={saving}
         onAdd={handleAddPart}
         onRemove={handleRemovePart}
-        onRename={(index, name) => apply(renamePart(draft, index, name))}
-        onWeight={(index, weight) => apply(setPartWeight(draft, index, weight))}
+        onRename={(index, name) => setDraft(renamePart(draft, index, name))}
+        onWeight={(index, weight) => setDraft(setPartWeight(draft, index, weight))}
       />
 
       {saveError && <ErrorMessage>{t.errors[saveError]}</ErrorMessage>}
