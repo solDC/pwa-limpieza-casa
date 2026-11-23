@@ -394,6 +394,48 @@ describe('US-31 · el peso de las partes hechas, al acabar la vuelta', () => {
     expect(saved.rows).toEqual([{ part_id: saved.task.oven, weight: 50 }])
   })
 
+  it('las de una vuelta que ya ha acabado no cambian, aunque la app la mande (por ejemplo, con la fecha de ayer)', async () => {
+    const saved = await asUser(db, ana, async (query) => {
+      const { rows } = await query(`select id from public.tasks where household_id = $1 and name = 'Superficies'`, [
+        anaHousehold,
+      ])
+      const taskId: string = rows[0].id
+      const parts = await query('select id from public.task_parts where task_id = $1 order by position', [taskId])
+      const ids = parts.rows.map((row) => row.id as string)
+      // Una vuelta de hace dos semanas con la cocina hecha (como administrador: la app solo
+      // puede marcar la de hoy).
+      await query('reset role')
+      const { rows: round } = await query(
+        `insert into public.task_part_completions (household_id, task_id, part_id, starts_on, due_by, completed_on)
+         select $1, $2, $3, d - 14, d - 8, d - 14 from (select (now() at time zone 'Europe/Madrid')::date as d) as madrid
+         returning starts_on, due_by`,
+        [anaHousehold, taskId, ids[0]],
+      )
+      await query('set local role authenticated')
+      await query(`select public.set_task_parts($1, $2, $2, $3, '{}', '{}', $4, $5)`, [
+        taskId,
+        ids,
+        [10, 80, 10],
+        round[0].starts_on,
+        round[0].due_by,
+      ])
+      await query('set constraints all immediate')
+      return completionsOf(query, taskId)
+    })
+    expect(saved.map((row: { weight: number }) => row.weight)).toEqual([50])
+  })
+
+  it('las de una vuelta ya terminada no cambian', async () => {
+    const saved = await asUser(db, ana, async (query) => {
+      const task = await kitchenTask(query)
+      await markDone(query, task.id, [task.oven])
+      await query('insert into public.task_rounds (household_id, task_id) values ($1, $2)', [anaHousehold, task.id])
+      await setParts(query, task.id, [[task.oven, 10], [task.fridge, 80], [task.cupboards, 10]])
+      return completionsOf(query, task.id)
+    })
+    expect(saved.map((row: { weight: number }) => row.weight)).toEqual([50])
+  })
+
   it('las que se quitan se quedan con su peso (la app ya no las cuenta en esa vuelta)', async () => {
     const saved = await asUser(db, ana, async (query) => {
       const task = await kitchenTask(query)

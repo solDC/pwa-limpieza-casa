@@ -176,15 +176,8 @@ export async function setTaskNextDueOn(email: string, taskName: string, nextDueO
 /**
  * US-51 · Quita una parte de una tarea del hogar de ese usuario, como si se hiciera desde
  * otro dispositivo: la archiva y pone a otra parte el peso que haga falta para sumar 100.
- * Con `archivedOn`, como si se hubiera quitado ese día (por defecto, hoy).
  */
-export async function archivePart(
-  email: string,
-  taskName: string,
-  partName: string,
-  otherPart: string,
-  archivedOn?: string,
-) {
+export async function archivePart(email: string, taskName: string, partName: string, otherPart: string) {
   const db = new pg.Client({ connectionString })
   await db.connect()
   try {
@@ -200,10 +193,7 @@ export async function archivePart(
     const removed = rows.find((row) => row.name === partName)
     const kept = rows.find((row) => row.name === otherPart)
     if (!removed || !kept) throw new Error(`No se han encontrado las partes de «${taskName}» de ${email}`)
-    await db.query('update public.task_parts set archived_on = coalesce($2::date, current_date) where id = $1', [
-      removed.id,
-      archivedOn ?? null,
-    ])
+    await db.query('update public.task_parts set archived_on = current_date where id = $1', [removed.id])
     await db.query('update public.task_parts set weight = $2 where id = $1', [kept.id, kept.weight + removed.weight])
     await db.query('commit')
   } catch (error) {
@@ -259,6 +249,51 @@ export async function addPastRound(
       [email, taskName, round.startsOn, round.dueBy, round.completedOn],
     )
     if (rowCount !== 1) throw new Error(`No se ha encontrado la tarea «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}
+
+/**
+ * US-31 · Cambia las partes de una tarea del hogar de ese usuario como lo haría «Cambiar
+ * partes» (`set_task_parts`) el día `day`, durante la vuelta que empieza `startsOn`: el peso
+ * nuevo de cada parte (`null`, se quita ese día), y el mismo peso nuevo para las partes ya
+ * hechas en esa vuelta. Así se prepara una vuelta pasada con los pesos cambiados a mitad.
+ */
+export async function changePartsDuringRound(
+  email: string,
+  taskName: string,
+  startsOn: string,
+  day: string,
+  weights: Record<string, number | null>,
+) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    await db.query('begin')
+    for (const [partName, weight] of Object.entries(weights)) {
+      const { rows } = await db.query(
+        `update public.task_parts p
+         set weight = coalesce($4::int, p.weight), archived_on = case when $4::int is null then $5::date end
+         from public.tasks t, public.household_members m, auth.users u
+         where t.id = p.task_id and m.household_id = t.household_id and u.id = m.user_id
+           and u.email = $1 and t.name = $2 and p.name = $3 and p.archived_on is null
+         returning p.id`,
+        [email, taskName, partName, weight, day],
+      )
+      if (rows.length !== 1) throw new Error(`No se ha encontrado la parte «${partName}» de «${taskName}» de ${email}`)
+      if (weight !== null) {
+        await db.query('update public.task_part_completions set weight = $2 where part_id = $1 and starts_on = $3', [
+          rows[0].id,
+          weight,
+          startsOn,
+        ])
+      }
+    }
+    await db.query('commit')
+  } catch (error) {
+    await db.query('rollback')
+    throw error
   } finally {
     await db.end()
   }

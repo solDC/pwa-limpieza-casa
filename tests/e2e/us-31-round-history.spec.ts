@@ -2,7 +2,12 @@ import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek } from '../../src/domain/dates'
 import { describeHistoryDay, describeWeekendDays } from '../../src/domain/history'
 import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
-import { addPastPartCompletions, addPastRound, archivePart, setAllTasksCreatedOn } from './helpers/database'
+import {
+  addPastPartCompletions,
+  addPastRound,
+  changePartsDuringRound,
+  setAllTasksCreatedOn,
+} from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-31 · Histórico de cada vuelta (#40)
@@ -119,17 +124,39 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await expect(historyDay(page, addDays(friday, 7))).toBeHidden()
   })
 
-  test('una vuelta a medias sale con el % que se veía en la lista al acabar: sin las partes quitadas en esa vuelta', async ({
+  test('una vuelta a medias sale con el % que se veía en la lista al acabar: si se cambiaron los pesos, con los nuevos', async ({
     page,
   }) => {
     const email = await signInWithTasksFrom(page, 30)
-    // El finde pasado: la cocina (50 %) y el salón (25 %), y el domingo se quitó la cocina.
-    await addPastPartCompletions(email, 'Superficies', ['Cocina', 'Salón'], 1)
+    // El finde pasado: el sábado, la cocina (50 %); el domingo se cambian los pesos (Cocina
+    // 10 %, Salón 80 %) y se hace el salón. En la lista se veía 90 %, no 130 %.
     const { saturday, friday } = previousWeekend()
-    await archivePart(email, 'Superficies', 'Cocina', 'Salón', addDays(saturday, 1))
+    await addPastPartCompletions(email, 'Superficies', ['Cocina'], 1)
+    await changePartsDuringRound(email, 'Superficies', saturday, addDays(saturday, 1), {
+      Cocina: 10,
+      Salón: 80,
+      Dormitorio: 10,
+    })
+    await addPastPartCompletions(email, 'Superficies', ['Salón'], 1)
     await openHistory(page)
 
-    await expect(historyEntry(page, friday, 'Superficies')).toContainText('Parcial (25 %)')
+    await expect(historyEntry(page, friday, 'Superficies')).toContainText('Parcial (90 %)')
+  })
+
+  test('una parte hecha y quitada en esa misma vuelta ya no cuenta, como en la lista', async ({ page }) => {
+    const email = await signInWithTasksFrom(page, 30)
+    // El finde pasado: la cocina (50 %) y el salón (25 %); el domingo se quita la cocina, y el
+    // salón pasa a 75 %. En la lista se veía 75 %.
+    const { saturday, friday } = previousWeekend()
+    await addPastPartCompletions(email, 'Superficies', ['Cocina', 'Salón'], 1)
+    await changePartsDuringRound(email, 'Superficies', saturday, addDays(saturday, 1), {
+      Cocina: null,
+      Salón: 75,
+      Dormitorio: 25,
+    })
+    await openHistory(page)
+
+    await expect(historyEntry(page, friday, 'Superficies')).toContainText('Parcial (75 %)')
   })
 
   test('sale lo de las últimas 4 semanas, de lo más reciente a lo más antiguo, y «Ver más» carga 4 semanas más', async ({

@@ -112,16 +112,25 @@ begin
   where p.id = kept.id;
 
   -- US-31 · Las partes ya hechas en la vuelta en curso pasan a contar con su peso nuevo: el
-  -- histórico muestra cada vuelta como se veía en la lista al acabar. Las de las vueltas
-  -- anteriores no cambian. Las que se quitan (archivadas) se quedan como estaban, pero dejan
-  -- de contar en esta vuelta (eso lo calcula la app, con archived_on).
+  -- histórico muestra cada vuelta como se veía en la lista al acabar. Las que se quitan
+  -- (archivadas) se quedan como estaban, pero dejan de contar en esta vuelta (eso lo calcula
+  -- la app, con archived_on). La vuelta la manda la app, así que se comprueba aquí que sigue
+  -- abierta: sin plazo o con el plazo sin acabar (hoy en Madrid), y sin terminar. Si no (por
+  -- ejemplo, un formulario abierto el viernes y guardado el sábado), no cambia nada: el % de
+  -- una vuelta acabada es el que tenía al acabar.
   update public.task_part_completions c
   set weight = p.weight
   from public.task_parts p
   where c.part_id = p.id
     and c.task_id = target_task_id
     and p.archived_on is null
-    and c.starts_on is not distinct from round_starts_on;
+    and c.starts_on is not distinct from round_starts_on
+    and (c.due_by is null or c.due_by >= today)
+    and not exists (
+      select 1
+      from public.task_rounds r
+      where r.task_id = c.task_id and r.starts_on is not distinct from c.starts_on
+    );
 
   -- Las nuevas, al final (también detrás de las archivadas).
   select coalesce(max(position), 0) into next_position from public.task_parts where task_id = target_task_id;
