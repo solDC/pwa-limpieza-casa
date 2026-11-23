@@ -53,7 +53,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-55 | La lista se pone al día al volver a la app | Nice to have | Pendiente | [#98](https://github.com/solDC/pwa-limpieza-casa/issues/98) |
-| US-56 | Volver con el botón atrás | Must have | Pendiente | — |
+| US-56 | Volver con el botón atrás | Must have | Pendiente | [#106](https://github.com/solDC/pwa-limpieza-casa/issues/106) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
 | US-44 | Deshacer una parte marcada como hecha | Backlog | Pendiente | [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63) |
