@@ -6,7 +6,7 @@ Las pruebas automáticas comprueban que la app hace lo que dicen las historias d
 
 | Carpeta | Qué prueba | Herramienta | Comando |
 |---|---|---|---|
-| `unit/` | La lógica pura de `src/domain/`: frecuencias, próximas fechas, progreso. Rápidas y sin red. | Vitest | `npm test` |
+| `unit/` | La lógica pura de `src/domain/`: frecuencias, próximas fechas, progreso, histórico. Rápidas y sin red. | Vitest | `npm test` |
 | `integration/` | La base de datos: tablas, reglas de seguridad (RLS) y funciones. Necesitan Supabase en local. | Vitest | `npm run test:integration` |
 | `e2e/` | La app entera en un navegador, como la usaría una persona: los criterios de aceptación de cada historia. | Playwright | `npm run test:e2e` |
 

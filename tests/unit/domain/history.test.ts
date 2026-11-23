@@ -201,7 +201,7 @@ describe('textos', () => {
     expect(describeOutcome({ status: 'partial', percent: 60, weekend: '2026-11-14' }, 'es')).toBe('Parcial (60 %)')
     expect(describeOutcome({ status: 'notCompleted', weekend: '2026-11-14' }, 'es')).toBe('No completada')
     expect(describeOutcome({ status: 'completed' }, 'en')).toBe('Completed')
-    expect(describeOutcome({ status: 'partial', percent: 60, weekend: '2026-11-14' }, 'en')).toBe('Partial (60 %)')
+    expect(describeOutcome({ status: 'partial', percent: 60, weekend: '2026-11-14' }, 'en')).toBe('Partial (60%)')
     expect(describeOutcome({ status: 'notCompleted', weekend: '2026-11-14' }, 'en')).toBe('Not completed')
   })
 

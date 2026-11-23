@@ -16,6 +16,11 @@ export type HistoryState =
       hasMore: boolean
       loadingMore: boolean
       moreError: ErrorCode | null
+      /**
+       * Lo último que ha cargado «Ver más»: el día más reciente de esas 4 semanas, o `null` si
+       * no había nada; `undefined` si aún no se ha pulsado.
+       */
+      loadedMore?: { firstDay: LocalDate | null }
     }
 
 /**
@@ -70,6 +75,7 @@ export function useHistory(today: LocalDate) {
                 days: [...current.days, ...older],
                 hasMore: hasOlderHistory(tasks.current, from),
                 loadingMore: false,
+                loadedMore: { firstDay: older[0]?.day ?? null },
               }
             : current,
         )

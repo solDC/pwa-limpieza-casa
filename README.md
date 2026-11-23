@@ -26,7 +26,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 
 Las historias se agrupan por *milestone* (MVP, MMP, MLP y Multicasa), en [`docs/user-stories.md`](docs/user-stories.md) y en los issues de GitHub.
 
-- **MMP (v1.0):** cancelar una tarea, cambiar cada cuánto toca, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, que la lista se ponga al día al volver a la app y avisos de error más visibles.
+- **MMP (v1.0):** cancelar una tarea (y verla en el histórico) o recuperarla, cambiar cada cuánto toca, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, que la lista se ponga al día al volver a la app y avisos de error más visibles.
 - **MLP:** el rediseño de la interfaz.
 - **Multicasa (v2.0):** tener varias casas y cambiar entre ellas.
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario. Está descrito en la sección «Visión» de [`docs/user-stories.md`](docs/user-stories.md).

@@ -186,7 +186,7 @@ const HISTORY_TEXTS = {
     today: 'Today',
     yesterday: 'Yesterday',
     completed: 'Completed',
-    partial: (percent: number) => `Partial (${percent} %)`,
+    partial: (percent: number) => `Partial (${percent}%)`,
     notCompleted: 'Not completed',
     weekend: (days: string) => `Weekend of ${days}`,
   },

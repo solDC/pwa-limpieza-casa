@@ -587,6 +587,22 @@ describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => 
     ])
   })
 
+  it('cada 7 días también al cambiar la hora (el último domingo de octubre y de marzo)', () => {
+    // El cambio de hora de octubre es el domingo 25.
+    const autumn = { frequency: weekly, createdOn: '2026-10-17' }
+    expect(pastWeekendRounds(autumn, '2026-10-20', '2026-11-03', '2026-11-03')).toEqual([
+      { startsOn: '2026-10-17', dueBy: '2026-10-23' },
+      { startsOn: '2026-10-24', dueBy: '2026-10-30' },
+    ])
+    // El de marzo, el domingo 28.
+    const spring = { frequency: weekly, createdOn: '2027-03-20' }
+    expect(pastWeekendRounds(spring, '2027-03-20', '2027-04-10', '2027-04-10')).toEqual([
+      { startsOn: '2027-03-20', dueBy: '2027-03-26' },
+      { startsOn: '2027-03-27', dueBy: '2027-04-02' },
+      { startsOn: '2027-04-03', dueBy: '2027-04-09' },
+    ])
+  })
+
   it('las de cada N días y las puntuales no tienen plazo: ninguna', () => {
     const interval = { frequency: { kind: 'interval', days: 3, nextDueOn: null } as Frequency, createdOn: '2026-10-31' }
     expect(pastWeekendRounds(interval, '2026-11-01', '2026-11-30', '2026-11-21')).toEqual([])

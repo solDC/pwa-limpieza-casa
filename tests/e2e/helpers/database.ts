@@ -225,3 +225,31 @@ export async function movePartWeight(email: string, taskName: string, from: stri
     await db.end()
   }
 }
+
+/**
+ * US-31 · Apunta como terminada una vuelta pasada de una tarea del hogar de ese usuario (la
+ * app solo deja terminar la de hoy): la que empieza `startsOn`, con plazo hasta `dueBy`
+ * (`null` sin plazo), terminada el día `completedOn`.
+ */
+export async function addPastRound(
+  email: string,
+  taskName: string,
+  round: { startsOn: string | null; dueBy: string | null; completedOn: string },
+) {
+  const db = new pg.Client({ connectionString })
+  await db.connect()
+  try {
+    const { rowCount } = await db.query(
+      `insert into public.task_rounds (household_id, task_id, starts_on, due_by, completed_on)
+       select t.household_id, t.id, $3, $4, $5
+       from public.tasks t
+       join public.household_members m on m.household_id = t.household_id
+       join auth.users u on u.id = m.user_id
+       where u.email = $1 and t.name = $2`,
+      [email, taskName, round.startsOn, round.dueBy, round.completedOn],
+    )
+    if (rowCount !== 1) throw new Error(`No se ha encontrado la tarea «${taskName}» de ${email}`)
+  } finally {
+    await db.end()
+  }
+}

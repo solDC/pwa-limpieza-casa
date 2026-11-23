@@ -317,7 +317,8 @@ body:has(.update-dialog[open]) {
 }
 
 /* Histórico (US-31): un título por día y, debajo, cada vuelta en una tarjeta. */
-.history h2:focus {
+.history h2:focus,
+.history h3:focus {
   outline: none;
 }
 

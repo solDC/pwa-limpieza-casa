@@ -345,7 +345,7 @@ para saber cómo voy con la limpieza.
 - En «Tus tareas» hay un botón «Histórico», que abre una pantalla aparte con «Volver».
 - Todo lo que desaparece de la lista sale en el histórico: cada vuelta completada (también las puntuales hechas) y cada vuelta de fin de semana que pasa de su plazo (el viernes) sin terminar.
 - El estado de cada vuelta es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos»; X es la suma de los pesos que tenían sus partes hechas el día en que se hicieron.
-- Las completadas salen con el día en que se hicieron; las parciales y las no completadas, con su fin de semana («Finde del 14-15 nov»).
+- Las completadas salen el día en que se hicieron; las parciales y las no completadas, el viernes en que acaba su plazo, con su fin de semana («Finde del 14-15 nov»).
 - Sale lo de las últimas 4 semanas, agrupado por día, de lo más reciente a lo más antiguo; «Ver más» carga 4 semanas más.
 
 *Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas.*
@@ -461,8 +461,9 @@ para que no salga como retrasada.
 - Al saltarla, la tarea muestra cuándo vuelve a tocar, como si se hubiera hecho; las puntuales no se pueden saltar (para eso está cancelarla, US-32).
 - En las de cada N días, la siguiente se cuenta desde el día en que se salta.
 - Si falla el guardado, la app lo dice y la tarea sigue como estaba.
+- En el histórico (US-31), esa vuelta sale como **Saltada**, no como «No completada».
 
-*Depende de la US-30. Cuando exista el histórico (US-31), esa vuelta sale como «Saltada», no como «No completada».*
+*Depende de la US-30 y la US-31.*
 
 ## Visión
 

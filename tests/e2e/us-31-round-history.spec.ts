@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek } from '../../src/domain/dates'
 import { describeHistoryDay, describeWeekendDays } from '../../src/domain/history'
 import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
-import { addPastPartCompletions, setAllTasksCreatedOn } from './helpers/database'
+import { addPastPartCompletions, addPastRound, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-31 · Histórico de cada vuelta (#40)
@@ -140,5 +140,37 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await expect(dayHeadings(page).first()).toHaveText(
       describeHistoryDay(shown[0], today, 'es'),
     )
+  })
+
+  test('una vuelta de fin de semana hecha la semana anterior a las 4 semanas, con el viernes dentro, no sale como no completada', async ({
+    page,
+  }) => {
+    const email = await signInWithTasksFrom(page, 60)
+    // El primer día de las 4 semanas es hace 27 días. Una vuelta de Superficies empieza el
+    // sábado anterior (de hace 28 a hace 33 días), se hace ese sábado y su viernes cae dentro.
+    // (Si hoy es viernes, esa vuelta no existe: el viernes cae fuera y la prueba no lo distingue.)
+    const today = todayInMadrid()
+    const firstDay = addDays(today, -27)
+    const saturday = addDays(addDays(firstDay, -1), -((dayOfWeek(addDays(firstDay, -1)) + 1) % 7))
+    await addPastRound(email, 'Superficies', { startsOn: saturday, dueBy: addDays(saturday, 6), completedOn: saturday })
+    await openHistory(page)
+    // Que haya cargado, antes de comprobar lo que no sale.
+    await expect(dayHeadings(page).first()).toBeVisible()
+
+    await expect(historyDay(page, addDays(saturday, 6))).toBeHidden()
+    await page.getByRole('button', { name: 'Ver más' }).click()
+    await expect(historyEntry(page, saturday, 'Superficies')).toContainText('Completada')
+    await expect(historyDay(page, saturday).getByRole('heading', { level: 3 })).toBeFocused()
+  })
+
+  test('si en las 4 semanas anteriores no hay nada, «Ver más» lo dice', async ({ page }) => {
+    // Creadas hace 30 días: puede haber algo de antes de las 4 semanas, pero no hay nada.
+    await signInWithTasksFrom(page, 30)
+    await openHistory(page)
+
+    await page.getByRole('button', { name: 'Ver más' }).click()
+    await expect(page.getByRole('status')).toHaveText('Nada en las 4 semanas anteriores.')
+    await expect(page.getByRole('button', { name: 'Ver más' })).toBeHidden()
+    await expect(page.getByRole('heading', { level: 2, name: 'Histórico' })).toBeFocused()
   })
 })

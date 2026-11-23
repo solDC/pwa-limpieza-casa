@@ -21,6 +21,16 @@ export function HistoryScreen({ onBack }: { onBack: () => void }) {
     headingRef.current?.focus()
   }, [])
 
+  // Después de «Ver más», el foco va al primer día que ha llegado; si no ha llegado nada y ya
+  // no hay «Ver más», al título, para que no se pierda con el botón.
+  const loadedMore = state.status === 'loaded' ? state.loadedMore : undefined
+  const hasMore = state.status === 'loaded' && state.hasMore
+  useEffect(() => {
+    if (!loadedMore) return
+    if (loadedMore.firstDay !== null) document.getElementById(`history-${loadedMore.firstDay}`)?.focus()
+    else if (!hasMore) headingRef.current?.focus()
+  }, [loadedMore, hasMore])
+
   return (
     <section className="stack history" aria-labelledby="history-heading">
       <button type="button" className="button-link" onClick={onBack}>
@@ -39,7 +49,9 @@ export function HistoryScreen({ onBack }: { onBack: () => void }) {
           )}
           {state.days.map(({ day, entries }) => (
             <section key={day} className="history-day" aria-labelledby={`history-${day}`}>
-              <h3 id={`history-${day}`}>{describeHistoryDay(day, openedOn, language)}</h3>
+              <h3 id={`history-${day}`} tabIndex={-1}>
+                {describeHistoryDay(day, openedOn, language)}
+              </h3>
               <ul role="list" className="history-list">
                 {entries.map(({ task, outcome }) => (
                   <li key={`${task.id}-${outcome.status}`} className="card history-entry">
@@ -55,6 +67,10 @@ export function HistoryScreen({ onBack }: { onBack: () => void }) {
               </ul>
             </section>
           ))}
+          {/* Siempre en la página: los lectores de pantalla solo leen lo que cambia dentro. */}
+          <p role="status" className="muted">
+            {state.days.length > 0 && state.loadedMore?.firstDay === null && t.history.emptyMore}
+          </p>
           {state.moreError && <ErrorMessage>{t.errors[state.moreError]}</ErrorMessage>}
           {state.hasMore && (
             <button
