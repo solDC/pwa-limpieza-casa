@@ -12,7 +12,7 @@ import { getSupabase } from './supabase-client'
  * Lo que hace falta para el histórico de los días de `from` a `to`: las vueltas terminadas
  * esos días o la semana anterior (las de fin de semana cuyo plazo acaba esos días pueden
  * haberse terminado hasta 6 días antes) y las partes hechas de las vueltas de fin de semana
- * cuyo plazo acaba esos días.
+ * cuyo plazo acaba esos días, con el día en que se quitó la parte (US-51), si se quitó.
  */
 export async function listHistory(
   from: LocalDate,
@@ -27,7 +27,7 @@ export async function listHistory(
       .lte('completed_on', to),
     supabase
       .from('task_part_completions')
-      .select('task_id, starts_on, due_by, weight')
+      .select('task_id, starts_on, due_by, weight, task_parts!task_part_completions_part_fkey (archived_on)')
       .gte('due_by', from)
       .lte('due_by', to),
   ])
@@ -39,12 +39,19 @@ export async function listHistory(
       completedOn: row.completed_on,
     })),
     parts: (
-      parts.data as { task_id: string; starts_on: string | null; due_by: string | null; weight: number }[]
+      parts.data as unknown as {
+        task_id: string
+        starts_on: string | null
+        due_by: string | null
+        weight: number
+        task_parts: { archived_on: string | null }
+      }[]
     ).map((row) => ({
       taskId: row.task_id,
       startsOn: row.starts_on,
       dueBy: row.due_by,
       weight: row.weight,
+      removedOn: row.task_parts.archived_on,
     })),
   }
 }

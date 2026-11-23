@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek } from '../../src/domain/dates'
 import { describeHistoryDay, describeWeekendDays } from '../../src/domain/history'
 import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
-import { addPastPartCompletions, addPastRound, setAllTasksCreatedOn } from './helpers/database'
+import { addPastPartCompletions, addPastRound, archivePart, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-31 · Histórico de cada vuelta (#40)
@@ -117,6 +117,19 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
 
     // La vuelta en curso sigue en la lista, no en el histórico, aunque vaya con retraso.
     await expect(historyDay(page, addDays(friday, 7))).toBeHidden()
+  })
+
+  test('una vuelta a medias sale con el % que se veía en la lista al acabar: sin las partes quitadas en esa vuelta', async ({
+    page,
+  }) => {
+    const email = await signInWithTasksFrom(page, 30)
+    // El finde pasado: la cocina (50 %) y el salón (25 %), y el domingo se quitó la cocina.
+    await addPastPartCompletions(email, 'Superficies', ['Cocina', 'Salón'], 1)
+    const { saturday, friday } = previousWeekend()
+    await archivePart(email, 'Superficies', 'Cocina', 'Salón', addDays(saturday, 1))
+    await openHistory(page)
+
+    await expect(historyEntry(page, friday, 'Superficies')).toContainText('Parcial (25 %)')
   })
 
   test('sale lo de las últimas 4 semanas, de lo más reciente a lo más antiguo, y «Ver más» carga 4 semanas más', async ({

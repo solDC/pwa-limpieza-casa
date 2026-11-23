@@ -176,8 +176,15 @@ export async function setTaskNextDueOn(email: string, taskName: string, nextDueO
 /**
  * US-51 · Quita una parte de una tarea del hogar de ese usuario, como si se hiciera desde
  * otro dispositivo: la archiva y pone a otra parte el peso que haga falta para sumar 100.
+ * Con `archivedOn`, como si se hubiera quitado ese día (por defecto, hoy).
  */
-export async function archivePart(email: string, taskName: string, partName: string, otherPart: string) {
+export async function archivePart(
+  email: string,
+  taskName: string,
+  partName: string,
+  otherPart: string,
+  archivedOn?: string,
+) {
   const db = new pg.Client({ connectionString })
   await db.connect()
   try {
@@ -193,7 +200,10 @@ export async function archivePart(email: string, taskName: string, partName: str
     const removed = rows.find((row) => row.name === partName)
     const kept = rows.find((row) => row.name === otherPart)
     if (!removed || !kept) throw new Error(`No se han encontrado las partes de «${taskName}» de ${email}`)
-    await db.query('update public.task_parts set archived_on = current_date where id = $1', [removed.id])
+    await db.query('update public.task_parts set archived_on = coalesce($2::date, current_date) where id = $1', [
+      removed.id,
+      archivedOn ?? null,
+    ])
     await db.query('update public.task_parts set weight = $2 where id = $1', [kept.id, kept.weight + removed.weight])
     await db.query('commit')
   } catch (error) {

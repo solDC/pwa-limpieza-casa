@@ -354,6 +354,57 @@ describe('US-51 · cambiar las partes de una tarea', () => {
   })
 })
 
+describe('US-31 · el peso de las partes hechas, al acabar la vuelta', () => {
+  /** Las partes hechas de la tarea, con su peso guardado. */
+  async function completionsOf(query: Query, taskId: string) {
+    const { rows } = await query('select part_id, weight from public.task_part_completions where task_id = $1', [taskId])
+    return rows
+  }
+
+  it('al cambiar los pesos, las partes ya hechas en la vuelta pasan a contar con su peso nuevo', async () => {
+    const saved = await asUser(db, ana, async (query) => {
+      const task = await kitchenTask(query)
+      await markDone(query, task.id, [task.oven])
+      await setParts(query, task.id, [[task.oven, 10], [task.fridge, 80], [task.cupboards, 10]])
+      await markDone(query, task.id, [task.fridge])
+      return { rows: await completionsOf(query, task.id), task }
+    })
+    // 10 + 80 = 90 %, como en la lista; no 50 + 80.
+    expect(saved.rows).toEqual(
+      expect.arrayContaining([
+        { part_id: saved.task.oven, weight: 10 },
+        { part_id: saved.task.fridge, weight: 80 },
+      ]),
+    )
+    expect(saved.rows).toHaveLength(2)
+  })
+
+  it('las de otra vuelta no cambian', async () => {
+    const saved = await asUser(db, ana, async (query) => {
+      const task = await kitchenTask(query)
+      await markDone(query, task.id, [task.oven])
+      // Como si la vuelta en curso fuera otra (la de la puntual no tiene fecha).
+      await query(
+        `select public.set_task_parts($1, $2, $3, '{10,80,10}', '{}', '{}', date '2026-11-21', date '2026-11-27')`,
+        [task.id, [task.oven, task.fridge, task.cupboards], [task.oven, task.fridge, task.cupboards]],
+      )
+      await query('set constraints all immediate')
+      return { rows: await completionsOf(query, task.id), task }
+    })
+    expect(saved.rows).toEqual([{ part_id: saved.task.oven, weight: 50 }])
+  })
+
+  it('las que se quitan se quedan con su peso (la app ya no las cuenta en esa vuelta)', async () => {
+    const saved = await asUser(db, ana, async (query) => {
+      const task = await kitchenTask(query)
+      await markDone(query, task.id, [task.fridge])
+      await setParts(query, task.id, [[task.oven, 50], [task.cupboards, 50]])
+      return { rows: await completionsOf(query, task.id), task }
+    })
+    expect(saved.rows).toEqual([{ part_id: saved.task.fridge, weight: 25 }])
+  })
+})
+
 describe('US-51 · seguridad', () => {
   it('nadie puede cambiar las partes de una tarea de otro hogar', async () => {
     await expect(

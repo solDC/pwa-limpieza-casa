@@ -15,13 +15,18 @@ export type CompletedRound = {
   completedOn: LocalDate
 }
 
-/** Una parte hecha (una fila de `task_part_completions`), con el peso que tenía ese día. */
+/**
+ * Una parte hecha (una fila de `task_part_completions`), con su peso al acabar la vuelta: si
+ * se cambian los pesos a mitad de vuelta, la base de datos lo pone al día (US-51).
+ */
 export type DonePart = {
   taskId: string
   startsOn: LocalDate | null
   /** Hasta cuándo había plazo (`null` en las de cada N días y las puntuales). */
   dueBy: LocalDate | null
   weight: number
+  /** El día en que se quitó la parte (US-51), o `null` si sigue en la tarea. */
+  removedOn: LocalDate | null
 }
 
 /** Cómo acabó una vuelta. Las parciales y las no completadas, con su finde (el sábado). */
@@ -67,7 +72,8 @@ const STATUS_ORDER: Record<RoundOutcome['status'], number> = {
  * están (canceladas) no salen.
  * - **Completadas:** cada vuelta terminada, el día en que se terminó.
  * - **Parciales:** cada vuelta de fin de semana con alguna parte hecha que no se terminó, el
- *   día en que acabó su plazo (el viernes), con la suma de los pesos que tenían sus partes.
+ *   día en que acabó su plazo (el viernes), con la suma de los pesos de sus partes hechas al
+ *   acabar la vuelta, como se veía en la lista: sin las que se quitaron en esa misma vuelta.
  * - **No completadas:** cada vuelta de fin de semana sin nada hecho, el día en que acabó su
  *   plazo, según el calendario que tiene ahora la tarea.
  * Las vueltas de fin de semana salen cuando su plazo ya ha pasado (antes de `today`), como en
@@ -102,6 +108,8 @@ export function historyDays(
   const withParts = new Set<string>()
   const partial = new Map<string, { taskId: string; weekend: LocalDate; dueBy: LocalDate; percent: number }>()
   for (const part of parts) {
+    // Quitada en esa vuelta (o antes de que acabe): ya no cuenta, como en la lista.
+    if (part.removedOn !== null && (part.dueBy === null || part.removedOn <= part.dueBy)) continue
     withParts.add(key(part.taskId, part.startsOn))
     if (part.startsOn === null || part.dueBy === null) continue
     if (part.dueBy >= today || !inRange(part.dueBy)) continue

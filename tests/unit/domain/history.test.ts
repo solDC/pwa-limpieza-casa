@@ -67,13 +67,44 @@ describe('qué sale en el histórico', () => {
         { taskId: 'weekly', startsOn: '2026-11-21', completedOn: '2026-11-21' },
       ],
       [
-        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 40 },
-        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 25 },
+        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 40, removedOn: null },
+        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 25, removedOn: null },
       ],
     )
     expect(result.find((day) => day.day === '2026-11-20')).toEqual({
       day: '2026-11-20',
       entries: [{ task: weekly, outcome: { status: 'partial', percent: 65, weekend: '2026-11-14' } }],
+    })
+  })
+
+  it('una parte hecha y quitada en esa misma vuelta ya no cuenta, como en la lista', () => {
+    const result = days(
+      [weekly],
+      [],
+      [
+        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 40, removedOn: '2026-11-15' },
+        { taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 30, removedOn: null },
+        // Quitada después de la vuelta: en esa vuelta sí cuenta.
+        { taskId: 'weekly', startsOn: '2026-11-07', dueBy: '2026-11-13', weight: 20, removedOn: '2026-11-15' },
+      ],
+    )
+    expect(result.find((day) => day.day === '2026-11-20')?.entries[0].outcome).toEqual({
+      status: 'partial',
+      percent: 30,
+      weekend: '2026-11-14',
+    })
+    expect(result.find((day) => day.day === '2026-11-13')?.entries[0].outcome).toEqual({
+      status: 'partial',
+      percent: 20,
+      weekend: '2026-11-07',
+    })
+  })
+
+  it('si se quitaron todas las partes hechas de la vuelta, sale como no completada', () => {
+    const parts = [{ taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 40, removedOn: '2026-11-15' }]
+    expect(days([weekly], [], parts)[0]).toEqual({
+      day: '2026-11-20',
+      entries: [{ task: weekly, outcome: { status: 'notCompleted', weekend: '2026-11-14' } }],
     })
   })
 
@@ -90,7 +121,7 @@ describe('qué sale en el histórico', () => {
   it('la vuelta en curso no sale, aunque vaya con retraso: sigue en la lista hasta el viernes', () => {
     const friday = historyDays([weekly], [], [], '2026-10-27', '2026-11-20', '2026-11-20')
     expect(friday.map((day) => day.day)).toEqual(['2026-11-13', '2026-11-06'])
-    const parts = [{ taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 50 }]
+    const parts = [{ taskId: 'weekly', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 50, removedOn: null }]
     expect(historyDays([weekly], [], parts, '2026-10-27', '2026-11-20', '2026-11-20')[0].day).toBe('2026-11-13')
   })
 
@@ -99,8 +130,8 @@ describe('qué sale en el histórico', () => {
       [interval, oneOff],
       [],
       [
-        { taskId: 'interval', startsOn: '2026-11-01', dueBy: null, weight: 50 },
-        { taskId: 'one-off', startsOn: null, dueBy: null, weight: 50 },
+        { taskId: 'interval', startsOn: '2026-11-01', dueBy: null, weight: 50, removedOn: null },
+        { taskId: 'one-off', startsOn: null, dueBy: null, weight: 50, removedOn: null },
       ],
     )
     expect(result).toEqual([])
@@ -131,7 +162,7 @@ describe('qué sale en el histórico', () => {
 
   it('las vueltas a medias salen siempre, también las de antes de mover la tarea', () => {
     const moved: HistoryTask = { ...weekly, frequency: { kind: 'weekendWeekly', startOn: '2026-11-14' } }
-    const parts = [{ taskId: 'weekly', startsOn: '2026-11-07', dueBy: '2026-11-13', weight: 30 }]
+    const parts = [{ taskId: 'weekly', startsOn: '2026-11-07', dueBy: '2026-11-13', weight: 30, removedOn: null }]
     expect(days([moved], [], parts).map((day) => day.day)).toEqual(['2026-11-20', '2026-11-13'])
   })
 
@@ -155,7 +186,7 @@ describe('qué sale en el histórico', () => {
     const result = days(
       [weekly, other, third],
       [{ taskId: 'third', startsOn: '2026-11-17', completedOn: '2026-11-20' }],
-      [{ taskId: 'other', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 50 }],
+      [{ taskId: 'other', startsOn: '2026-11-14', dueBy: '2026-11-20', weight: 50, removedOn: null }],
     )
     expect(result[0].entries.map((entry) => [entry.task.id, entry.outcome.status])).toEqual([
       ['third', 'completed'],
