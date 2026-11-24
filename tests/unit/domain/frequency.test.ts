@@ -17,7 +17,7 @@ import type { Frequency } from '../../../src/domain/task'
 
 const createdOn = '2026-11-08'
 const round = (frequency: Frequency, lastCompletedOn: string | null, today: string) =>
-  currentRound({ frequency, createdOn, lastCompletedOn }, today)
+  currentRound({ frequency, frequencySince: createdOn, lastCompletedOn }, today)
 
 describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el viernes', () => {
   const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
@@ -66,7 +66,7 @@ describe('semanal, en fin de semana: toca el finde y se puede hacer hasta el vie
     expect(round(weekly, null, '2028-02-29')).toEqual({ startsOn: '2028-02-26', dueBy: '2028-03-03' })
     // Una tarea creada antes de ese cambio de hora (con fecha anterior al resto de pruebas).
     expect(
-      currentRound({ frequency: weekly, createdOn: '2026-01-01', lastCompletedOn: null }, '2026-03-29'),
+      currentRound({ frequency: weekly, frequencySince: '2026-01-01', lastCompletedOn: null }, '2026-03-29'),
     ).toEqual({ startsOn: '2026-03-28', dueBy: '2026-04-03' })
   })
 })
@@ -105,7 +105,7 @@ describe('US-42 · una semanal movida a otro finde', () => {
 
   it('un finde anterior al primero de la tarea no la adelanta (US-48)', () => {
     const createdThursday = currentRound(
-      { frequency: movedTo('2026-11-07'), createdOn: '2026-11-12', lastCompletedOn: null },
+      { frequency: movedTo('2026-11-07'), frequencySince: '2026-11-12', lastCompletedOn: null },
       '2026-11-12',
     )
     expect(createdThursday).toEqual({ startsOn: '2026-11-14', dueBy: '2026-11-20' })
@@ -125,7 +125,7 @@ describe('US-42 · una de cada 15 días movida a otro finde', () => {
 describe('US-42 · los findes a los que se puede mover una tarea', () => {
   const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
   const options = (today: string, lastCompletedOn: string | null = null) => {
-    const task = { frequency: weekly, createdOn, lastCompletedOn }
+    const task = { frequency: weekly, frequencySince: createdOn, lastCompletedOn }
     return moveWeekendOptions(task, currentRound(task, today)!, today)
   }
 
@@ -152,7 +152,7 @@ describe('US-42 · los findes a los que se puede mover una tarea', () => {
   })
 
   it('una movida más adelante se puede traer de vuelta a un finde anterior', () => {
-    const task = { frequency: { kind: 'weekendWeekly', startOn: '2026-12-19' } as Frequency, createdOn, lastCompletedOn: null }
+    const task = { frequency: { kind: 'weekendWeekly', startOn: '2026-12-19' } as Frequency, frequencySince: createdOn, lastCompletedOn: null }
     const shown = currentRound(task, '2026-11-18')!
     expect(shown.startsOn).toBe('2026-12-19')
     expect(moveWeekendOptions(task, shown, '2026-11-18').slice(0, 2)).toEqual(['2026-11-21', '2026-11-28'])
@@ -161,7 +161,7 @@ describe('US-42 · los findes a los que se puede mover una tarea', () => {
   it('cruza el fin de mes y el cambio de hora', () => {
     // Una tarea creada a principios de año, para que la vuelta que se muestra sea la de antes.
     const firstOptions = (today: string) => {
-      const task = { frequency: weekly, createdOn: '2026-01-01', lastCompletedOn: null }
+      const task = { frequency: weekly, frequencySince: '2026-01-01', lastCompletedOn: null }
       return moveWeekendOptions(task, currentRound(task, today)!, today).slice(0, 3)
     }
     // Miércoles 24 mar 2027: el domingo 28 cambia la hora.
@@ -445,7 +445,7 @@ describe('una tarea nueva no empieza con una vuelta anterior a crearla', () => {
   const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
   const cati: Frequency = { kind: 'weekendBiweekly', startOn: '2026-12-05' }
   const roundOf = (frequency: Frequency, created: string, today: string) =>
-    currentRound({ frequency, createdOn: created, lastCompletedOn: null }, today)!
+    currentRound({ frequency, frequencySince: created, lastCompletedOn: null }, today)!
 
   it('de fin de semana, creada de lunes a viernes: empieza el sábado siguiente, sin retraso', () => {
     // Lunes, miércoles y viernes.
@@ -558,7 +558,7 @@ describe('thisOrNextWeekend: el primer finde que se puede elegir', () => {
 
 describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => {
   const weekly: Frequency = { kind: 'weekendWeekly', startOn: null }
-  const task = { frequency: weekly, createdOn: '2026-10-31' }
+  const task = { frequency: weekly, frequencySince: '2026-10-31' }
 
   it('las que acaban entre los dos días y antes de hoy, desde la primera de la tarea', () => {
     expect(pastWeekendRounds(task, '2026-11-01', '2026-11-30', '2026-11-21')).toEqual([
@@ -580,7 +580,7 @@ describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => 
   })
 
   it('las de cada 15 días, cada 14 días desde su primer finde, también a fin de año', () => {
-    const biweekly = { frequency: { kind: 'weekendBiweekly', startOn: '2026-12-19' } as Frequency, createdOn: '2026-12-01' }
+    const biweekly = { frequency: { kind: 'weekendBiweekly', startOn: '2026-12-19' } as Frequency, frequencySince: '2026-12-01' }
     expect(pastWeekendRounds(biweekly, '2026-12-01', '2027-01-31', '2027-01-20')).toEqual([
       { startsOn: '2026-12-19', dueBy: '2026-12-25' },
       { startsOn: '2027-01-02', dueBy: '2027-01-08' },
@@ -589,13 +589,13 @@ describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => 
 
   it('cada 7 días también al cambiar la hora (el último domingo de octubre y de marzo)', () => {
     // El cambio de hora de octubre es el domingo 25.
-    const autumn = { frequency: weekly, createdOn: '2026-10-17' }
+    const autumn = { frequency: weekly, frequencySince: '2026-10-17' }
     expect(pastWeekendRounds(autumn, '2026-10-20', '2026-11-03', '2026-11-03')).toEqual([
       { startsOn: '2026-10-17', dueBy: '2026-10-23' },
       { startsOn: '2026-10-24', dueBy: '2026-10-30' },
     ])
     // El de marzo, el domingo 28.
-    const spring = { frequency: weekly, createdOn: '2027-03-20' }
+    const spring = { frequency: weekly, frequencySince: '2027-03-20' }
     expect(pastWeekendRounds(spring, '2027-03-20', '2027-04-10', '2027-04-10')).toEqual([
       { startsOn: '2027-03-20', dueBy: '2027-03-26' },
       { startsOn: '2027-03-27', dueBy: '2027-04-02' },
@@ -604,7 +604,7 @@ describe('US-31 · las vueltas de fin de semana cuyo plazo ya ha pasado', () => 
   })
 
   it('las de cada N días y las puntuales no tienen plazo: ninguna', () => {
-    const interval = { frequency: { kind: 'interval', days: 3, nextDueOn: null } as Frequency, createdOn: '2026-10-31' }
+    const interval = { frequency: { kind: 'interval', days: 3, nextDueOn: null } as Frequency, frequencySince: '2026-10-31' }
     expect(pastWeekendRounds(interval, '2026-11-01', '2026-11-30', '2026-11-21')).toEqual([])
   })
 })

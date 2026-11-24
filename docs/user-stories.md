@@ -51,7 +51,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 |---|---|---|---|---|
 | US-32 | Cancelar una tarea | Nice to have | Pendiente | [#41](https://github.com/solDC/pwa-limpieza-casa/issues/41) |
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
-| US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
+| US-53 | Cambiar cada cuánto toca una tarea | Must have | Hecha | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-55 | La lista se pone al día al volver a la app | Nice to have | Pendiente | [#98](https://github.com/solDC/pwa-limpieza-casa/issues/98) |
 | US-56 | Volver con el botón atrás | Must have | Pendiente | [#106](https://github.com/solDC/pwa-limpieza-casa/issues/106) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
@@ -319,13 +319,13 @@ para entender qué toca y qué he hecho sin traducir nada.
 Como usuario,
 quiero cambiar la frecuencia de una tarea que ya existe (por ejemplo, de cada N días a semanal en fin de semana, de semanal a cada 15 días, o de cada 7 días a cada 10),
 para adaptarla cuando cambia cómo la hago.
-- En «Tus tareas», cada tarea tiene «Cambiar frecuencia», con las cuatro frecuencias y lo que pide cada una, como al crearla (US-33): los días en las de cada N días y el primer finde en las de cada 15 días. También sirve para cambiar solo el número de días.
+- En «Tus tareas», cada tarea tiene «Cambiar frecuencia», con las cuatro frecuencias y lo que pide cada una, como al crearla (US-33): los días en las de cada N días, el primer finde en las de cada 15 días y la fecha opcional en las puntuales. También sirve para cambiar solo el número de días.
 - Al guardar, la tarea muestra la frecuencia nueva y cuándo toca con ella; con «Cancelar», se queda como estaba.
-- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima se cuenta desde la última vez que se hizo, o desde hoy si nunca se ha hecho; si ese día ya ha pasado, toca hoy.
-- Si la vuelta en curso estaba a medias, sus partes hechas no pasan a la vuelta nueva, que empieza con todas por hacer.
-- Las vueltas ya terminadas se conservan.
+- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima toca N días después de la última vez que se hizo; si ese día ya ha pasado, o nunca se ha hecho, toca hoy.
+- Si la vuelta en curso estaba a medias, sus partes hechas no pasan a la vuelta nueva: la nueva empieza después de ella (el finde siguiente, o el día siguiente), con todas por hacer.
+- Las vueltas ya terminadas se conservan, y el histórico (US-31) sigue mostrando las de antes del cambio con la frecuencia que tenían.
 
-*Depende de la US-30. Cambiar el nombre o las partes de la tarea no entra aquí; cambiar solo el número de días se podría separar en otra historia si esta resulta grande.*
+*Depende de la US-30 y la US-31. Cambiar el nombre o las partes de la tarea no entra aquí. Se decidió al implementarla: en las de cada N días, el formulario no pide el día de la primera vez (lo calcula la base de datos; si se quiere otro, «Cambiar fecha», US-41); en una puntual, la fecha se cambia con «Cambiar fecha» (US-38), así que el formulario solo la pide al pasar a puntual; y cada frecuencia que deja de valer se guarda con los días en que valió, para que el histórico calcule con ella sus vueltas no completadas. Las vueltas a medias de cada N días o puntuales que se dejan al cambiar la frecuencia no salen en el histórico, como las demás sin plazo (solo salen las completadas).*
 
 ### US-54 · Cambiar el nombre de una tarea y de sus partes (Must have)
 Como usuario,
@@ -349,7 +349,7 @@ para saber cómo voy con la limpieza.
 - Las completadas salen el día en que se hicieron; las parciales y las no completadas, el viernes en que acaba su plazo, con su fin de semana («Finde del 14-15 nov»).
 - Sale lo de las últimas 4 semanas, agrupado por día, de lo más reciente a lo más antiguo; «Ver más» carga 4 semanas más.
 
-*Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas. Se decidió al implementarla: el % de una parcial es el que se veía en la lista al acabar la vuelta (Cocina hecha al 50 %, cambiada a 10 %, y Salón al 80 %: 90 %, no 130 %).*
+*Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario de la tarea, sin guardarlas (si se le cambia la frecuencia, con el de cada una en los días en que valió, US-53); como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas. Se decidió al implementarla: el % de una parcial es el que se veía en la lista al acabar la vuelta (Cocina hecha al 50 %, cambiada a 10 %, y Salón al 80 %: 90 %, no 130 %).*
 
 ### US-56 · Volver con el botón atrás (Must have)
 Como usuario,

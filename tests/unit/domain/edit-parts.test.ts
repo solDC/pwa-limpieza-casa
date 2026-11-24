@@ -28,6 +28,7 @@ const surfaces: Task = {
     { id: 'bedroom', name: 'Dormitorio', defaultKey: 'bedroom', weight: 25 },
   ],
   createdOn: '2026-10-01',
+  frequencySince: '2026-10-01',
   cancelledOn: null,
   lastCompletedOn: null,
   partCompletions: [{ partId: 'kitchen', startsOn: '2026-11-21' }],

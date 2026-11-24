@@ -28,7 +28,7 @@ export function isWeekend(frequency: Frequency): boolean {
  * Devuelve `null` si ya no vuelve a tocar (una puntual ya hecha).
  */
 export function currentRound(
-  task: Pick<Task, 'frequency' | 'createdOn' | 'lastCompletedOn'>,
+  task: Pick<Task, 'frequency' | 'frequencySince' | 'lastCompletedOn'>,
   today: LocalDate,
 ): Round | null {
   const { frequency, lastCompletedOn } = task
@@ -51,14 +51,18 @@ export function currentRound(
       // Aunque se haya elegido otro día para la próxima vez (US-41): ese día lo dice
       // `dueDate()`, y la vuelta es la misma, con sus partes hechas.
       return {
-        startsOn: lastCompletedOn ? addDays(lastCompletedOn, frequency.days) : task.createdOn,
+        startsOn: lastCompletedOn ? addDays(lastCompletedOn, frequency.days) : task.frequencySince,
         dueBy: null,
       }
     case 'oneOff':
       // Su vuelta va siempre sin fecha, aunque la tarea tenga una (US-38): así, al cambiar
       // la fecha, la vuelta es la misma y no se pierden sus partes hechas. Cuándo toca lo
       // dice `dueDate()`.
-      return lastCompletedOn ? null : { startsOn: null, dueBy: null }
+      // Ya hecha si se ha terminado desde que es puntual (US-53: una que antes tenía otra
+      // frecuencia no está hecha por haberse hecho con aquella).
+      return lastCompletedOn !== null && lastCompletedOn >= task.frequencySince
+        ? null
+        : { startsOn: null, dueBy: null }
   }
 }
 
@@ -79,19 +83,20 @@ export function thisOrNextWeekend(today: LocalDate): LocalDate {
 /**
  * US-48 · El sábado de la primera vuelta de una tarea de fin de semana: el primer finde de
  * su calendario cuyo sábado o domingo es el día en que se creó o después. Así, una tarea
- * creada entre semana no empieza con retraso por un finde que ya había pasado.
+ * creada entre semana no empieza con retraso por un finde que ya había pasado. Lo mismo al
+ * cambiarle la frecuencia (US-53): cuenta desde el día del cambio (`frequencySince`).
  * US-42 · En una semanal movida a otro finde, ese finde, si es posterior (en las de cada 15
  * días, moverla cambia el primer finde de su calendario, `startOn`).
  */
-function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
-  // El último sábado que aún vale: el de la víspera, si se crea en domingo.
-  const earliest = addDays(task.createdOn, -1)
+function firstWeekend(task: Pick<Task, 'frequency' | 'frequencySince'>): LocalDate {
+  // El último sábado que aún vale: el de la víspera, si se crea (o se cambia) en domingo.
+  const earliest = addDays(task.frequencySince, -1)
   if (task.frequency.kind === 'weekendBiweekly') {
     const { startOn } = task.frequency
     if (earliest <= startOn) return startOn
     return addDays(startOn, Math.ceil(daysBetween(startOn, earliest) / 14) * 14)
   }
-  const saturday = saturdayOnOrBefore(task.createdOn)
+  const saturday = saturdayOnOrBefore(task.frequencySince)
   const first = saturday >= earliest ? saturday : addDays(saturday, 7)
   const startOn = task.frequency.kind === 'weekendWeekly' ? task.frequency.startOn : null
   return startOn !== null && startOn > first ? startOn : first
@@ -102,12 +107,15 @@ function firstWeekend(task: Pick<Task, 'frequency' | 'createdOn'>): LocalDate {
  * y `to` y ya ha pasado (antes de `today`), según el calendario que tiene ahora la tarea:
  * desde su primer finde (US-48, o el finde al que se movió, US-42), cada 7 o 14 días. En las
  * demás tareas, ninguna: no tienen plazo.
+ * US-53 · Con `before`, solo las que empiezan antes de ese día: las de una frecuencia que dejó
+ * de valer ese día.
  */
 export function pastWeekendRounds(
-  task: Pick<Task, 'frequency' | 'createdOn'>,
+  task: Pick<Task, 'frequency' | 'frequencySince'>,
   from: LocalDate,
   to: LocalDate,
   today: LocalDate,
+  before?: LocalDate,
 ): Round[] {
   const { frequency } = task
   if (!isWeekend(frequency)) return []
@@ -119,7 +127,7 @@ export function pastWeekendRounds(
   const rounds: Round[] = []
   for (let saturday = addDays(first, skip * every); ; saturday = addDays(saturday, every)) {
     const dueBy = addDays(saturday, WEEKEND_ROUND_DAYS - 1)
-    if (dueBy > lastDueBy) break
+    if (dueBy > lastDueBy || (before !== undefined && saturday >= before)) break
     rounds.push({ startsOn: saturday, dueBy })
   }
   return rounds

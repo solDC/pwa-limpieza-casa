@@ -4,7 +4,8 @@ import type { Round } from '../../domain/frequency'
 import { withPartsDone, withRoundDone } from '../../domain/progress'
 import { withRenamed, type TaskRename } from '../../domain/rename-task'
 import { withPartsChanged, type PartsChange } from '../../domain/edit-parts'
-import type { LocalDate, Task } from '../../domain/task'
+import { withFrequencyChanged } from '../../domain/change-frequency'
+import type { Frequency, LocalDate, Task } from '../../domain/task'
 import { listTasks } from '../../storage/tasks'
 
 export type TasksState =
@@ -22,6 +23,7 @@ export type TasksState =
  * - `moveWeekend`: se ha movido una tarea de fin de semana a otro finde (ya guardado).
  * - `rename`: se ha renombrado una tarea o alguna de sus partes (ya guardado).
  * - `changeParts`: se han cambiado las partes de una tarea (ya guardado).
+ * - `changeFrequency`: se ha cambiado la frecuencia de una tarea (ya guardado, US-53).
  * - `refresh`: la lista no está al día (se marcó en otro dispositivo).
  * - `reloadAfterAdding`: se ha añadido una tarea; si la lista no se puede poner al día,
  *   llama a `onFailed`.
@@ -117,9 +119,15 @@ export function useTasks() {
     changeTask(taskId, (task) => withPartsChanged(task, change, newPartIds, completedOn))
   }
 
+  /** US-53 · Se ha cambiado la frecuencia de una tarea (ya guardado). */
+  function changeFrequency(taskId: string, frequency: Frequency, frequencySince: LocalDate, nextDueOn: LocalDate | null) {
+    changeTask(taskId, (task) => withFrequencyChanged(task, frequency, frequencySince, nextDueOn))
+  }
+
   return {
     state,
     changeParts,
+    changeFrequency,
     moveWeekend,
     rename,
     markCompleted,

@@ -38,9 +38,11 @@ export type PartsErrors = {
   weightsTotal?: string
 }
 
-/** Lo que se ha escrito en el formulario, tal cual. */
-export type NewTaskDraft = PartsDraft & {
-  name: string
+/**
+ * La frecuencia elegida en un formulario, tal cual: al crear una tarea (US-33) o al
+ * cambiársela (US-53).
+ */
+export type FrequencyDraft = {
   frequencyKind: Frequency['kind'] | null
   /** Solo en «cada N días»: lo escrito en el campo. */
   intervalDays: string
@@ -55,6 +57,18 @@ export type NewTaskDraft = PartsDraft & {
   dueOn: LocalDate | null
 }
 
+/** Qué falta en la frecuencia, campo a campo. */
+export type FrequencyErrors = {
+  frequency?: string
+  intervalDays?: string
+  firstDueOn?: string
+  biweeklyStartOn?: string
+  dueOn?: string
+}
+
+/** Lo que se ha escrito en el formulario, tal cual. */
+export type NewTaskDraft = PartsDraft & FrequencyDraft & { name: string }
+
 /** La tarea lista para guardar. */
 export type NewTask = {
   name: string
@@ -63,14 +77,7 @@ export type NewTask = {
 }
 
 /** Qué falta, campo a campo (las partes, en su orden). */
-export type NewTaskErrors = PartsErrors & {
-  name?: string
-  frequency?: string
-  intervalDays?: string
-  firstDueOn?: string
-  biweeklyStartOn?: string
-  dueOn?: string
-}
+export type NewTaskErrors = PartsErrors & FrequencyErrors & { name?: string }
 
 export function emptyDraft(): NewTaskDraft {
   return {
@@ -267,23 +274,19 @@ export function partNameError(name: string, language: Language): string | undefi
 }
 
 /**
- * Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`;
- * `today` es para la fecha de las puntuales y la primera vez de las de cada N días;
- * `otherTasks`, las tareas del hogar, para no repetir un nombre.
+ * Comprueba la frecuencia elegida (US-33 y US-53): lo que pide cada una, con los avisos en el
+ * idioma `language`. Con `firstDueOn`, las de cada N días llevan el día en que tocan la
+ * primera vez (US-50, al crearla); sin él, no (al cambiarla, ese día lo pone la base de datos).
+ * Devuelve la frecuencia lista para guardar, o `null` si falta algo (y qué, en `errors`).
  */
-export function validateNewTask(
-  draft: NewTaskDraft,
+export function validateFrequency(
+  draft: FrequencyDraft,
   language: Language,
   today: LocalDate,
-  otherTasks: NamedTask[],
-): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
+  options: { firstDueOn: boolean },
+): { frequency: Frequency | null; errors: FrequencyErrors } {
   const text = VALIDATION_TEXTS[language]
-  const errors: NewTaskErrors = {}
-
-  const name = draft.name.trim()
-  const nameError = taskNameError(name, otherTasks, language)
-  if (nameError) errors.name = nameError
-
+  const errors: FrequencyErrors = {}
   let frequency: Frequency | null = null
   switch (draft.frequencyKind) {
     case null:
@@ -306,7 +309,7 @@ export function validateNewTask(
       if (!validDays) errors.intervalDays = text.intervalDays(MAX_INTERVAL_DAYS)
       // US-50 · Sin cambiar, toca hoy. Hoy es lo mismo que no elegir ningún día: una tarea
       // nueva de cada N días toca desde el día en que se crea.
-      const firstDueOn = draft.firstDueOn ?? today
+      const firstDueOn = options.firstDueOn ? (draft.firstDueOn ?? today) : today
       const firstDueOnProblem = dueOnError(firstDueOn, today, language)
       if (firstDueOnProblem) errors.firstDueOn = firstDueOnProblem
       if (validDays && !firstDueOnProblem) {
@@ -321,6 +324,30 @@ export function validateNewTask(
       break
     }
   }
+
+  return { frequency: Object.keys(errors).length > 0 ? null : frequency, errors }
+}
+
+/**
+ * Comprueba el formulario. Los avisos de lo que falta salen en el idioma `language`;
+ * `today` es para la fecha de las puntuales y la primera vez de las de cada N días;
+ * `otherTasks`, las tareas del hogar, para no repetir un nombre.
+ */
+export function validateNewTask(
+  draft: NewTaskDraft,
+  language: Language,
+  today: LocalDate,
+  otherTasks: NamedTask[],
+): { ok: true; task: NewTask } | { ok: false; errors: NewTaskErrors } {
+  const errors: NewTaskErrors = {}
+
+  const name = draft.name.trim()
+  const nameError = taskNameError(name, otherTasks, language)
+  if (nameError) errors.name = nameError
+
+  const checked = validateFrequency(draft, language, today, { firstDueOn: true })
+  Object.assign(errors, checked.errors)
+  const { frequency } = checked
 
   const parts = validateParts(draft, language)
   Object.assign(errors, parts.errors)

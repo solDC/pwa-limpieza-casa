@@ -89,6 +89,7 @@ grant select on public.task_frequency_periods to authenticated;
 --   frequency_changed_on.
 -- - Quita lo de la frecuencia de antes: el finde al que se movió (weekly_start_on, US-42), la
 --   fecha de una puntual o el día elegido para la próxima vez (US-41).
+-- Devuelve lo que ha puesto: { frequency_changed_on, next_due_on }.
 -- Errores:
 -- - 42501: la tarea no existe o es de otro hogar.
 -- - 22023: está cancelada, la frecuencia no existe, falta lo que pide, el primer finde no es
@@ -101,7 +102,7 @@ create function public.change_task_frequency(
   task_biweekly_start_on date default null,
   task_due_on date default null
 )
-returns void
+returns jsonb
 language plpgsql
 security definer
 set search_path = ''
@@ -211,6 +212,8 @@ begin
     next_due_on = next_due,
     frequency_changed_on = since
   where id = target_task_id;
+
+  return jsonb_build_object('frequency_changed_on', since, 'next_due_on', next_due);
 end;
 $$;
 

@@ -5,7 +5,7 @@
 import { addDays, formatDayMonth, formatLongDate } from './dates'
 import { pastWeekendRounds } from './frequency'
 import type { Language } from './language'
-import type { LocalDate, Task } from './task'
+import type { Frequency, LocalDate, Task } from './task'
 
 /** Una vuelta terminada (una fila de `task_rounds`). */
 export type CompletedRound = {
@@ -35,7 +35,18 @@ export type RoundOutcome =
   | { status: 'partial'; percent: number; weekend: LocalDate }
   | { status: 'notCompleted'; weekend: LocalDate }
 
-export type HistoryTask = Pick<Task, 'id' | 'name' | 'defaultKey' | 'frequency' | 'createdOn'>
+export type HistoryTask = Pick<Task, 'id' | 'name' | 'defaultKey' | 'frequency' | 'createdOn' | 'frequencySince'>
+
+/**
+ * US-53 · Una frecuencia que tuvo una tarea antes de la actual (una fila de
+ * `task_frequency_periods`): valió desde `startsOn` hasta el día antes de `endsOn`.
+ */
+export type FrequencyPeriod = {
+  taskId: string
+  frequency: Frequency
+  startsOn: LocalDate
+  endsOn: LocalDate
+}
 
 export type HistoryEntry = { task: HistoryTask; outcome: RoundOutcome }
 
@@ -75,7 +86,9 @@ const STATUS_ORDER: Record<RoundOutcome['status'], number> = {
  *   día en que acabó su plazo (el viernes), con la suma de los pesos de sus partes hechas al
  *   acabar la vuelta, como se veía en la lista: sin las que se quitaron en esa misma vuelta.
  * - **No completadas:** cada vuelta de fin de semana sin nada hecho, el día en que acabó su
- *   plazo, según el calendario que tiene ahora la tarea.
+ *   plazo, según el calendario de la tarea: el que tiene ahora y, si se le ha cambiado la
+ *   frecuencia (US-53), el de cada una de antes (`periods`), en los días en que valió. Una
+ *   vuelta que se hizo dentro de ese finde, aunque fuera con otra frecuencia, no sale.
  * Las vueltas de fin de semana salen cuando su plazo ya ha pasado (antes de `today`), como en
  * la lista: hasta entonces, siguen ahí. `rounds` y `parts` tienen que incluir las de las vueltas
  * cuyo plazo acaba entre `from` y `to` (las de la semana anterior a `from`, en adelante).
@@ -87,6 +100,7 @@ export function historyDays(
   from: LocalDate,
   to: LocalDate,
   today: LocalDate,
+  periods: FrequencyPeriod[] = [],
 ): HistoryDay[] {
   const byId = new Map(tasks.map((task, position) => [task.id, { task, position }]))
   const inRange = (day: LocalDate) => day >= from && day <= to
@@ -127,12 +141,30 @@ export function historyDays(
     add(round.taskId, round.dueBy, { status: 'partial', percent: round.percent, weekend: round.weekend })
   }
 
-  for (const task of tasks) {
-    for (const round of pastWeekendRounds(task, from, to, today)) {
-      const roundKey = key(task.id, round.startsOn)
-      if (completed.has(roundKey) || withParts.has(roundKey)) continue
+  // Las de cada frecuencia de la tarea: la de ahora y las de antes. Un mismo finde de dos
+  // frecuencias (cambiada en domingo a otra de fin de semana desde ese finde) sale una vez.
+  const calendars = [
+    ...tasks.map((task) => ({ taskId: task.id, task, before: undefined as LocalDate | undefined })),
+    ...periods.map((period) => ({
+      taskId: period.taskId,
+      task: { frequency: period.frequency, frequencySince: period.startsOn },
+      before: period.endsOn,
+    })),
+  ]
+  const notCompleted = new Set<string>()
+  for (const { taskId, task, before } of calendars) {
+    for (const round of pastWeekendRounds(task, from, to, today, before)) {
       // `pastWeekendRounds()` solo da vueltas con fecha y plazo.
-      add(task.id, round.dueBy as LocalDate, { status: 'notCompleted', weekend: round.startsOn as LocalDate })
+      const startsOn = round.startsOn as LocalDate
+      const dueBy = round.dueBy as LocalDate
+      const roundKey = key(taskId, startsOn)
+      if (completed.has(roundKey) || withParts.has(roundKey) || notCompleted.has(roundKey)) continue
+      const doneThatWeekend = rounds.some(
+        (done) => done.taskId === taskId && done.completedOn >= startsOn && done.completedOn <= dueBy,
+      )
+      if (doneThatWeekend) continue
+      notCompleted.add(roundKey)
+      add(taskId, dueBy, { status: 'notCompleted', weekend: startsOn })
     }
   }
 

@@ -46,6 +46,11 @@ export type Task = {
   frequency: Frequency
   parts: TaskPart[]
   createdOn: LocalDate
+  /**
+   * Desde qué día cuenta la frecuencia que tiene ahora: el día en que se cambió (US-53) o,
+   * si nunca se ha cambiado, el día en que se creó.
+   */
+  frequencySince: LocalDate
   cancelledOn: LocalDate | null
   /** Día en que se terminó la última vuelta (`null` si nunca). */
   lastCompletedOn: LocalDate | null

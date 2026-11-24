@@ -30,6 +30,7 @@ export function TaskList({
     moveWeekend,
     rename,
     changeParts,
+    changeFrequency,
     refresh,
     reloadAfterAdding,
   } = useTasks()
@@ -119,6 +120,7 @@ export function TaskList({
               onMovedWeekend={moveWeekend}
               onRenamed={rename}
               onPartsChanged={changeParts}
+              onFrequencyChanged={changeFrequency}
               onStale={refresh}
             />
           ))}

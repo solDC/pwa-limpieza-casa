@@ -125,6 +125,7 @@ describe('agenda: el orden de «Tus tareas»', () => {
     name,
     frequency,
     createdOn,
+    frequencySince: createdOn,
     lastCompletedOn,
   })
   const names = (tasks: ReturnType<typeof task>[]) => agenda(tasks, today).map(({ task }) => task.name)
