@@ -26,6 +26,7 @@ export function HomeScreen({ session }: { session: Session }) {
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<ErrorCode | null>(null)
   const [showHistory, setShowHistory] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   // Al volver del histórico, el foco vuelve a «Histórico» en lugar de perderse, y la página,
   // a donde estaba (`scrollBeforeHistory`, `null` si no se viene del histórico).
   const historyButtonRef = useRef<HTMLButtonElement>(null)
@@ -62,6 +63,25 @@ export function HomeScreen({ session }: { session: Session }) {
 
   return (
     <Screen>
+      <header className="home-topbar">
+        <span className="home-brand">My House Cleaning</span>
+        <button type="button" className="home-settings-toggle" aria-label="Ajustes" aria-expanded={showSettings} onClick={() => setShowSettings((value) => !value)}>
+          ⚙
+        </button>
+      </header>
+      {showSettings && (
+        <section className="home-settings" aria-label="Ajustes">
+          <LanguageSwitch />
+          <button type="button" className="home-signout" onClick={handleSignOut} disabled={signingOut}>
+            ↪ {signingOut ? t.home.signingOut : t.home.signOut}
+          </button>
+          {signOutError && <ErrorMessage>{t.errors[signOutError]}</ErrorMessage>}
+        </section>
+      )}
+      <nav className="home-tabs" aria-label="Secciones">
+        <button type="button" className={!showHistory ? 'active' : ''} aria-current={!showHistory ? 'page' : undefined} onClick={() => setShowHistory(false)}>Qué toca</button>
+        <button type="button" className={showHistory ? 'active' : ''} aria-current={showHistory ? 'page' : undefined} onClick={() => { scrollBeforeHistory.current = window.scrollY; setShowHistory(true) }}>Histórico</button>
+      </nav>
       {showHistory && <HistoryScreen onBack={() => setShowHistory(false)} />}
       <div hidden={showHistory}>
         <p>{t.home.signedInAs(session.email)}</p>
@@ -83,18 +103,6 @@ export function HomeScreen({ session }: { session: Session }) {
           }}
         />
 
-        <div className="stack account">
-          <button
-            type="button"
-            className="button-secondary"
-            onClick={handleSignOut}
-            disabled={signingOut}
-          >
-            {signingOut ? t.home.signingOut : t.home.signOut}
-          </button>
-          {signOutError && <ErrorMessage>{t.errors[signOutError]}</ErrorMessage>}
-          <LanguageSwitch />
-        </div>
       </div>
     </Screen>
   )
