@@ -96,6 +96,11 @@ const es = {
     addPartsLabel: (name: string) => `Añadir partes a ${name}`,
     partsForm: (name: string) => `Partes de ${name}`,
     noParts: 'Sin partes, la tarea se marca entera.',
+    // US-53
+    changeFrequency: 'Cambiar frecuencia',
+    changeFrequencyLabel: (name: string) => `Cambiar frecuencia de ${name}`,
+    frequencyForm: (name: string) => `Frecuencia de ${name}`,
+    frequencyChangeHint: 'Empieza sin retraso. Si la vuelta de ahora está a medias, la nueva empieza después.',
   },
 
   newTask: {
@@ -249,6 +254,10 @@ const en: Messages = {
     addPartsLabel: (name: string) => `Add parts to ${name}`,
     partsForm: (name: string) => `Parts of ${name}`,
     noParts: 'Without parts, the task is marked as a whole.',
+    changeFrequency: 'Change frequency',
+    changeFrequencyLabel: (name: string) => `Change frequency of ${name}`,
+    frequencyForm: (name: string) => `Frequency of ${name}`,
+    frequencyChangeHint: 'It starts with no delay. If the current round is half done, the new one starts after it.',
   },
 
   newTask: {

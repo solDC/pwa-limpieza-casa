@@ -18,6 +18,7 @@ const weekly: HistoryTask = {
   defaultKey: 'surfaces',
   frequency: { kind: 'weekendWeekly', startOn: null },
   createdOn: '2026-11-01',
+  frequencySince: '2026-11-01',
 }
 const interval: HistoryTask = {
   id: 'interval',
@@ -25,6 +26,7 @@ const interval: HistoryTask = {
   defaultKey: null,
   frequency: { kind: 'interval', days: 3, nextDueOn: null },
   createdOn: '2026-11-01',
+  frequencySince: '2026-11-01',
 }
 const oneOff: HistoryTask = {
   id: 'one-off',
@@ -32,6 +34,7 @@ const oneOff: HistoryTask = {
   defaultKey: null,
   frequency: { kind: 'oneOff', dueOn: null },
   createdOn: '2026-11-01',
+  frequencySince: '2026-11-01',
 }
 const today = '2026-11-23'
 const days = (tasks: HistoryTask[], rounds = [] as Parameters<typeof historyDays>[1], parts = [] as Parameters<typeof historyDays>[2]) =>
@@ -139,11 +142,11 @@ describe('qué sale en el histórico', () => {
 
   it('no hay vueltas anteriores a la tarea (US-48)', () => {
     // Creada en domingo: su primera vuelta es la de ese finde; en lunes, la del siguiente.
-    const created = { ...weekly, createdOn: '2026-11-15' }
+    const created = { ...weekly, createdOn: '2026-11-15', frequencySince: '2026-11-15' }
     expect(days([created])).toEqual([
       { day: '2026-11-20', entries: [{ task: created, outcome: { status: 'notCompleted', weekend: '2026-11-14' } }] },
     ])
-    expect(days([{ ...weekly, createdOn: '2026-11-16' }])).toEqual([])
+    expect(days([{ ...weekly, createdOn: '2026-11-16', frequencySince: '2026-11-16' }])).toEqual([])
   })
 
   it('las de cada 15 días, solo los findes que tocan', () => {
@@ -193,6 +196,51 @@ describe('qué sale en el histórico', () => {
       ['other', 'partial'],
       ['weekly', 'notCompleted'],
     ])
+  })
+})
+
+describe('US-53 · con la frecuencia cambiada', () => {
+  it('las vueltas de antes del cambio salen con la frecuencia de antes; las de después, con la nueva', () => {
+    // Semanal hasta el lunes 16, cuando pasó a cada 3 días.
+    const changed: HistoryTask = { ...interval, id: 'weekly', frequencySince: '2026-11-16' }
+    const periods = [
+      {
+        taskId: 'weekly',
+        frequency: { kind: 'weekendWeekly', startOn: null } as const,
+        startsOn: '2026-11-01',
+        endsOn: '2026-11-16',
+      },
+    ]
+    const result = historyDays([changed], [], [], '2026-10-27', today, today, periods)
+    // El finde del 14-15 aún tenía plazo al cambiarla: no sale como no completado (se cambió a
+    // propósito, como una vuelta movida, US-42).
+    expect(result.map((day) => [day.day, day.entries[0].outcome.status])).toEqual([
+      ['2026-11-13', 'notCompleted'],
+      ['2026-11-06', 'notCompleted'],
+    ])
+  })
+
+  it('un finde de la frecuencia de antes que también es de la nueva sale una sola vez', () => {
+    // Semanal hasta el domingo 15, cuando pasó a cada 15 días desde ese mismo finde.
+    const changed: HistoryTask = {
+      ...weekly,
+      frequency: { kind: 'weekendBiweekly', startOn: '2026-11-14' },
+      frequencySince: '2026-11-15',
+    }
+    const periods = [
+      { taskId: 'weekly', frequency: weekly.frequency, startsOn: '2026-11-01', endsOn: '2026-11-15' },
+    ]
+    const result = historyDays([changed], [], [], '2026-10-27', today, today, periods)
+    expect(result.map((day) => day.day)).toEqual(['2026-11-20', '2026-11-13', '2026-11-06'])
+    expect(result[0].entries).toHaveLength(1)
+  })
+
+  it('una vuelta que se hizo con la frecuencia de antes dentro de ese finde cuenta como hecha', () => {
+    // Cada 3 días, hecha el sábado 14; el lunes 16 pasó a semanal desde ese día.
+    const changed: HistoryTask = { ...weekly, frequencySince: '2026-11-14' }
+    const rounds = [{ taskId: 'weekly', startsOn: '2026-11-11', completedOn: '2026-11-14' }]
+    const result = historyDays([changed], rounds, [], '2026-11-10', today, today)
+    expect(result.map((day) => [day.day, day.entries[0].outcome.status])).toEqual([['2026-11-14', 'completed']])
   })
 })
 

@@ -46,8 +46,16 @@ export type Task = {
   frequency: Frequency
   parts: TaskPart[]
   createdOn: LocalDate
+  /**
+   * Desde qué día cuenta la frecuencia que tiene ahora: el día en que se cambió (US-53) o,
+   * si nunca se ha cambiado, el día en que se creó.
+   */
+  frequencySince: LocalDate
   cancelledOn: LocalDate | null
-  /** Día en que se terminó la última vuelta (`null` si nunca). */
+  /**
+   * Día en que se terminó la última vuelta (`null` si nunca). En una puntual, el día en que se
+   * hizo como puntual: no cuentan las vueltas de la frecuencia que tenía antes (US-53).
+   */
   lastCompletedOn: LocalDate | null
   /** Las últimas partes hechas (US-39): las de la vuelta en curso están siempre. */
   partCompletions: PartCompletion[]

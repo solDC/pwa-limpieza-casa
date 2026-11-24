@@ -1,8 +1,9 @@
 import { addDays } from '../domain/dates'
 import { AppError } from '../domain/errors'
-import type { CompletedRound, DonePart } from '../domain/history'
+import type { CompletedRound, DonePart, FrequencyPeriod } from '../domain/history'
 import type { LocalDate } from '../domain/task'
 import { getSupabase } from './supabase-client'
+import { toFrequency, type FrequencyColumns } from './tasks'
 
 // US-31 · Lo guardado de las vueltas, para el histórico: las vueltas terminadas
 // (`task_rounds`) y las partes hechas (`task_part_completions`). Las reglas RLS hacen que
@@ -54,4 +55,28 @@ export async function listHistory(
       removedOn: row.task_parts.archived_on,
     })),
   }
+}
+
+/**
+ * US-53 · Las frecuencias que tuvieron las tareas del hogar antes de la actual
+ * (`task_frequency_periods`), para calcular las vueltas no completadas de cada una. Son pocas
+ * (una por cada cambio), así que se leen todas.
+ */
+export async function listFrequencyPeriods(): Promise<FrequencyPeriod[]> {
+  const { data, error } = await getSupabase()
+    .from('task_frequency_periods')
+    .select('task_id, frequency, interval_days, biweekly_start_on, weekly_start_on, starts_on, ends_on')
+  if (error) throw new AppError('historyLoad')
+  return (
+    data as (Omit<FrequencyColumns, 'name' | 'due_on' | 'next_due_on'> & {
+      task_id: string
+      starts_on: string
+      ends_on: string
+    })[]
+  ).map((row) => ({
+    taskId: row.task_id,
+    frequency: toFrequency({ ...row, name: row.task_id, due_on: null, next_due_on: null }),
+    startsOn: row.starts_on,
+    endsOn: row.ends_on,
+  }))
 }

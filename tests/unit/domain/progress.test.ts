@@ -19,6 +19,7 @@ const surfaces = (partCompletions: Task['partCompletions'] = []): Task => ({
     { id: 'bedroom', name: 'Dormitorio', defaultKey: null, weight: 25 },
   ],
   createdOn: '2026-10-01',
+  frequencySince: '2026-10-01',
   cancelledOn: null,
   lastCompletedOn: null,
   partCompletions,

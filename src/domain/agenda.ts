@@ -15,7 +15,7 @@ const ORDER: Record<Due['status'], number> = { overdue: 0, today: 1, pending: 2,
  * estado de hoy, por orden: las retrasadas (más retraso arriba), las de hoy, las puntuales sin fecha y
  * las de más adelante (por fecha). Con el mismo estado, se queda el orden de la lista.
  */
-export function agenda<T extends Pick<Task, 'frequency' | 'createdOn' | 'lastCompletedOn'>>(
+export function agenda<T extends Pick<Task, 'frequency' | 'frequencySince' | 'lastCompletedOn'>>(
   tasks: T[],
   today: LocalDate,
 ): AgendaItem<T>[] {

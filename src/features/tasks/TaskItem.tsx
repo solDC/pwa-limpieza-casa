@@ -17,6 +17,7 @@ import {
   describeFrequency,
   partDisplayName,
   taskDisplayName,
+  type Frequency,
   type LocalDate,
   type Task,
 } from '../../domain/task'
@@ -29,6 +30,7 @@ import {
   setTaskNextDueOn,
 } from '../../storage/tasks'
 import { DueOnForm } from './DueOnForm'
+import { FrequencyForm } from './FrequencyForm'
 import { MoveWeekendForm } from './MoveWeekendForm'
 import { PartsForm } from './PartsForm'
 import { RenameForm } from './RenameForm'
@@ -38,8 +40,11 @@ import { RenameForm } from './RenameForm'
 // si ya está hecha, «Hecha», desactivado: será el de deshacer, US-44), lo que se lleva de la
 // vuelta y «Marcar todo como hecho» (US-39). Las puntuales, «Poner fecha» o «Cambiar fecha»
 // (US-38), y las de cada N días, «Cambiar fecha» (cuándo toca la próxima vez, US-41). Las de
-// fin de semana, «Mover a otro finde» (US-42). Todas, «Cambiar nombre» (US-54) y «Cambiar
-// partes» (US-51).
+// fin de semana, «Mover a otro finde» (US-42). Todas, «Cambiar frecuencia» (US-53), «Cambiar
+// nombre» (US-54) y «Cambiar partes» (US-51).
+/** Los formularios de la tarjeta. */
+type Editing = 'dueOn' | 'frequency' | 'name' | 'parts'
+
 export function TaskItem({
   task,
   otherTasks,
@@ -51,6 +56,7 @@ export function TaskItem({
   onMovedWeekend,
   onRenamed,
   onPartsChanged,
+  onFrequencyChanged,
   onStale,
 }: {
   task: Task
@@ -76,6 +82,11 @@ export function TaskItem({
    * ha completado la vuelta, el día (US-51).
    */
   onPartsChanged: (taskId: string, change: PartsChange, newPartIds: string[], completedOn: LocalDate | null) => void
+  /**
+   * Se ha cambiado la frecuencia (ya guardado): desde qué día cuenta y, en las de cada N días,
+   * si toca hoy (US-53).
+   */
+  onFrequencyChanged: (taskId: string, frequency: Frequency, frequencySince: LocalDate, nextDueOn: LocalDate | null) => void
   /** La lista no está al día (se marcó en otro dispositivo): hay que volver a cargarla. */
   onStale: () => void
 }) {
@@ -120,19 +131,20 @@ export function TaskItem({
     next?.focus()
   }, [saving, task.partCompletions])
 
-  // El formulario abierto: el de la fecha o el finde (US-38, US-41 y US-42), el del nombre
-  // (US-54) o el de las partes (US-51). Uno cada vez. Al cerrarlo, el foco vuelve al botón
-  // que lo abrió.
-  const [editing, setEditing] = useState<'dueOn' | 'name' | 'parts' | null>(null)
+  // El formulario abierto: el de la fecha o el finde (US-38, US-41 y US-42), el de la
+  // frecuencia (US-53), el del nombre (US-54) o el de las partes (US-51). Uno cada vez. Al
+  // cerrarlo, el foco vuelve al botón que lo abrió.
+  const [editing, setEditing] = useState<Editing | null>(null)
   const editingDueOn = editing === 'dueOn'
   const buttons = {
     dueOn: useRef<HTMLButtonElement>(null),
+    frequency: useRef<HTMLButtonElement>(null),
     name: useRef<HTMLButtonElement>(null),
     parts: useRef<HTMLButtonElement>(null),
   }
   const dueOnButton = buttons.dueOn
   // Qué botón recibe el foco cuando vuelva a estar en la tarjeta (con el formulario abierto, no está).
-  const focusAfterClosing = useRef<'dueOn' | 'name' | 'parts' | null>(null)
+  const focusAfterClosing = useRef<Editing | null>(null)
   useEffect(() => {
     if (editing === null && focusAfterClosing.current) {
       buttons[focusAfterClosing.current].current?.focus()
@@ -274,6 +286,27 @@ export function TaskItem({
             {t.tasks.moveWeekend}
           </button>
         ))}
+      {editing === 'frequency' ? (
+        <FrequencyForm
+          task={task}
+          taskName={name}
+          round={round}
+          today={today}
+          onSaved={(changed, since, nextDueOn) => onFrequencyChanged(task.id, changed, since, nextDueOn)}
+          onClose={closeForm}
+        />
+      ) : (
+        <button
+          ref={buttons.frequency}
+          type="button"
+          className="button-secondary"
+          aria-label={t.tasks.changeFrequencyLabel(name)}
+          onClick={() => setEditing('frequency')}
+          disabled={saving || editing !== null}
+        >
+          {t.tasks.changeFrequency}
+        </button>
+      )}
       {editing === 'name' ? (
         <RenameForm
           task={task}

@@ -4,7 +4,7 @@ Aplicación web progresiva (PWA) para organizar las tareas de mantenimiento del 
 
 **La app:** https://my-house-cleaning.vercel.app (la dirección anterior, https://pwa-limpieza-casa.vercel.app, sigue funcionando: las dos son la misma app, con los mismos datos. La sesión, el idioma elegido y la app instalada son de cada dirección: en la nueva hay que volver a entrar, y la app instalada desde la anterior sigue en la anterior).
 
-🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso, ponerle fecha a una puntual, elegir o cambiar cuándo toca una de cada N días, mover una de fin de semana a otro finde, cambiar el nombre de una tarea y de sus partes, sin repetir el de otra tarea, cambiar sus partes (los nombres, los pesos, añadir y quitar) y ver en el histórico cómo acabó cada vuelta. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-31, US-33, US-34, US-38, US-39, US-41, US-42, US-48, US-50, US-51, US-52 y US-54). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
+🚧 **MVP en desarrollo.** Ya se puede entrar por email (con el enlace o con el código) y cerrar sesión. Cada usuario tiene su hogar con las tareas por defecto, ve cuándo toca cada una y qué va con retraso, primero lo más urgente, puede marcarlas como hechas, enteras o por partes, puede añadir tareas nuevas, con el peso de cada parte, que no empiezan con retraso, ponerle fecha a una puntual, elegir o cambiar cuándo toca una de cada N días, mover una de fin de semana a otro finde, cambiar el nombre de una tarea y de sus partes, sin repetir el de otra tarea, cambiar sus partes (los nombres, los pesos, añadir y quitar) y ver en el histórico cómo acabó cada vuelta. La app está en castellano y en inglés (US-01, US-02, US-03, US-26, US-27, US-28, US-29, US-30, US-31, US-33, US-34, US-38, US-39, US-41, US-42, US-48, US-50, US-51, US-52 y US-54). Del MMP, ya se puede cambiar cada cuánto toca una tarea (US-53). El resto de historias, en [`docs/user-stories.md`](docs/user-stories.md).
 
 ## Qué hace el MVP
 
@@ -26,7 +26,7 @@ Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar.
 
 Las historias se agrupan por *milestone* (MVP, MMP, MLP y Multicasa), en [`docs/user-stories.md`](docs/user-stories.md) y en los issues de GitHub.
 
-- **MMP (v1.0):** cancelar una tarea (y verla en el histórico) o recuperarla, cambiar cada cuánto toca, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, que la lista se ponga al día al volver a la app y avisos de error más visibles.
+- **MMP (v1.0):** cambiar cada cuánto toca una tarea (ya hecha), cancelar una tarea (y verla en el histórico) o recuperarla, deshacer lo marcado, saltarse una vuelta, marcar como hecha en un día anterior, que la lista se ponga al día al volver a la app y avisos de error más visibles.
 - **MLP:** el rediseño de la interfaz.
 - **Multicasa (v2.0):** tener varias casas y cambiar entre ellas.
 - **Compartir el hogar** con otras personas. La base de datos ya está pensada para ello: todo cuelga del hogar, no del usuario. Está descrito en la sección «Visión» de [`docs/user-stories.md`](docs/user-stories.md).
@@ -81,7 +81,7 @@ La lógica de tareas, frecuencias y progreso va en `src/domain/`. Esa carpeta no
 │   ├── features/
 │   │   ├── auth/           Entrar con el código o el enlace del email, y la sesión
 │   │   ├── home/           Pantalla de Inicio
-│   │   ├── tasks/          «Tus tareas»: la lista, cada tarea, sus formularios (fecha, mover de finde, nombre, partes) y el de tarea nueva
+│   │   ├── tasks/          «Tus tareas»: la lista, cada tarea, sus formularios (fecha, mover de finde, frecuencia, nombre, partes) y el de tarea nueva
 │   │   ├── history/        «Histórico»: cómo acabó cada vuelta, por días
 │   │   └── app-update/     El aviso de que hay una versión nueva de la app
 │   ├── components/         Componentes visuales comunes a varias pantallas

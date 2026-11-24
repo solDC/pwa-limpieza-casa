@@ -18,10 +18,10 @@ Para empezar de cero, lo más fácil es entrar con otra cuenta (`+prueba2`, `+pr
 
 ## Ver las tareas de una cuenta
 
-Qué tareas tiene, cuándo se crearon, el primer finde de las de cada 15 días y el de las semanales movidas (US-42), la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41 y US-50) y cuándo se hicieron por última vez.
+Qué tareas tiene, cuándo se crearon, el primer finde de las de cada 15 días y el de las semanales movidas (US-42), la fecha de las puntuales (US-38), el día elegido para la próxima vez en las de cada N días (US-41 y US-50), cada cuántos días, desde cuándo cuenta la frecuencia si se ha cambiado (US-53) y cuándo se hicieron por última vez.
 
 ```sql
-select t.name, t.frequency, t.created_on, t.biweekly_start_on, t.weekly_start_on, t.due_on, t.next_due_on,
+select t.name, t.frequency, t.interval_days, t.created_on, t.frequency_changed_on, t.biweekly_start_on, t.weekly_start_on, t.due_on, t.next_due_on,
   (select max(r.completed_on) from public.task_rounds r where r.task_id = t.id) as last_completed_on
 from public.tasks t
 join public.household_members m on m.household_id = t.household_id
@@ -47,7 +47,7 @@ order by p.position;
 
 ## Dejar todas las tareas sin hacer
 
-Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas, ni deshace el cambio de finde de una tarea movida (US-42): para tener las tareas como al principio, entra con otra cuenta. También vacía el histórico (US-31): solo quedan las vueltas de fin de semana pasadas, como «No completada».
+Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas, ni deshace el cambio de finde de una tarea movida (US-42) ni el cambio de frecuencia (US-53), que sigue contando desde el día del cambio: para tener las tareas como al principio, entra con otra cuenta. También vacía el histórico (US-31): solo quedan las vueltas de fin de semana pasadas, como «No completada».
 
 ```sql
 delete from public.task_rounds r
@@ -74,7 +74,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 Para tener una tarea de cada N días retrasada sin esperar: una que nunca se ha hecho toca desde el día en que se creó. Con `- 5`, Baño (cada 3 días) tocaba hace 5 días y sale «Retrasada 5 días».
 
-**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta, ni se le ha elegido o cambiado el día desde la app (US-41 y US-50): cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo, y con un día elegido, toca ese día; en los dos casos, el día de creación no cuenta. Si es así, ejecuta antes «Dejar todas las tareas sin hacer».
+**Solo funciona si la tarea nunca se ha marcado como hecha** en esa cuenta, ni se le ha elegido o cambiado el día desde la app (US-41 y US-50), ni se le ha cambiado la frecuencia (US-53, que cuenta desde el día del cambio, `frequency_changed_on`): cuando ya se ha hecho, la próxima vez se cuenta desde el día en que se hizo, y con un día elegido, toca ese día; en los dos casos, el día de creación no cuenta. Si es así, ejecuta antes «Dejar todas las tareas sin hacer».
 
 ```sql
 update public.tasks t
@@ -89,7 +89,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada». En el histórico (US-31) salen sus findes pasados como «No completada».
 
-Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni, si son semanales, se han movido a otro finde desde la app (US-42).
+Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni, si son semanales, se han movido a otro finde desde la app (US-42), ni se les ha cambiado la frecuencia (US-53). Para eso, entra con otra cuenta.
 
 ```sql
 update public.tasks t

@@ -24,10 +24,12 @@ type TaskRow = {
   // Solo en las de cada N días: el día elegido para la próxima vez, si se ha cambiado (US-41).
   next_due_on: string | null
   created_on: string
+  // Desde qué día cuenta la frecuencia, si se ha cambiado (US-53).
+  frequency_changed_on: string | null
   cancelled_on: string | null
   task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
   // Solo la última vuelta terminada.
-  task_rounds: { completed_on: string }[]
+  task_rounds: { completed_on: string; starts_on: string | null }[]
   // Las últimas partes hechas: como mucho, tantas como partes puede tener una tarea.
   task_part_completions: { part_id: string; starts_on: string | null }[]
 }
@@ -37,7 +39,7 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, frequency_changed_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on, starts_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     // Las partes quitadas (archivadas, US-51) ya no son de la tarea.
@@ -264,6 +266,31 @@ export async function moveWeekendTask(taskId: string, saturday: LocalDate): Prom
   if (error) throw new AppError('saveFailed')
 }
 
+/**
+ * US-53 · Cambia la frecuencia de una tarea. La base de datos pone desde qué día cuenta (hoy
+ * o, si la vuelta en curso estaba a medias, después de ella) y, en las de cada N días, si
+ * toca hoy (`nextDueOn`); lo devuelve para poner la tarea al día sin volver a cargarla.
+ */
+export async function changeTaskFrequency(
+  taskId: string,
+  frequency: Frequency,
+): Promise<{ frequencySince: LocalDate; nextDueOn: LocalDate | null }> {
+  const { data, error } = await getSupabase().rpc('change_task_frequency', {
+    target_task_id: taskId,
+    task_frequency: toFrequencyColumn(frequency),
+    task_interval_days: frequency.kind === 'interval' ? frequency.days : null,
+    task_biweekly_start_on: frequency.kind === 'weekendBiweekly' ? frequency.startOn : null,
+    task_due_on: frequency.kind === 'oneOff' ? frequency.dueOn : null,
+  })
+  // 23514 con fecha (el primer finde o la de una puntual): ya ha pasado para la base de datos
+  // (hoy en Madrid), porque la fecha del dispositivo va mal. Lo demás lo comprueba el formulario.
+  const hasDate = frequency.kind === 'weekendBiweekly' || (frequency.kind === 'oneOff' && frequency.dueOn !== null)
+  if (error?.code === '23514' && hasDate) throw new AppError('deviceDate')
+  if (error || !data) throw new AppError('saveFailed')
+  const saved = data as { frequency_changed_on: string; next_due_on: string | null }
+  return { frequencySince: saved.frequency_changed_on, nextDueOn: saved.next_due_on }
+}
+
 /** El día en que toca al crear la tarea, si se ha elegido (`null` si no). */
 function dueOnOf(frequency: Frequency): LocalDate | null {
   if (frequency.kind === 'oneOff') return frequency.dueOn
@@ -284,6 +311,17 @@ function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
   }
 }
 
+/**
+ * El día en que se terminó la última vuelta. En una puntual, solo si se hizo como puntual (su
+ * vuelta no tiene fecha): si antes tenía otra frecuencia (US-53), las vueltas de aquella no la
+ * dan por hecha.
+ */
+function lastCompletedOn(row: TaskRow): LocalDate | null {
+  const last = row.task_rounds[0]
+  if (!last) return null
+  return row.frequency === 'one_off' && last.starts_on !== null ? null : last.completed_on
+}
+
 function toTask(row: TaskRow): Task {
   return {
     id: row.id,
@@ -298,8 +336,9 @@ function toTask(row: TaskRow): Task {
       weight: part.weight,
     })),
     createdOn: row.created_on,
+    frequencySince: row.frequency_changed_on ?? row.created_on,
     cancelledOn: row.cancelled_on,
-    lastCompletedOn: row.task_rounds[0]?.completed_on ?? null,
+    lastCompletedOn: lastCompletedOn(row),
     partCompletions: row.task_part_completions.map((completion) => ({
       partId: completion.part_id,
       startsOn: completion.starts_on,
@@ -307,7 +346,13 @@ function toTask(row: TaskRow): Task {
   }
 }
 
-function toFrequency(row: TaskRow): Frequency {
+/** Las columnas de la frecuencia, en `tasks` y en `task_frequency_periods` (US-53). */
+export type FrequencyColumns = Pick<
+  TaskRow,
+  'name' | 'frequency' | 'interval_days' | 'biweekly_start_on' | 'weekly_start_on' | 'due_on' | 'next_due_on'
+>
+
+export function toFrequency(row: FrequencyColumns): Frequency {
   switch (row.frequency) {
     case 'weekend_weekly':
       return { kind: 'weekendWeekly', startOn: row.weekly_start_on }
@@ -322,7 +367,7 @@ function toFrequency(row: TaskRow): Frequency {
 
 // Programación defensiva: las reglas (check) de la tabla tasks impiden que falte este dato,
 // así que no debería pasar nunca. Si pasara, mejor avisar que inventarse una frecuencia.
-function required<T>(value: T | null, row: TaskRow): T {
+function required<T>(value: T | null, row: FrequencyColumns): T {
   if (value === null) {
     throw new Error(`La tarea «${row.name}» tiene una frecuencia incompleta.`)
   }

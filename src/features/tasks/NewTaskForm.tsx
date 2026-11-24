@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
-import { formatDayMonth } from '../../domain/dates'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import {
   addPart,
@@ -12,13 +11,12 @@ import {
   validateNewTask,
   type NewTaskDraft,
 } from '../../domain/new-task'
-import type { Frequency, LocalDate, Task } from '../../domain/task'
+import type { LocalDate, Task } from '../../domain/task'
 import { useLanguage } from '../../i18n/language-context'
 import { createTask } from '../../storage/tasks'
 import { FieldError } from './FieldError'
+import { FrequencyFields } from './FrequencyFields'
 import { PartsFields } from './PartsFields'
-
-const frequencyKinds: Frequency['kind'][] = ['weekendWeekly', 'weekendBiweekly', 'interval', 'oneOff']
 
 // US-33 · Añadir una tarea: nombre, frecuencia y, si se quiere, partes.
 // US-34 · Elegir el peso de las partes: si no se cambian, cuentan lo mismo.
@@ -60,15 +58,6 @@ export function NewTaskForm({
 
   function update(changes: Partial<NewTaskDraft>) {
     setDraft({ ...draft, ...changes })
-  }
-
-  function chooseFrequency(kind: Frequency['kind']) {
-    update({
-      frequencyKind: kind,
-      // Sale elegido el primero de los dos próximos fines de semana.
-      biweeklyStartOn:
-        kind === 'weekendBiweekly' ? (draft.biweeklyStartOn ?? weekends[0]) : draft.biweeklyStartOn,
-    })
   }
 
   function handleAddPart() {
@@ -131,97 +120,17 @@ export function NewTaskForm({
       />
       <FieldError id="new-task-name-error" message={errors?.name} />
 
-      <fieldset
-        className="stack"
-        aria-invalid={invalid(errors?.frequency)}
-        aria-describedby={errors?.frequency ? 'new-task-frequency-error' : undefined}
-        tabIndex={errors?.frequency ? -1 : undefined}
+      <FrequencyFields
+        idPrefix="new-task"
+        draft={draft}
+        errors={errors}
+        weekends={weekends}
+        today={today}
+        showFirstDueOn
+        showDueOn
         disabled={saving}
-      >
-        <legend>{t.newTask.frequency}</legend>
-        {frequencyKinds.map((kind) => (
-          <label key={kind} className="choice">
-            <input
-              type="radio"
-              name="frequency"
-              checked={draft.frequencyKind === kind}
-              onChange={() => chooseFrequency(kind)}
-            />
-            {t.newTask[kind]}
-          </label>
-        ))}
-        <FieldError id="new-task-frequency-error" message={errors?.frequency} />
-      </fieldset>
-
-      {draft.frequencyKind === 'interval' && (
-        <>
-          <label htmlFor="new-task-interval-days">{t.newTask.intervalDays}</label>
-          <input
-            id="new-task-interval-days"
-            inputMode="numeric"
-            value={draft.intervalDays}
-            onChange={(event) => update({ intervalDays: event.target.value })}
-            aria-invalid={invalid(errors?.intervalDays)}
-            aria-describedby={errors?.intervalDays ? 'new-task-interval-days-error' : undefined}
-            disabled={saving}
-          />
-          <FieldError id="new-task-interval-days-error" message={errors?.intervalDays} />
-          {/* US-50 · El día en que toca la primera vez: hoy, si no se cambia. */}
-          <label htmlFor="new-task-first-due-on">{t.newTask.firstDueOn}</label>
-          <input
-            id="new-task-first-due-on"
-            type="date"
-            min={today}
-            value={draft.firstDueOn ?? today}
-            onChange={(event) => update({ firstDueOn: event.target.value })}
-            aria-invalid={invalid(errors?.firstDueOn)}
-            aria-describedby={errors?.firstDueOn ? 'new-task-first-due-on-error' : undefined}
-            disabled={saving}
-          />
-          <FieldError id="new-task-first-due-on-error" message={errors?.firstDueOn} />
-        </>
-      )}
-
-      {/* US-38 · La fecha de una puntual, opcional: sin ella, queda «Sin fecha». */}
-      {draft.frequencyKind === 'oneOff' && (
-        <>
-          <label htmlFor="new-task-due-on">{t.newTask.dueOn}</label>
-          <input
-            id="new-task-due-on"
-            type="date"
-            min={today}
-            value={draft.dueOn ?? ''}
-            onChange={(event) => update({ dueOn: event.target.value || null })}
-            aria-invalid={invalid(errors?.dueOn)}
-            aria-describedby={errors?.dueOn ? 'new-task-due-on-error' : undefined}
-            disabled={saving}
-          />
-          <FieldError id="new-task-due-on-error" message={errors?.dueOn} />
-        </>
-      )}
-
-      {draft.frequencyKind === 'weekendBiweekly' && (
-        <fieldset
-          className="stack"
-          aria-invalid={invalid(errors?.biweeklyStartOn)}
-          aria-describedby={errors?.biweeklyStartOn ? 'new-task-biweekly-error' : undefined}
-          disabled={saving}
-        >
-          <legend>{t.newTask.firstWeekend}</legend>
-          {weekends.map((saturday) => (
-            <label key={saturday} className="choice">
-              <input
-                type="radio"
-                name="biweekly-start"
-                checked={draft.biweeklyStartOn === saturday}
-                onChange={() => update({ biweeklyStartOn: saturday })}
-              />
-              {t.newTask.weekendOf(formatDayMonth(saturday, language))}
-            </label>
-          ))}
-          <FieldError id="new-task-biweekly-error" message={errors?.biweeklyStartOn} />
-        </fieldset>
-      )}
+        onChange={update}
+      />
 
       <PartsFields
         idPrefix="new-task"

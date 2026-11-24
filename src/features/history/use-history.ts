@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { errorCode, type ErrorCode } from '../../domain/errors'
-import { hasOlderHistory, historyDays, historyPage, type HistoryDay, type HistoryTask } from '../../domain/history'
+import {
+  hasOlderHistory,
+  historyDays,
+  historyPage,
+  type FrequencyPeriod,
+  type HistoryDay,
+  type HistoryTask,
+} from '../../domain/history'
 import type { LocalDate } from '../../domain/task'
-import { listHistory } from '../../storage/history'
+import { listFrequencyPeriods, listHistory } from '../../storage/history'
 import { listTasks } from '../../storage/tasks'
 
 export type HistoryState =
@@ -32,20 +39,23 @@ export function useHistory(today: LocalDate) {
   const [state, setState] = useState<HistoryState>({ status: 'loading' })
   const [openedOn] = useState(today)
   const tasks = useRef<HistoryTask[]>([])
+  // US-53 · Las frecuencias de antes de las tareas, para sus vueltas no completadas.
+  const periods = useRef<FrequencyPeriod[]>([])
   const pages = useRef(0)
   const mounted = useRef(true)
 
   useEffect(() => {
     mounted.current = true
     const { from, to } = historyPage(openedOn, 0)
-    Promise.all([listTasks(), listHistory(from, to)])
-      .then(([loadedTasks, { rounds, parts }]) => {
+    Promise.all([listTasks(), listHistory(from, to), listFrequencyPeriods()])
+      .then(([loadedTasks, { rounds, parts }, loadedPeriods]) => {
         if (!mounted.current) return
         tasks.current = loadedTasks
+        periods.current = loadedPeriods
         pages.current = 1
         setState({
           status: 'loaded',
-          days: historyDays(loadedTasks, rounds, parts, from, to, openedOn),
+          days: historyDays(loadedTasks, rounds, parts, from, to, openedOn, loadedPeriods),
           hasMore: hasOlderHistory(loadedTasks, from),
           loadingMore: false,
           moreError: null,
@@ -67,7 +77,7 @@ export function useHistory(today: LocalDate) {
       .then(({ rounds, parts }) => {
         if (!mounted.current) return
         pages.current += 1
-        const older = historyDays(tasks.current, rounds, parts, from, to, openedOn)
+        const older = historyDays(tasks.current, rounds, parts, from, to, openedOn, periods.current)
         setState((current) =>
           current.status === 'loaded'
             ? {
