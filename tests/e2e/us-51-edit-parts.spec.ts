@@ -87,9 +87,9 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await save(page, 'Superficies')
 
     const card = task(page, 'Superficies')
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón 25 %/, /^Dormitorio 25 %/, /^Baño de invitados 10 %/])
-    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await page.reload()
     await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón 25 %/, /^Dormitorio 25 %/, /^Baño de invitados 10 %/])
@@ -244,9 +244,9 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await form.getByRole('button', { name: 'Cancelar' }).click()
 
     await expect(form).toHaveCount(0)
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
-    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
   })
 
   test('los cambios cuentan desde la vuelta en curso: sus partes hechas siguen hechas', async ({ page }) => {
@@ -436,6 +436,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
         .getByRole('list', { name: 'Your tasks' })
         .getByRole('listitem')
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Bathroom', exact: true }) })
+      await openTaskActions(bathroom)
       await expect(bathroom.getByRole('button', { name: 'Add parts to Bathroom' })).toHaveText('Add parts')
     })
   })

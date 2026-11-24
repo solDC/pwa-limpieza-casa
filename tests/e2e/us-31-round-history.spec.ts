@@ -212,6 +212,6 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await page.getByRole('button', { name: 'Ver más' }).click()
     await expect(page.getByRole('status')).toHaveText('Nada en las 4 semanas anteriores.')
     await expect(page.getByRole('button', { name: 'Ver más' })).toBeHidden()
-    await expect(page.getByRole('heading', { level: 2, name: 'Qué toca' })).toBeFocused()
+    await expect(page.getByRole('heading', { level: 2, name: 'Histórico' })).toBeFocused()
   })
 })

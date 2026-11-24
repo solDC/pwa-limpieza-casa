@@ -469,6 +469,10 @@ body:has(.update-dialog[open]) {
   align-self: center;
 }
 
+.app-home {
+  overflow-anchor: none;
+}
+
 .home-navigation {
   position: sticky;
   z-index: 2;
@@ -690,7 +694,7 @@ body:has(.update-dialog[open]) {
   background: var(--color-surface);
 }
 
-.app-home :is(input, select, button, h3) {
+.app-home > :not(.home-navigation) :is(input, select, button, h3) {
   scroll-margin-top: calc(7rem + env(safe-area-inset-top));
 }
 

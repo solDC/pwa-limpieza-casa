@@ -67,9 +67,9 @@ test.describe('US-54 · Cambiar el nombre de una tarea y de sus partes', () => {
 
     await expect(form).toHaveCount(0)
     const card = task(page, 'Superficies de abajo')
+    await expect(taskActions(task(page, 'Superficies de abajo'))).toBeFocused()
     await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 50 %/, /^Salón comedor 25 %/, /^Dormitorio 25 %/])
-    await expect(taskActions(task(page, 'Superficies de abajo'))).toBeFocused()
 
     await page.reload()
     await openTaskParts(task(page, 'Superficies de abajo'))

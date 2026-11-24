@@ -263,6 +263,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
       await form.getByLabel('Date').fill(day(5))
       await form.getByRole('button', { name: 'Save' }).click()
       await expect(card).toContainText(`Due: ${formatShortDate(day(5), 'en')}`)
+      await openTaskActions(card)
       await expect(card.getByRole('button', { name: 'Change date of Scrub the floor' })).toHaveText(
         'Change date',
       )
