@@ -47,7 +47,7 @@ order by p.position;
 
 ## Dejar todas las tareas sin hacer
 
-Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas, ni deshace el cambio de finde de una tarea movida (US-42): para tener las tareas como al principio, entra con otra cuenta.
+Borra lo que se ha marcado como hecho. Las puntuales vuelven a aparecer. También olvida el día elegido para la próxima vez en las de cada N días (US-41). No devuelve las partes quitadas (US-51), que siguen archivadas, ni deshace el cambio de finde de una tarea movida (US-42): para tener las tareas como al principio, entra con otra cuenta. También vacía el histórico (US-31): solo quedan las vueltas de fin de semana pasadas, como «No completada».
 
 ```sql
 delete from public.task_rounds r
@@ -87,7 +87,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 ## Que la cuenta se creara hace unas semanas
 
-Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada».
+Para tener tareas de **fin de semana** retrasadas. Una tarea nueva no empieza con retraso: si se crea entre semana, su primera vuelta es el finde siguiente (US-48). Así que, con una cuenta recién creada, de lunes a viernes Superficies dice «Toca: finde del…» y no se puede marcar. Con esta consulta, todas sus tareas se crearon hace 4 semanas, y de lunes a viernes Superficies sale «Retrasada». En el histórico (US-31) salen sus findes pasados como «No completada».
 
 Como la de arriba, solo cambia algo en las tareas que nunca se han marcado como hechas, ni, si son semanales, se han movido a otro finde desde la app (US-42).
 
@@ -101,7 +101,7 @@ where t.household_id = m.household_id and m.user_id = u.id
 
 ## Que una tarea de cada N días se hiciera hace unos días
 
-Apunta que se hizo por última vez hace 10 días. Con Baño (cada 3 días), tocaba hace 7 y sale «Retrasada 7 días». Solo para las de **cada N días**; si la tarea ya se ha marcado después, primero deja las tareas sin hacer (arriba).
+Apunta que se hizo por última vez hace 10 días. Con Baño (cada 3 días), tocaba hace 7 y sale «Retrasada 7 días». Solo para las de **cada N días**; si la tarea ya se ha marcado después, primero deja las tareas sin hacer (arriba). En el histórico (US-31) sale como «Completada» hace 10 días.
 
 ```sql
 insert into public.task_rounds (household_id, task_id, starts_on, completed_on)

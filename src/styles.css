@@ -147,6 +147,18 @@ button:disabled {
   margin-top: 2rem;
 }
 
+/* El título de «Tus tareas», con «Histórico» (US-31) a su derecha. */
+.tasks-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tasks-header h2 {
+  margin: 0;
+}
+
 /* Lista de tareas (US-27): tarjetas una debajo de otra, sin viñetas. */
 .task-list {
   display: flex;
@@ -302,4 +314,50 @@ body:has(.update-dialog[open]) {
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: flex-end;
+}
+
+/* Histórico (US-31): un título por día y, debajo, cada vuelta en una tarjeta. */
+.history h2:focus,
+.history h3:focus {
+  outline: none;
+}
+
+.history-day h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-entry {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.history-task {
+  flex: 1 1 100%;
+  font-weight: 600;
+}
+
+.history-status {
+  font-weight: 600;
+}
+
+.history-completed {
+  color: var(--color-accent);
+}
+
+.history-notCompleted {
+  color: var(--color-error);
 }

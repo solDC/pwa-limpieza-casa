@@ -66,3 +66,22 @@ export function formatDayMonth(date: LocalDate, language: Language): string {
 export function formatShortDate(date: LocalDate, language: Language): string {
   return `${WEEKDAYS[language][dayOfWeek(date)]} ${formatDayMonth(date, language)}`
 }
+
+const LONG_WEEKDAYS: Record<Language, string[]> = {
+  es: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+}
+const LONG_MONTHS: Record<Language, string[]> = {
+  es: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre',
+    'octubre', 'noviembre', 'diciembre'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+    'October', 'November', 'December'],
+}
+
+/** «sábado 21 de noviembre» o «Saturday 21 November» (US-31). */
+export function formatLongDate(date: LocalDate, language: Language): string {
+  const [, month, day] = date.split('-').map(Number)
+  const weekday = LONG_WEEKDAYS[language][dayOfWeek(date)]
+  const monthName = LONG_MONTHS[language][month - 1]
+  return language === 'es' ? `${weekday} ${day} de ${monthName}` : `${weekday} ${day} ${monthName}`
+}

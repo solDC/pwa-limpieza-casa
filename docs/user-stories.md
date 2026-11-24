@@ -10,7 +10,7 @@ Cada historia tiene su issue en GitHub, enlazado en la tabla de resumen. Al aña
 
 ## El MVP acotado
 
-Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se mantienen la base de datos y el inicio de sesión porque ya estaban hechos. Lo esencial: ver qué toca y marcarlo como hecho, entero o por partes, y poder cambiar cuándo toca. El histórico de cada vuelta queda en el backlog.
+Una app para mi casa, con las tareas que uso de verdad ya creadas al entrar. Se mantienen la base de datos y el inicio de sesión porque ya estaban hechos. Lo esencial: ver qué toca y marcarlo como hecho, entero o por partes, y poder cambiar cuándo toca, y ver en el histórico cómo acabó cada vuelta.
 
 ## Resumen
 
@@ -41,6 +41,7 @@ Primero las hechas y después las pendientes.
 | US-50 | Elegir desde qué día toca una tarea de cada N días | Must have | Hecha | [#81](https://github.com/solDC/pwa-limpieza-casa/issues/81) |
 | US-54 | Cambiar el nombre de una tarea y de sus partes | Must have | Hecha | [#96](https://github.com/solDC/pwa-limpieza-casa/issues/96) |
 | US-51 | Cambiar las partes de una tarea | Must have | Hecha | [#83](https://github.com/solDC/pwa-limpieza-casa/issues/83) |
+| US-31 | Histórico de cada vuelta | Must have | Hecha | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
 
 ### MMP (producto mínimo comercializable, v1.0)
 
@@ -52,7 +53,7 @@ Lo que viene después del MVP. Las «Nice to have» están descritas más abajo,
 | US-46 | Marcar como hecha en un día anterior | Nice to have | Pendiente | [#65](https://github.com/solDC/pwa-limpieza-casa/issues/65) |
 | US-53 | Cambiar cada cuánto toca una tarea | Must have | Pendiente | [#93](https://github.com/solDC/pwa-limpieza-casa/issues/93) |
 | US-55 | La lista se pone al día al volver a la app | Nice to have | Pendiente | [#98](https://github.com/solDC/pwa-limpieza-casa/issues/98) |
-| US-31 | Histórico de cada vuelta | Backlog | Pendiente | [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40) |
+| US-56 | Volver con el botón atrás | Must have | Pendiente | [#106](https://github.com/solDC/pwa-limpieza-casa/issues/106) |
 | US-40 | Ver en el histórico las tareas canceladas | Backlog | Pendiente | [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58) |
 | US-43 | Deshacer una tarea marcada como hecha | Backlog | Pendiente | [#62](https://github.com/solDC/pwa-limpieza-casa/issues/62) |
 | US-44 | Deshacer una parte marcada como hecha | Backlog | Pendiente | [#63](https://github.com/solDC/pwa-limpieza-casa/issues/63) |
@@ -299,7 +300,7 @@ para ajustar la tarea cuando cambia cómo la hago.
 - Quitar una parte la archiva: deja de salir, y las vueltas pasadas conservan sus partes hechas y su porcentaje.
 - Los cambios cuentan desde la vuelta en curso: sus partes ya hechas siguen hechas. Si al quitar partes ya están hechas todas las que quedan, la vuelta queda completada.
 
-*Depende de la US-39. No cumple la «S» de INVEST: junta nombres, pesos, añadir y quitar, que en la tabla y en la base de datos son lo mismo (las partes de la tarea). Renombrar las partes también se puede con «Cambiar nombre» (US-54). Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso que tenía cada parte el día en que se hizo (US-39, tabla `task_part_completions`). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí. Se decidió al implementarla: el nombre de las partes que ya existen también se cambia aquí (al probarla, Sol vio que hacía falta; al principio solo se veía); si los pesos estaban repartidos a partes iguales, al añadir o quitar partes se vuelven a repartir, y si no, se conservan y la nueva empieza en 0; si se quitan todas, la vuelta no se da por terminada (la tarea pasa a marcarse entera); y quitar una parte que nunca se ha hecho también la archiva.*
+*Depende de la US-39. No cumple la «S» de INVEST: junta nombres, pesos, añadir y quitar, que en la tabla y en la base de datos son lo mismo (las partes de la tarea). Renombrar las partes también se puede con «Cambiar nombre» (US-54). Para que las vueltas pasadas conserven su porcentaje, la base de datos guarda el peso de cada parte hecha (US-39, tabla `task_part_completions`): el que tenía al hacerse o, si se cambian los pesos en esa misma vuelta, el nuevo (US-31). Al implementarla: sacar del formulario de tarea nueva (`NewTaskForm.tsx`) el bloque de partes y pesos a un componente propio, para reutilizarlo aquí. Se decidió al implementarla: el nombre de las partes que ya existen también se cambia aquí (al probarla, Sol vio que hacía falta; al principio solo se veía); si los pesos estaban repartidos a partes iguales, al añadir o quitar partes se vuelven a repartir, y si no, se conservan y la nueva empieza en 0; si se quitan todas, la vuelta no se da por terminada (la tarea pasa a marcarse entera); y quitar una parte que nunca se ha hecho también la archiva.*
 
 ### US-52 · La app en inglés y en castellano (Must have)
 Como usuario que no habla castellano,
@@ -337,6 +338,28 @@ para que se llamen como yo las llamo.
 - El progreso de la vuelta en curso y las vueltas pasadas no cambian.
 
 *Depende de la US-33. Al implementarla se decidió que no puede haber dos tareas con el mismo nombre, tampoco al añadirlas (criterio nuevo en la US-33). Cuenta como el mismo nombre sin distinguir mayúsculas ni espacios al principio y al final; solo entre las que salen en la lista (una cancelada o una puntual ya hecha no bloquean su nombre); y se compara el nombre guardado, no el traducido (una tarea propia llamada «Surfaces» no choca con «Superficies»). Si ya había dos tareas iguales, se quedan. Renombrar es escribir algo distinto de lo que se ve en el idioma elegido: guardar sin cambiar nada no quita la traducción.*
+
+### US-31 · Histórico de cada vuelta (Must have)
+Como usuario,
+quiero ver cómo acabó cada vuelta de mis tareas, también las que no hice,
+para saber cómo voy con la limpieza.
+- En «Tus tareas» hay un botón «Histórico», que abre una pantalla aparte con «Volver».
+- Todo lo que desaparece de la lista sale en el histórico: cada vuelta completada (también las puntuales hechas) y cada vuelta de fin de semana que pasa de su plazo (el viernes) sin terminar.
+- El estado de cada vuelta es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos»; X es la suma de los pesos de sus partes hechas al acabar la vuelta, como se veía en la lista (si se cambian los pesos a mitad de vuelta, cuentan los nuevos; una parte quitada en esa vuelta ya no cuenta).
+- Las completadas salen el día en que se hicieron; las parciales y las no completadas, el viernes en que acaba su plazo, con su fin de semana («Finde del 14-15 nov»).
+- Sale lo de las últimas 4 semanas, agrupado por día, de lo más reciente a lo más antiguo; «Ver más» carga 4 semanas más.
+
+*Depende de la US-30 y la US-39. Las de «cada N días» y las puntuales no tienen plazo: siguen en la lista como retrasadas hasta que se hacen, así que solo llegan al histórico como completadas. La primera vuelta de una tarea es la primera que empieza el día en que se crea o después (US-48), así que no hay vueltas anteriores a la tarea. Se decidió al escribirla: las vueltas no completadas se calculan con el calendario que tiene ahora la tarea, sin guardar nada nuevo; como de una tarea movida a otro finde (US-42) solo se guarda el último cambio, sus no completadas salen solo desde el finde al que se movió, y la vuelta que se movió no sale como no completada (se movió a propósito). Las vueltas en las que se hizo algo salen siempre, porque se guardan con sus fechas. Se decidió al implementarla: el % de una parcial es el que se veía en la lista al acabar la vuelta (Cocina hecha al 50 %, cambiada a 10 %, y Salón al 80 %: 90 %, no 130 %).*
+
+### US-56 · Volver con el botón atrás (Must have)
+Como usuario,
+quiero volver del histórico a «Tus tareas» con el botón atrás del móvil o del navegador,
+para moverme por la app como en cualquier otra.
+- Desde el histórico, el botón atrás de Android y el del navegador vuelven a «Tus tareas», como «Volver».
+- Al volver así, «Tus tareas» sigue como estaba: lo que se estaba escribiendo y el sitio de la página.
+- En «Tus tareas», atrás hace lo de siempre: sale de la app o de la página.
+
+*Depende de la US-31. En el iPhone, la app instalada no tiene botón atrás: allí se vuelve con «Volver».*
 
 ## Historias anteriores
 
@@ -384,17 +407,6 @@ para que deje de aparecer sin perder su histórico.
 - No puedo archivar mi única casa activa.
 
 *Depende de la US-36. Cuando se pueda compartir una casa (ver «Visión»), solo quien la creó podrá archivarla; las demás personas solo podrán salir de ella.*
-
-### US-31 · Histórico de cada vuelta · [#40](https://github.com/solDC/pwa-limpieza-casa/issues/40)
-Como usuario,
-quiero ver el histórico de cada vuelta de cada tarea,
-para saber cómo voy con la limpieza.
-- Hay una pantalla «Histórico» con cada vuelta cerrada, de la más reciente a la más antigua: tarea, fechas y estado.
-- El estado es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos».
-- Las vueltas de fin de semana que llegan al sábado siguiente sin terminar (el plazo acaba el viernes) quedan como parcial o no completada sin que yo haga nada.
-- El porcentaje parcial es la suma de los pesos de las partes hechas.
-
-*La primera vuelta de una tarea es la primera que empieza después de crearla (US-48), así que no hay vueltas anteriores a la tarea en el histórico.*
 
 ### US-40 · Ver en el histórico las tareas canceladas · [#58](https://github.com/solDC/pwa-limpieza-casa/issues/58)
 Como usuario,
@@ -460,8 +472,9 @@ para que no salga como retrasada.
 - Al saltarla, la tarea muestra cuándo vuelve a tocar, como si se hubiera hecho; las puntuales no se pueden saltar (para eso está cancelarla, US-32).
 - En las de cada N días, la siguiente se cuenta desde el día en que se salta.
 - Si falla el guardado, la app lo dice y la tarea sigue como estaba.
+- En el histórico (US-31), esa vuelta sale como **Saltada**, no como «No completada».
 
-*Depende de la US-30. Cuando exista el histórico (US-31), esa vuelta sale como «Saltada», no como «No completada».*
+*Depende de la US-30 y la US-31.*
 
 ## Visión
 

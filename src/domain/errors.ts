@@ -26,6 +26,8 @@ export type ErrorCode =
   | 'duplicateTaskName'
   // US-51: las partes de la tarea han cambiado en otro dispositivo.
   | 'staleParts'
+  // US-31: el histórico.
+  | 'historyLoad'
 
 /** Un fallo con su código, para que la pantalla lo explique en el idioma elegido. */
 export class AppError extends Error {
