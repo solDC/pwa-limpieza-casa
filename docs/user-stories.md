@@ -81,7 +81,7 @@ Tener más de una casa. Están descritas en la sección «Backlog».
 ## Conceptos
 
 - **Tarea:** algo que hay que mantener. Puede ser **una acción** («Aspirar cosas de Cati», «Cristales y espejos») o **un lugar** de la casa («Baño», «Jardín», «Planta de arriba»). Puede tener **partes**, que a su vez pueden ser **lugares** («Superficies»: cocina, salón, dormitorio) o **acciones** («Baño»: inodoro, ducha, espejo), cada una con su **peso** en porcentaje; los pesos suman 100 %. Las partes no se borran: quitar una (US-51) es **archivarla** (deja de salir, como una tarea cancelada), para que las vueltas pasadas conserven sus partes hechas y su porcentaje.
-- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o el de una de cada N días, al crearla, US-50, o para la próxima vez, US-41) no cambia la vuelta: conserva sus partes hechas.
+- **Vuelta:** cada vez que toca hacer una tarea. Empieza cuando toca y se cierra con uno de estos estados. Cambiar el día en que toca (la fecha de una puntual, US-38, o el de una de cada N días, al crearla, US-50, o para la próxima vez, US-41) no cambia la vuelta: conserva sus partes hechas. Cambiar la frecuencia (US-53) sí: si la vuelta de ahora está a medias, la nueva empieza después, con todas sus partes por hacer.
 
   | Estado | Cuándo |
   |---|---|
@@ -321,11 +321,11 @@ quiero cambiar la frecuencia de una tarea que ya existe (por ejemplo, de cada N 
 para adaptarla cuando cambia cómo la hago.
 - En «Tus tareas», cada tarea tiene «Cambiar frecuencia», con las cuatro frecuencias y lo que pide cada una, como al crearla (US-33): los días en las de cada N días, el primer finde en las de cada 15 días y la fecha opcional en las puntuales. También sirve para cambiar solo el número de días.
 - Al guardar, la tarea muestra la frecuencia nueva y cuándo toca con ella; con «Cancelar», se queda como estaba.
-- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima toca N días después de la última vez que se hizo; si ese día ya ha pasado, o nunca se ha hecho, toca hoy.
+- La frecuencia nueva empieza sin retraso, como una tarea nueva (US-48). En las de cada N días, la próxima toca N días después de la última vez que se hizo; si ese día ya ha pasado, o nunca se ha hecho, toca hoy (mañana, si la vuelta de hoy está a medias).
 - Si la vuelta en curso estaba a medias, sus partes hechas no pasan a la vuelta nueva: la nueva empieza después de ella (el finde siguiente, o el día siguiente), con todas por hacer.
 - Las vueltas ya terminadas se conservan, y el histórico (US-31) sigue mostrando las de antes del cambio con la frecuencia que tenían.
 
-*Depende de la US-30 y la US-31. Cambiar el nombre o las partes de la tarea no entra aquí. Se decidió al implementarla: en las de cada N días, el formulario no pide el día de la primera vez (lo calcula la base de datos; si se quiere otro, «Cambiar fecha», US-41); en una puntual, la fecha se cambia con «Cambiar fecha» (US-38), así que el formulario solo la pide al pasar a puntual; y cada frecuencia que deja de valer se guarda con los días en que valió, para que el histórico calcule con ella sus vueltas no completadas. Las vueltas a medias de cada N días o puntuales que se dejan al cambiar la frecuencia no salen en el histórico, como las demás sin plazo (solo salen las completadas).*
+*Depende de la US-30 y la US-31. Cambiar el nombre o las partes de la tarea no entra aquí. Se decidió al implementarla: en las de cada N días, el formulario no pide el día de la primera vez (lo calcula la base de datos; si se quiere otro, «Cambiar fecha», US-41); en una puntual, la fecha se cambia con «Cambiar fecha» (US-38), así que el formulario solo la pide al pasar a puntual; cada frecuencia que deja de valer se guarda con los días en que valió, para que el histórico calcule con ella sus vueltas no completadas; un finde en que la tarea se hizo, aunque fuera con la frecuencia de antes, no sale como no completado; y al cambiarla se quita lo de la de antes: el finde al que se movió (US-42), la fecha de la puntual y el día elegido para la próxima vez (US-41). Las vueltas a medias de cada N días o puntuales que se dejan al cambiar la frecuencia no salen en el histórico, como las demás sin plazo (solo salen las completadas).*
 
 ### US-54 · Cambiar el nombre de una tarea y de sus partes (Must have)
 Como usuario,
