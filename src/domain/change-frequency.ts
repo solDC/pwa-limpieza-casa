@@ -79,9 +79,11 @@ function isUnchanged(current: Frequency, draft: FrequencyDraft): boolean {
 /**
  * La tarea con la frecuencia nueva, como la ha guardado la base de datos: desde el día
  * `frequencySince` y, en las de cada N días, con el día en que toca si ya había pasado
- * (`nextDueOn`). Las partes hechas se quedan en su vuelta: la nueva es otra.
+ * (`nextDueOn`). Las partes hechas se quedan en su vuelta: la nueva es otra. Al pasar a
+ * puntual, sin «última vez»: en una puntual es el día en que se hizo como puntual, y aún no se
+ * ha hecho (como lo lee `storage/`).
  */
-export function withFrequencyChanged<T extends Pick<Task, 'frequency' | 'frequencySince'>>(
+export function withFrequencyChanged<T extends Pick<Task, 'frequency' | 'frequencySince' | 'lastCompletedOn'>>(
   task: T,
   frequency: Frequency,
   frequencySince: LocalDate,
@@ -91,5 +93,6 @@ export function withFrequencyChanged<T extends Pick<Task, 'frequency' | 'frequen
     ...task,
     frequency: frequency.kind === 'interval' ? { ...frequency, nextDueOn } : frequency,
     frequencySince,
+    lastCompletedOn: frequency.kind === 'oneOff' ? null : task.lastCompletedOn,
   }
 }

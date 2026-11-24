@@ -135,6 +135,66 @@ test.describe('US-53 · Cambiar cada cuánto toca una tarea', () => {
     await expect(task(page, 'Superficies')).toContainText('Llevas 0 %')
   })
 
+  test('una semanal hecha el finde pasado y a medias este finde, pasada a cada 7 días, no se queda con sus partes hechas', async ({
+    page,
+  }) => {
+    const email = await signInWithTasksFrom(page, 30)
+    // El finde pasado se hizo entera; este finde (o el último, entre semana), la cocina.
+    const today = todayInMadrid()
+    const saturday = addDays(today, -((dayOfWeek(today) + 1) % 7))
+    await addPastRound(email, 'Superficies', {
+      startsOn: addDays(saturday, -7),
+      dueBy: addDays(saturday, -1),
+      completedOn: addDays(saturday, -7),
+    })
+    await page.reload()
+    await task(page, 'Superficies').getByRole('button', { name: 'Marcar Cocina como hecha' }).click()
+    await expect(task(page, 'Superficies')).toContainText('Llevas 50 %')
+
+    const form = await openFrequencyForm(page, 'Superficies')
+    await form.getByLabel('Cada N días desde la última vez').check()
+    await form.getByLabel('Cada cuántos días').fill('7')
+    await form.getByRole('button', { name: 'Guardar' }).click()
+
+    await expect(task(page, 'Superficies')).toContainText('Cada 7 días desde la última vez')
+    await expect(task(page, 'Superficies')).toContainText('Llevas 0 %')
+    await page.reload()
+    await expect(task(page, 'Superficies')).toContainText('Llevas 0 %')
+  })
+
+  test('una tarea hecha hoy y pasada a puntual sigue en la lista', async ({ page }) => {
+    await signInWithTasksFrom(page, 0)
+    await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
+    await expect(task(page, 'Baño')).toContainText('Toca:')
+
+    const form = await openFrequencyForm(page, 'Baño')
+    await form.getByLabel('Puntual').check()
+    await form.getByRole('button', { name: 'Guardar' }).click()
+
+    await expect(task(page, 'Baño')).toContainText('Puntual')
+    await expect(task(page, 'Baño')).toContainText('Sin fecha')
+    await page.reload()
+    await expect(task(page, 'Baño')).toContainText('Sin fecha')
+  })
+
+  test('a cada 15 días, eligiendo el primer finde; a puntual, con fecha', async ({ page }) => {
+    await signInWithTasksFrom(page, 0)
+    const first = firstWeekendFromToday()
+    let form = await openFrequencyForm(page, 'Baño')
+    await form.getByLabel('Fin de semana cada 15 días').check()
+    await form.getByLabel(`Finde del ${formatDayMonth(addDays(first, 7), 'es')}`).check()
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(task(page, 'Baño')).toContainText('Fin de semana cada 15 días')
+    await expect(task(page, 'Baño')).toContainText(`Toca: finde del ${formatDayMonth(addDays(first, 7), 'es')}`)
+
+    const nextWeek = addDays(todayInMadrid(), 7)
+    form = await openFrequencyForm(page, 'Baño')
+    await form.getByLabel('Puntual').check()
+    await form.getByLabel('Fecha (opcional)').fill(nextWeek)
+    await form.getByRole('button', { name: 'Guardar' }).click()
+    await expect(task(page, 'Baño')).toContainText(`Toca: ${formatShortDate(nextWeek, 'es')}`)
+  })
+
   test('las vueltas ya terminadas se conservan, y el histórico sigue mostrando las de antes con su frecuencia', async ({
     page,
   }) => {

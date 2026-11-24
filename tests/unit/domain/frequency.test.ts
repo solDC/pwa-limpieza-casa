@@ -237,8 +237,11 @@ describe('cada N días desde la última vez', () => {
 
   it('30 días cruzando meses cortos y años bisiestos', () => {
     const windows: Frequency = { kind: 'interval', days: 30, nextDueOn: null }
-    expect(round(windows, '2026-01-30', '2026-01-30')).toEqual({ startsOn: '2026-03-01', dueBy: null })
-    expect(round(windows, '2028-02-15', '2028-02-15')).toEqual({ startsOn: '2028-03-16', dueBy: null })
+    // Creada antes de hacerse (la de las demás pruebas es de noviembre de 2026).
+    const since = (frequencySince: string, lastCompletedOn: string) =>
+      currentRound({ frequency: windows, frequencySince, lastCompletedOn }, lastCompletedOn)
+    expect(since('2026-01-01', '2026-01-30')).toEqual({ startsOn: '2026-03-01', dueBy: null })
+    expect(since('2028-01-01', '2028-02-15')).toEqual({ startsOn: '2028-03-16', dueBy: null })
   })
 })
 

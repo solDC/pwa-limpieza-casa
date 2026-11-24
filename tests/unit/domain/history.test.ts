@@ -212,9 +212,9 @@ describe('US-53 · con la frecuencia cambiada', () => {
       },
     ]
     const result = historyDays([changed], [], [], '2026-10-27', today, today, periods)
-    // El finde del 14-15 ya había empezado al cambiarla: también sale.
+    // El finde del 14-15 aún tenía plazo al cambiarla: no sale como no completado (se cambió a
+    // propósito, como una vuelta movida, US-42).
     expect(result.map((day) => [day.day, day.entries[0].outcome.status])).toEqual([
-      ['2026-11-20', 'notCompleted'],
       ['2026-11-13', 'notCompleted'],
       ['2026-11-06', 'notCompleted'],
     ])
@@ -232,6 +232,7 @@ describe('US-53 · con la frecuencia cambiada', () => {
     ]
     const result = historyDays([changed], [], [], '2026-10-27', today, today, periods)
     expect(result.map((day) => day.day)).toEqual(['2026-11-20', '2026-11-13', '2026-11-06'])
+    expect(result[0].entries).toHaveLength(1)
   })
 
   it('una vuelta que se hizo con la frecuencia de antes dentro de ese finde cuenta como hecha', () => {

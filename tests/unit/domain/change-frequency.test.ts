@@ -149,8 +149,24 @@ describe('la tarea, ya cambiada', () => {
     expect(currentRound(changed, today)).toEqual({ startsOn: '2026-11-28', dueBy: '2026-12-04' })
   })
 
+  it('a cada N días con la vuelta a medias: la nueva no empieza en la misma (aunque la última vez más N caiga ahí)', () => {
+    // Semanal, hecha el sábado 14; el sábado 21, la cocina; el domingo 22 pasa a cada 7 días.
+    // La última vez más 7 es el 21, la vuelta a medias: la nueva empieza el 22 (lo pone la base de datos).
+    const halfDone = task(weekly, {
+      lastCompletedOn: '2026-11-14',
+      parts: [
+        { id: 'a', name: 'A', defaultKey: null, weight: 50 },
+        { id: 'b', name: 'B', defaultKey: null, weight: 50 },
+      ],
+      partCompletions: [{ partId: 'a', startsOn: '2026-11-21' }],
+    })
+    const changed = withFrequencyChanged(halfDone, { kind: 'interval', days: 7, nextDueOn: null }, '2026-11-22', null)
+    expect(currentRound(changed, '2026-11-22')).toEqual({ startsOn: '2026-11-22', dueBy: null })
+  })
+
   it('una puntual hecha con la frecuencia de antes no cuenta como hecha', () => {
-    const done = task(every3, { lastCompletedOn: '2026-11-20' })
+    // También si se hizo hoy, el mismo día del cambio.
+    const done = task(every3, { lastCompletedOn: today })
     const changed = withFrequencyChanged(done, { kind: 'oneOff', dueOn: null }, today, null)
     expect(currentRound(changed, today)).toEqual({ startsOn: null, dueBy: null })
   })

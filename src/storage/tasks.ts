@@ -29,7 +29,7 @@ type TaskRow = {
   cancelled_on: string | null
   task_parts: { id: string; name: string; default_key: string | null; weight: number; position: number }[]
   // Solo la última vuelta terminada.
-  task_rounds: { completed_on: string }[]
+  task_rounds: { completed_on: string; starts_on: string | null }[]
   // Las últimas partes hechas: como mucho, tantas como partes puede tener una tarea.
   task_part_completions: { part_id: string; starts_on: string | null }[]
 }
@@ -39,7 +39,7 @@ export async function listTasks(): Promise<Task[]> {
   const { data, error } = await getSupabase()
     .from('tasks')
     .select(
-      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, frequency_changed_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on), task_part_completions (part_id, starts_on)',
+      'id, household_id, name, default_key, frequency, interval_days, biweekly_start_on, weekly_start_on, due_on, next_due_on, created_on, frequency_changed_on, cancelled_on, task_parts (id, name, default_key, weight, position), task_rounds (completed_on, starts_on), task_part_completions (part_id, starts_on)',
     )
     .is('cancelled_on', null)
     // Las partes quitadas (archivadas, US-51) ya no son de la tarea.
@@ -311,6 +311,17 @@ function toFrequencyColumn(frequency: Frequency): TaskRow['frequency'] {
   }
 }
 
+/**
+ * El día en que se terminó la última vuelta. En una puntual, solo si se hizo como puntual (su
+ * vuelta no tiene fecha): si antes tenía otra frecuencia (US-53), las vueltas de aquella no la
+ * dan por hecha.
+ */
+function lastCompletedOn(row: TaskRow): LocalDate | null {
+  const last = row.task_rounds[0]
+  if (!last) return null
+  return row.frequency === 'one_off' && last.starts_on !== null ? null : last.completed_on
+}
+
 function toTask(row: TaskRow): Task {
   return {
     id: row.id,
@@ -327,7 +338,7 @@ function toTask(row: TaskRow): Task {
     createdOn: row.created_on,
     frequencySince: row.frequency_changed_on ?? row.created_on,
     cancelledOn: row.cancelled_on,
-    lastCompletedOn: row.task_rounds[0]?.completed_on ?? null,
+    lastCompletedOn: lastCompletedOn(row),
     partCompletions: row.task_part_completions.map((completion) => ({
       partId: completion.part_id,
       startsOn: completion.starts_on,

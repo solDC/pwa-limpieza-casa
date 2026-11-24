@@ -13,7 +13,12 @@
 -- vuelta nueva empieza después (el finde siguiente, o el día siguiente), así que es otra
 -- vuelta (otro starts_on) y empieza con todas por hacer.
 --
--- Compatible con la versión anterior de la app: la columna admite vacío y la tabla es nueva.
+-- Una tarea hecha con otra frecuencia y pasada a puntual no está hecha como puntual: sigue en
+-- la lista. Por eso «puntual ya hecha» pasa a ser una puntual con su vuelta sin fecha
+-- (starts_on vacío), también en la comprobación de nombres repetidos (US-54).
+--
+-- Compatible con la versión anterior de la app: la columna admite vacío, la tabla es nueva y
+-- las funciones se llaman igual.
 
 -- ---------------------------------------------------------------------------
 -- Columna
@@ -131,6 +136,21 @@ begin
     raise exception using errcode = '22023', message = 'No se puede cambiar una tarea cancelada.';
   end if;
 
+  -- Una puntual ya hecha ya no está en la lista: no hay nada que cambiar.
+  if target.frequency = 'one_off' and exists (
+    select 1 from public.task_rounds r where r.task_id = target_task_id and r.starts_on is null
+  ) then
+    raise exception using errcode = '22023', message = 'Esa puntual ya está hecha.';
+  end if;
+
+  -- Una vuelta de puntual no tiene fecha (starts_on vacío): si la tarea ya tiene partes hechas
+  -- como puntual, al volver a puntual la vuelta nueva se quedaría con ellas.
+  if task_frequency = 'one_off' and target.frequency <> 'one_off' and exists (
+    select 1 from public.task_part_completions c where c.task_id = target_task_id and c.starts_on is null
+  ) then
+    raise exception using errcode = '22023', message = 'Ya tiene partes hechas como puntual.';
+  end if;
+
   if task_frequency is null or task_frequency not in ('weekend_weekly', 'weekend_biweekly', 'interval', 'one_off') then
     raise exception using errcode = '22023', message = 'Esa frecuencia no existe.';
   end if;
@@ -220,3 +240,41 @@ $$;
 -- Solo la app con sesión (comprueba ella misma que la tarea es del hogar del usuario).
 revoke execute on function public.change_task_frequency(uuid, text, integer, date, date) from public, anon;
 grant execute on function public.change_task_frequency(uuid, text, integer, date, date) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Nombres repetidos (US-54): una puntual está hecha si tiene su vuelta sin fecha
+-- ---------------------------------------------------------------------------
+
+-- Igual que la de …_rename_task.sql, pero una puntual solo deja libre su nombre si se hizo
+-- como puntual (su vuelta no tiene fecha): una que se hizo con otra frecuencia y se pasó a
+-- puntual sigue en la lista.
+create or replace function public.check_task_name_free(
+  target_household_id uuid,
+  task_name text,
+  except_task_id uuid default null
+)
+returns void
+language plpgsql
+set search_path = ''
+as $$
+begin
+  perform pg_advisory_xact_lock(hashtextextended('task_names:' || target_household_id::text, 0));
+  if exists (
+    select 1
+    from public.tasks t
+    where t.household_id = target_household_id
+      and t.cancelled_on is null
+      -- Una puntual con su vuelta (sin fecha) apuntada ya está hecha: ya no sale en la lista.
+      and not (
+        t.frequency = 'one_off'
+        and exists (select 1 from public.task_rounds r where r.task_id = t.id and r.starts_on is null)
+      )
+      and t.id is distinct from except_task_id
+      and lower(btrim(t.name)) = lower(btrim(task_name))
+  ) then
+    raise exception using errcode = '23505', message = 'Ya tienes una tarea con ese nombre.';
+  end if;
+end;
+$$;
+
+revoke execute on function public.check_task_name_free(uuid, text, uuid) from public, anon, authenticated;

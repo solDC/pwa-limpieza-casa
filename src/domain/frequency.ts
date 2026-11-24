@@ -47,22 +47,23 @@ export function currentRound(
       const current = weeksSinceStart % 2 === 0 ? saturday : addDays(saturday, 14)
       return notBefore(weekendRound(current, 14, lastCompletedOn), firstWeekend(task))
     }
-    case 'interval':
+    case 'interval': {
       // Aunque se haya elegido otro día para la próxima vez (US-41): ese día lo dice
       // `dueDate()`, y la vuelta es la misma, con sus partes hechas.
-      return {
-        startsOn: lastCompletedOn ? addDays(lastCompletedOn, frequency.days) : task.frequencySince,
-        dueBy: null,
-      }
+      // US-53 · Nunca antes del día desde el que cuenta la frecuencia: si se cambió con la
+      // vuelta a medias, la nueva empieza después de ella aunque la última vez más N caiga en
+      // ella. Sin cambios, ese día es el de creación, anterior a la última vez.
+      const next = lastCompletedOn ? addDays(lastCompletedOn, frequency.days) : task.frequencySince
+      return { startsOn: next > task.frequencySince ? next : task.frequencySince, dueBy: null }
+    }
     case 'oneOff':
       // Su vuelta va siempre sin fecha, aunque la tarea tenga una (US-38): así, al cambiar
       // la fecha, la vuelta es la misma y no se pierden sus partes hechas. Cuándo toca lo
       // dice `dueDate()`.
-      // Ya hecha si se ha terminado desde que es puntual (US-53: una que antes tenía otra
-      // frecuencia no está hecha por haberse hecho con aquella).
-      return lastCompletedOn !== null && lastCompletedOn >= task.frequencySince
-        ? null
-        : { startsOn: null, dueBy: null }
+      // US-53 · En una puntual, `lastCompletedOn` es el día en que se hizo como puntual: una
+      // que antes tenía otra frecuencia no está hecha por haberse hecho con aquella (lo
+      // tienen en cuenta `storage/` y `withFrequencyChanged()`).
+      return lastCompletedOn ? null : { startsOn: null, dueBy: null }
   }
 }
 
@@ -107,7 +108,7 @@ function firstWeekend(task: Pick<Task, 'frequency' | 'frequencySince'>): LocalDa
  * y `to` y ya ha pasado (antes de `today`), según el calendario que tiene ahora la tarea:
  * desde su primer finde (US-48, o el finde al que se movió, US-42), cada 7 o 14 días. En las
  * demás tareas, ninguna: no tienen plazo.
- * US-53 · Con `before`, solo las que empiezan antes de ese día: las de una frecuencia que dejó
+ * US-53 · Con `before`, solo las que acabaron antes de ese día: las de una frecuencia que dejó
  * de valer ese día.
  */
 export function pastWeekendRounds(
@@ -127,7 +128,10 @@ export function pastWeekendRounds(
   const rounds: Round[] = []
   for (let saturday = addDays(first, skip * every); ; saturday = addDays(saturday, every)) {
     const dueBy = addDays(saturday, WEEKEND_ROUND_DAYS - 1)
-    if (dueBy > lastDueBy || (before !== undefined && saturday >= before)) break
+    // US-53 · De una frecuencia que dejó de valer, solo las que ya habían pasado de plazo: la
+    // vuelta que aún tenía plazo al cambiarla no sale como no completada (se cambió a
+    // propósito, como la que se mueve a otro finde, US-42).
+    if (dueBy > lastDueBy || (before !== undefined && dueBy >= before)) break
     rounds.push({ startsOn: saturday, dueBy })
   }
   return rounds

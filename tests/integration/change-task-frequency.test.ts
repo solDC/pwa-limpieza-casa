@@ -227,6 +227,50 @@ describe('US-53 · cambiar la frecuencia', () => {
     ).rejects.toMatchObject({ code: '23514' })
   })
 
+  it('una tarea hecha con otra frecuencia y pasada a puntual sigue bloqueando su nombre (está en la lista)', async () => {
+    await expect(
+      asUser(db, ana, async (query) => {
+        const id = await taskId(query, 'Baño')
+        await asAdmin(query, `insert into public.task_rounds (household_id, task_id, starts_on, completed_on) values ($1, $2, $3, $3)`, [
+          anaHousehold,
+          id,
+          await day(-2),
+        ])
+        await change(query, id, 'one_off')
+        await query(`select public.create_task($1, 'baño', 'one_off', null, null, '{}', '{}')`, [anaHousehold])
+      }),
+    ).rejects.toMatchObject({ code: '23505' })
+  })
+
+  it('no se cambia una puntual ya hecha (ya no está en la lista)', async () => {
+    await expect(
+      asUser(db, ana, async (query) => {
+        const id = await taskId(query, 'Cepillar suelo')
+        await query('insert into public.task_rounds (household_id, task_id) values ($1, $2)', [anaHousehold, id])
+        await change(query, id, 'weekend_weekly')
+      }),
+    ).rejects.toMatchObject({ code: '22023' })
+  })
+
+  it('no se vuelve a puntual si ya tiene partes hechas como puntual: la vuelta nueva se quedaría con ellas', async () => {
+    await expect(
+      asUser(db, ana, async (query) => {
+        const { rows } = await query(
+          `select public.create_task($1, 'Horno', 'one_off', null, null, '{Puerta,Bandejas}', '{50,50}') as id`,
+          [anaHousehold],
+        )
+        const id: string = rows[0].id
+        const parts = await query('select id from public.task_parts where task_id = $1 order by position', [id])
+        await query(
+          'insert into public.task_part_completions (household_id, task_id, part_id, starts_on, due_by) values ($1, $2, $3, null, null)',
+          [anaHousehold, id, parts.rows[0].id],
+        )
+        await change(query, id, 'interval', { days: 7 })
+        await change(query, id, 'one_off')
+      }),
+    ).rejects.toMatchObject({ code: '22023' })
+  })
+
   it('no en una tarea cancelada', async () => {
     await expect(
       asUser(db, ana, async (query) => {
