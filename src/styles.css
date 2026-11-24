@@ -361,3 +361,15 @@ body:has(.update-dialog[open]) {
 .history-notCompleted {
   color: var(--color-error);
 }
+
+/* Primera etapa: navegación compacta, ajustes y pestañas. */
+.home-topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.home-brand { font-size: 1.05rem; font-weight: 700; color: var(--color-text); }
+.home-settings-toggle { background: transparent; color: var(--color-accent); width: 2.75rem; padding: 0; font-size: 1.5rem; }
+.home-settings { display: flex; flex-direction: column; gap: .75rem; padding: .75rem 1rem; border: 1px solid var(--color-border); border-radius: .75rem; background: var(--color-surface); }
+.home-settings .language-switch { margin: 0; justify-content: flex-end; }
+.home-settings .home-signout { background: transparent; color: var(--color-error); text-align: left; border-top: 1px solid var(--color-border); border-radius: 0; padding: .65rem 0 0; }
+.home-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: .75rem 0 1rem; border-bottom: 1px solid var(--color-border); }
+.home-tabs button { border-radius: 0; background: transparent; color: var(--color-text-muted); border-bottom: 3px solid transparent; }
+.home-tabs button.active { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+.tasks-header .button-link { display: none; }
