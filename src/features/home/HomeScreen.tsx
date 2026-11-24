@@ -9,6 +9,7 @@ import { signOut, type Session } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
 import { HistoryScreen } from '../history/HistoryScreen'
 import { TaskList } from '../tasks/TaskList'
+import { useHistoryView } from './use-history-view'
 
 type HouseholdState =
   | { status: 'loading' }
@@ -19,23 +20,25 @@ type HouseholdState =
 // sus tareas (src/features/tasks/), y deja cerrar la sesión (US-03) y cambiar el idioma (US-52).
 // Desde «Tus tareas» se abre el histórico (US-31), en lugar del Inicio, hasta «Volver». El
 // Inicio no se desmonta, solo se oculta: así, al volver, sigue lo que se estaba escribiendo
-// en un formulario, la lista no se vuelve a cargar y la página vuelve a donde estaba.
+// en un formulario, la lista no se vuelve a cargar y la página vuelve a donde estaba. Se
+// vuelve con «Volver» o con el botón atrás (US-56, `use-history-view.ts`).
 export function HomeScreen({ session }: { session: Session }) {
   const { language, t } = useLanguage()
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<ErrorCode | null>(null)
-  const [showHistory, setShowHistory] = useState(false)
+  const { showHistory, openHistory, closeHistory } = useHistoryView()
   // Al volver del histórico, el foco vuelve a «Histórico» en lugar de perderse, y la página,
-  // a donde estaba (`scrollBeforeHistory`, `null` si no se viene del histórico).
+  // a donde estaba (`scrollBeforeHistory`; arriba del todo si se ha recargado en el histórico).
   const historyButtonRef = useRef<HTMLButtonElement>(null)
-  const scrollBeforeHistory = useRef<number | null>(null)
+  const scrollBeforeHistory = useRef(0)
+  const wasShowingHistory = useRef(showHistory)
   useEffect(() => {
-    if (!showHistory && scrollBeforeHistory.current !== null) {
+    if (wasShowingHistory.current && !showHistory) {
       historyButtonRef.current?.focus({ preventScroll: true })
       window.scrollTo(0, scrollBeforeHistory.current)
-      scrollBeforeHistory.current = null
     }
+    wasShowingHistory.current = showHistory
   }, [showHistory])
 
   async function handleSignOut() {
@@ -62,7 +65,7 @@ export function HomeScreen({ session }: { session: Session }) {
 
   return (
     <Screen>
-      {showHistory && <HistoryScreen onBack={() => setShowHistory(false)} />}
+      {showHistory && <HistoryScreen onBack={closeHistory} />}
       <div hidden={showHistory}>
         <p>{t.home.signedInAs(session.email)}</p>
 
@@ -79,7 +82,7 @@ export function HomeScreen({ session }: { session: Session }) {
           historyButtonRef={historyButtonRef}
           onOpenHistory={() => {
             scrollBeforeHistory.current = window.scrollY
-            setShowHistory(true)
+            openHistory()
           }}
         />
 
