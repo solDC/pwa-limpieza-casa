@@ -8,7 +8,7 @@ PWA para organizar las tareas de mantenimiento del hogar: qué toca hoy, qué se
 
 **Estado:** MVP en desarrollo. Hechas US-01 (entrar con enlace mágico), US-02 (hogar automático), US-03 (cerrar sesión), US-26 (entrar con código desde la app instalada), US-27 (mis tareas por defecto), US-28 (frecuencias), US-29 (qué toca), US-30 (marcar una tarea como hecha), US-31 (histórico de cada vuelta), US-33 (añadir una tarea), US-34 (elegir el peso de las partes), US-38 (poner fecha a una tarea puntual), US-39 (marcar una parte como hecha), US-41 (cambiar cuándo toca la próxima vez), US-42 (mover una tarea de fin de semana a otro finde), US-48 (las tareas nuevas no empiezan con retraso), US-50 (elegir desde qué día toca una tarea de cada N días), US-51 (cambiar las partes de una tarea), US-52 (la app en inglés y en castellano) y US-54 (cambiar el nombre de una tarea y de sus partes).
 
-**Nombre de la app:** dentro de la app, «Limpieza de casa» en castellano y «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas, «My House Cleaning» (`name` y `short_name` del manifiesto; el corto es el que propone el iPhone al instalarla, porque la etiqueta `apple-mobile-web-app-title` no le sirve).
+**Nombre de la app:** «My House Cleaning» en ambos idiomas, también en la app instalada (`name` y `short_name` del manifiesto; el corto es el que propone el iPhone al instalarla, porque la etiqueta `apple-mobile-web-app-title` no le sirve).
 
 ## Arquitectura
 

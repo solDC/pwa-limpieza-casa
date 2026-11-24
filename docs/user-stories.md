@@ -313,7 +313,7 @@ para entender qué toca y qué he hecho sin traducir nada.
 - Las tareas por defecto y sus partes se ven en el idioma elegido («Superficies» / «Surfaces»); las que añado yo, como las escribí (y también las que renombro, US-54).
 - El email para entrar llega en el idioma de la cuenta: el de la app al darse de alta y, después, el último elegido dentro de la app.
 
-*Dentro de la app se llama «My House Cleaning» en inglés. La app instalada tiene un solo nombre para todos los idiomas: «My House Cleaning».*
+*La interfaz y la app instalada se llaman «My House Cleaning» en ambos idiomas.*
 
 ### US-53 · Cambiar cada cuánto toca una tarea (Must have)
 Como usuario,
@@ -343,7 +343,7 @@ para que se llamen como yo las llamo.
 Como usuario,
 quiero ver cómo acabó cada vuelta de mis tareas, también las que no hice,
 para saber cómo voy con la limpieza.
-- En «Tus tareas» hay un botón «Histórico», que abre una pantalla aparte con «Volver».
+- La pestaña «Histórico» abre el histórico y «Qué toca» vuelve a las tareas conservando el formulario y la posición de la lista.
 - Todo lo que desaparece de la lista sale en el histórico: cada vuelta completada (también las puntuales hechas) y cada vuelta de fin de semana que pasa de su plazo (el viernes) sin terminar.
 - El estado de cada vuelta es **Completada**, **Parcial (X %)** o **No completada**, como dice la tabla de «Conceptos»; X es la suma de los pesos de sus partes hechas al acabar la vuelta, como se veía en la lista (si se cambian los pesos a mitad de vuelta, cuentan los nuevos; una parte quitada en esa vuelta ya no cuenta).
 - Las completadas salen el día en que se hicieron; las parciales y las no completadas, el viernes en que acaba su plazo, con su fin de semana («Finde del 14-15 nov»).
@@ -355,11 +355,11 @@ para saber cómo voy con la limpieza.
 Como usuario,
 quiero volver del histórico a «Tus tareas» con el botón atrás del móvil o del navegador,
 para moverme por la app como en cualquier otra.
-- Desde el histórico, el botón atrás de Android y el del navegador vuelven a «Tus tareas», como «Volver».
+- Desde el histórico, el botón atrás de Android y el del navegador vuelven a «Tus tareas», como la pestaña «Qué toca».
 - Al volver así, «Tus tareas» sigue como estaba: lo que se estaba escribiendo y el sitio de la página.
 - En «Tus tareas», atrás hace lo de siempre: sale de la app o de la página.
 
-*Depende de la US-31. En el iPhone, la app instalada no tiene botón atrás: allí se vuelve con «Volver».*
+*Depende de la US-31. En el iPhone, la app instalada no tiene botón atrás: allí se vuelve con la pestaña «Qué toca».*
 
 ## Historias anteriores
 

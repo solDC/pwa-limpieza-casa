@@ -44,7 +44,7 @@ function AppWithSession() {
     )
   }
   if (state.status === 'signed-out') return <SignInScreen />
-  return <HomeScreen session={state.session} />
+  return <HomeScreen key={state.session.userId} />
 }
 
 // Solo se ve si falta configurar Supabase (en local: .env; en Vercel: variables de entorno).

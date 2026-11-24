@@ -22,20 +22,20 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
     const email = uniqueEmail()
     await signIn(page, email)
 
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
   })
 
   test('la sesión se mantiene al cerrar y volver a abrir la app', async ({ context, page }) => {
     const email = uniqueEmail()
     await signIn(page, email)
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
 
     await page.close()
     const reopened = await context.newPage()
     await reopened.goto('/')
 
-    await expect(reopened.getByText(`Has entrado como ${email}.`)).toBeVisible()
-    await expect(reopened.getByLabel('Email')).toHaveCount(0)
+    await expect(reopened.getByRole('button', { name: 'Qué toca' })).toBeVisible()
+    await expect(reopened.getByLabel('Correo electrónico')).toHaveCount(0)
   })
 
   // Regresión: Supabase solo deja volver a direcciones de su lista (Redirect URLs), que
@@ -55,12 +55,12 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
 
   test('sin sesión, la app pide el email para enviar un código', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
-    await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Bienvenida' })).toBeVisible()
+    await expect(page.getByLabel('Correo electrónico')).toBeVisible()
     await expect(
-      page.getByText('Escribe tu email y te enviaremos un código para entrar. Sin contraseñas.'),
+      page.getByText('Introduce tu correo para acceder a tu hogar.'),
     ).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Enviarme el código' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible()
   })
 
   test('un enlace caducado avisa y deja pedir otro', async ({ page }) => {
@@ -69,7 +69,7 @@ test.describe('US-01 · Entrar con enlace mágico', () => {
     await expect(page.getByRole('alert')).toHaveText(
       'El enlace ha caducado o ya se ha usado. Pide uno nuevo.',
     )
-    await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(page.getByLabel('Correo electrónico')).toBeVisible()
     expect(page.url()).not.toContain('error')
   })
 
@@ -95,6 +95,6 @@ test.describe('US-02 · Hogar creado automáticamente', () => {
   test('al entrar por primera vez ya tengo mi hogar', async ({ page }) => {
     await signIn(page, uniqueEmail())
 
-    await expect(page.getByRole('heading', { name: 'Mi casa' })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Tus tareas' })).toBeVisible()
   })
 })

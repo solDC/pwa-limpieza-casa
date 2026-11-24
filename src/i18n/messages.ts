@@ -6,7 +6,7 @@ import type { Language } from '../domain/language'
 // formulario y nombres de las tareas por defecto) están en src/domain/, que recibe el idioma.
 
 const es = {
-  appName: 'Limpieza de casa',
+  appName: 'My House Cleaning',
   loading: 'Cargando…',
   missingConfiguration:
     'Falta configurar la conexión con la base de datos (VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY).',
@@ -17,36 +17,39 @@ const es = {
   },
 
   signIn: {
-    title: 'Entrar',
-    intro: 'Escribe tu email y te enviaremos un código para entrar. Sin contraseñas.',
-    email: 'Email',
+    title: 'Bienvenida',
+    claim: 'Tu casa, a tu ritmo.',
+    passwordFree: 'Acceso sin contraseña',
+    intro: 'Introduce tu correo para acceder a tu hogar.',
+    email: 'Correo electrónico',
     emailPlaceholder: 'tu@email.com',
-    send: 'Enviarme el código',
+    send: 'Continuar',
     sending: 'Enviando…',
     checkEmail: 'Revisa tu correo',
     sentBefore: 'Te hemos enviado un email a ',
     sentAfter: ' con un código. Escríbelo aquí para entrar.',
     code: 'Código del email',
-    enter: 'Entrar con el código',
+    enter: 'Entrar',
     checking: 'Comprobando…',
     linkToo: 'También puedes pulsar el enlace del email.',
     notArrived: 'Si no ves el email en unos minutos, mira en la carpeta de spam o pide otro.',
     resend: 'Reenviar email',
     resent: (email: string) => `Te hemos enviado otro email a ${email}.`,
-    back: 'Volver',
+    back: 'Cambiar correo',
   },
 
   home: {
-    signedInAs: (email: string) => `Has entrado como ${email}.`,
+    settings: 'Ajustes',
+    sections: 'Secciones',
+    due: 'Qué toca',
     loadingHousehold: 'Cargando tu hogar…',
     signOut: 'Cerrar sesión',
     signingOut: 'Cerrando sesión…',
   },
 
   history: {
-    open: 'Histórico',
     title: 'Histórico',
-    back: 'Volver',
+    range: 'Últimas 4 semanas',
     loading: 'Cargando el histórico…',
     empty: 'Aún no hay nada en el histórico.',
     emptyPage: 'Nada en estas 4 semanas.',
@@ -57,6 +60,7 @@ const es = {
 
   tasks: {
     title: 'Tus tareas',
+    actions: (name: string) => `Acciones de ${name}`,
     loading: 'Cargando tus tareas…',
     add: 'Añadir tarea',
     added: (name: string) => `Tarea añadida: ${name}.`,
@@ -171,37 +175,40 @@ const en: Messages = {
   },
 
   signIn: {
-    title: 'Sign in',
-    intro: 'Enter your email and we will send you a code to sign in. No passwords.',
+    title: 'Welcome',
+    claim: 'Your home, at your pace.',
+    passwordFree: 'Password-free sign-in',
+    intro: 'Enter your email to access your home.',
     email: 'Email',
     emailPlaceholder: 'you@email.com',
-    send: 'Send me the code',
+    send: 'Continue',
     sending: 'Sending…',
     checkEmail: 'Check your email',
     sentBefore: 'We have sent an email to ',
     sentAfter: ' with a code. Enter it here to sign in.',
     code: 'Code from the email',
-    enter: 'Sign in with the code',
+    enter: 'Sign in',
     checking: 'Checking…',
     linkToo: 'You can also tap the link in the email.',
     notArrived:
       'If you don’t see the email in a few minutes, check your spam folder or ask for another one.',
     resend: 'Resend email',
     resent: (email: string) => `We have sent another email to ${email}.`,
-    back: 'Back',
+    back: 'Change email',
   },
 
   home: {
-    signedInAs: (email: string) => `You are signed in as ${email}.`,
+    settings: 'Settings',
+    sections: 'Sections',
+    due: 'What’s due',
     loadingHousehold: 'Loading your home…',
     signOut: 'Sign out',
     signingOut: 'Signing out…',
   },
 
   history: {
-    open: 'History',
     title: 'History',
-    back: 'Back',
+    range: 'Last 4 weeks',
     loading: 'Loading the history…',
     empty: 'There is nothing in the history yet.',
     emptyPage: 'Nothing in these 4 weeks.',
@@ -212,6 +219,7 @@ const en: Messages = {
 
   tasks: {
     title: 'Your tasks',
+    actions: (name: string) => `Actions for ${name}`,
     loading: 'Loading your tasks…',
     add: 'Add task',
     added: (name: string) => `Task added: ${name}.`,

@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test'
 
 test('la app carga y muestra su nombre', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveTitle('Limpieza de casa')
-  await expect(page.getByRole('heading', { level: 1, name: 'Limpieza de casa' })).toBeVisible()
+  await expect(page).toHaveTitle('My House Cleaning')
+  await expect(page.getByRole('heading', { level: 1, name: 'My House Cleaning' })).toBeVisible()
 })
 
 test('el manifiesto de la PWA está enlazado y es correcto (US-24)', async ({ page, request }) => {

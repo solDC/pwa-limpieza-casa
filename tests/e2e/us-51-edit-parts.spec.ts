@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays } from '../../src/domain/dates'
-import { signIn, task, taskParts, todayInMadrid } from './helpers/app'
+import { openTaskParts, openTaskActions, taskActions, openSettings, signIn, task, taskParts, todayInMadrid } from './helpers/app'
 import { archivePart, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
@@ -34,6 +34,7 @@ async function signInWithSurfaces(page: Page) {
   await signIn(page, email)
   await setAllTasksCreatedOn(email, addDays(todayInMadrid(), -30))
   await page.reload()
+  await openTaskParts(task(page, 'Superficies'))
   await expect(markPart(page, 'Superficies', 'Cocina')).toBeVisible()
 }
 
@@ -57,7 +58,9 @@ async function save(page: Page, taskName: string) {
 test.describe('US-51 · Cambiar las partes de una tarea', () => {
   test('«Cambiar partes» muestra cada parte con su peso y lo que suman', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await expect(partsButton(page, 'Superficies')).toHaveText('Cambiar partes')
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
 
     const form = partsForm(page, 'Superficies')
@@ -71,6 +74,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
   test('cambio los pesos y añado una parte: al guardar, la tarea muestra sus partes nuevas', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Añadir parte' }).click()
@@ -83,14 +87,17 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await save(page, 'Superficies')
 
     const card = task(page, 'Superficies')
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón 25 %/, /^Dormitorio 25 %/, /^Baño de invitados 10 %/])
-    await expect(partsButton(page, 'Superficies')).toBeFocused()
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await page.reload()
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón 25 %/, /^Dormitorio 25 %/, /^Baño de invitados 10 %/])
   })
 
   test('cambio el nombre de una parte y su peso: lo renombrado deja de traducirse', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByLabel('Parte 2', { exact: true }).fill(' Salón comedor ')
@@ -99,12 +106,16 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await save(page, 'Superficies')
 
     const card = task(page, 'Superficies')
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón comedor 35 %/, /^Dormitorio 25 %/])
     await page.reload()
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Cocina 40 %/, /^Salón comedor 35 %/, /^Dormitorio 25 %/])
 
     // En inglés: la renombrada se ve como la escribí; las demás se siguen traduciendo.
+    await openSettings(page)
     await languageButton(page, 'English').click()
+    await openTaskParts(taskInEnglish(page, 'Surfaces'))
     await expect(taskParts(taskInEnglish(page, 'Surfaces'))).toHaveText([
       /^Kitchen 40 %/,
       /^Salón comedor 35 %/,
@@ -114,6 +125,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
   test('el nombre de una parte, ni vacío ni de más de 80 caracteres', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByLabel('Parte 1', { exact: true }).fill('  ')
@@ -125,13 +137,16 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
     // No se ha guardado nada.
     await page.reload()
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
   })
 
   test('puedo añadir partes a una tarea que no tiene: su botón es «Añadir partes»', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Baño'))
     await expect(addPartsButton(page, 'Baño')).toHaveText('Añadir partes')
     await expect(partsButton(page, 'Baño')).toHaveCount(0)
+    await openTaskActions(task(page, 'Baño'))
     await addPartsButton(page, 'Baño').click()
     const form = partsForm(page, 'Baño')
     // El formulario empieza con una parte, sin nombre y al 100 %, lista para escribir.
@@ -144,14 +159,17 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     // Sin cambiar los pesos, cuentan lo mismo.
     await expect(form.getByLabel('Peso de la parte 1')).toHaveValue('50')
     await save(page, 'Baño')
+    await openTaskParts(task(page, 'Baño'))
     await expect(taskParts(task(page, 'Baño'))).toHaveText([/^Ducha 50 %/, /^Lavabo 50 %/])
     // Ya tiene partes: el botón pasa a «Cambiar partes», y el foco vuelve a él.
+    await openTaskActions(task(page, 'Baño'))
     await expect(partsButton(page, 'Baño')).toHaveText('Cambiar partes')
-    await expect(partsButton(page, 'Baño')).toBeFocused()
+    await expect(taskActions(task(page, 'Baño'))).toBeFocused()
   })
 
   test('en una tarea sin partes, si no escribo ninguna, no se guarda nada', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Baño'))
     await addPartsButton(page, 'Baño').click()
     const form = partsForm(page, 'Baño')
     await form.getByRole('button', { name: 'Guardar' }).click()
@@ -160,11 +178,12 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await form.getByRole('button', { name: 'Quitar parte 1' }).click()
     await save(page, 'Baño')
     await expect(taskParts(task(page, 'Baño'))).toHaveCount(0)
-    await expect(addPartsButton(page, 'Baño')).toBeFocused()
+    await expect(taskActions(task(page, 'Baño'))).toBeFocused()
   })
 
   test('puedo quitarlas todas: la tarea se marca entera', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     for (let i = 0; i < 3; i++) await form.getByRole('button', { name: 'Quitar parte 1' }).click()
@@ -174,8 +193,9 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     const card = task(page, 'Superficies')
     await expect(taskParts(card)).toHaveCount(0)
     // Sin partes, el botón pasa a «Añadir partes», y el foco vuelve a él.
+    await openTaskActions(task(page, 'Superficies'))
     await expect(addPartsButton(page, 'Superficies')).toHaveText('Añadir partes')
-    await expect(addPartsButton(page, 'Superficies')).toBeFocused()
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await page.reload()
     await expect(taskParts(card)).toHaveCount(0)
   })
@@ -184,6 +204,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     page,
   }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByLabel('Peso de la parte 1').fill('60')
@@ -199,11 +220,13 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
     // No se ha guardado nada.
     await page.reload()
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
   })
 
   test('como mucho 20 partes', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     for (let i = 0; i < 17; i++) await form.getByRole('button', { name: 'Añadir parte' }).click()
@@ -213,6 +236,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
   test('con «Cancelar», se quedan como estaban', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 2' }).click()
@@ -220,17 +244,20 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await form.getByRole('button', { name: 'Cancelar' }).click()
 
     await expect(form).toHaveCount(0)
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
-    await expect(partsButton(page, 'Superficies')).toBeFocused()
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
   })
 
   test('los cambios cuentan desde la vuelta en curso: sus partes hechas siguen hechas', async ({ page }) => {
     await signInWithSurfaces(page)
     const card = task(page, 'Superficies')
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(card).toContainText('Llevas 50 %')
 
     // Cocina pasa a pesar 60 y se quita Salón (sin hacer).
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 2' }).click()
@@ -247,9 +274,11 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
   test('quitar una parte ya hecha: deja de salir y de contar', async ({ page }) => {
     await signInWithSurfaces(page)
     const card = task(page, 'Superficies')
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(card).toContainText('Llevas 50 %')
 
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 1' }).click()
@@ -260,16 +289,19 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await expect(taskParts(card)).toHaveText([/^Salón 50 %/, /^Dormitorio 50 %/])
     await expect(card).toContainText('Llevas 0 %')
     await page.reload()
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Salón 50 %/, /^Dormitorio 50 %/])
   })
 
   test('si al quitar partes ya están hechas todas las que quedan, la vuelta queda completada', async ({ page }) => {
     await signInWithSurfaces(page)
     const card = task(page, 'Superficies')
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await markPart(page, 'Superficies', 'Salón').click()
     await expect(card).toContainText('Llevas 75 %')
 
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 3' }).click()
@@ -287,6 +319,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
   test('si falla el guardado, la app lo dice y no cambia nada', async ({ page }) => {
     await signIn(page, uniqueEmail())
     await page.route('**/rest/v1/rpc/set_task_parts*', (route) => route.abort('internetdisconnected'))
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 3' }).click()
@@ -296,6 +329,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await expect(form.getByRole('alert')).toHaveText(
       'No se ha podido guardar. Revisa la conexión e inténtalo de nuevo.',
     )
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 50 %/, /^Salón 25 %/, /^Dormitorio 25 %/])
     await expect(form.getByRole('button', { name: 'Guardar' })).toBeEnabled()
   })
@@ -305,6 +339,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
   }) => {
     const email = uniqueEmail()
     await signIn(page, email)
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByLabel('Peso de la parte 1').fill('40')
@@ -322,6 +357,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
     await form.getByLabel('Peso de la parte 1').fill('60')
     await form.getByLabel('Peso de la parte 2').fill('40')
     await save(page, 'Superficies')
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 60 %/, /^Salón 40 %/])
   })
 
@@ -334,6 +370,7 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
         body: JSON.stringify({ code: '23514', message: 'task_rounds_completed_on_check' }),
       }),
     )
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
     const form = partsForm(page, 'Superficies')
     await form.getByRole('button', { name: 'Quitar parte 3' }).click()
@@ -346,23 +383,30 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
 
   test('guardar en inglés sin cambiar los nombres no les quita la traducción', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openSettings(page)
     await languageButton(page, 'English').click()
     const card = taskInEnglish(page, 'Surfaces')
+    await openTaskActions(card)
     await card.getByRole('button', { name: 'Change parts of Surfaces' }).click()
     const form = page.getByRole('form', { name: 'Parts of Surfaces' })
     await form.getByLabel('Weight of part 1').fill('40')
     await form.getByLabel('Weight of part 2').fill('35')
     await form.getByRole('button', { name: 'Save' }).click()
     await expect(form).toHaveCount(0)
+    await openTaskParts(card)
     await expect(taskParts(card)).toHaveText([/^Kitchen 40 %/, /^Living room 35 %/, /^Bedroom 25 %/])
 
+    await openSettings(page)
     await languageButton(page, 'Español').click()
+    await openTaskParts(task(page, 'Superficies'))
     await expect(taskParts(task(page, 'Superficies'))).toHaveText([/^Cocina 40 %/, /^Salón 35 %/, /^Dormitorio 25 %/])
   })
 
   test('si cambio de idioma con el formulario abierto, las partes salen en el nuevo', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await partsButton(page, 'Superficies').click()
+    await openSettings(page)
     await languageButton(page, 'English').click()
     const form = page.getByRole('form', { name: 'Parts of Surfaces' })
     await expect(form.getByLabel('Part 1', { exact: true })).toHaveValue('Kitchen')
@@ -375,13 +419,14 @@ test.describe('US-51 · Cambiar las partes de una tarea', () => {
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
       const card = page
         .getByRole('list', { name: 'Your tasks' })
         .getByRole('listitem')
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Surfaces', exact: true }) })
 
+      await openTaskActions(card)
       await card.getByRole('button', { name: 'Change parts of Surfaces' }).click()
       const form = page.getByRole('form', { name: 'Parts of Surfaces' })
       await expect(form.getByLabel('Part 1', { exact: true })).toHaveValue('Kitchen')

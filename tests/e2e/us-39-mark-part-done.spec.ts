@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth, formatShortDate } from '../../src/domain/dates'
-import { newTaskForm, signIn, task, taskParts, todayInMadrid } from './helpers/app'
+import { openTaskParts, newTaskForm, signIn, task, taskParts, todayInMadrid } from './helpers/app'
 import { addPastPartCompletions, setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
@@ -38,6 +38,7 @@ async function signInWithSurfaces(page: Page) {
   await signIn(page, email)
   await setAllTasksCreatedOn(email, addDays(todayInMadrid(), -30))
   await page.reload()
+  await openTaskParts(task(page, 'Superficies'))
   await expect(markPart(page, 'Superficies', 'Cocina')).toBeVisible()
 }
 
@@ -71,6 +72,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     const surfaces = task(page, 'Superficies')
     await expect(surfaces).toContainText('Llevas 0 %')
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
 
     await expect(surfaces).toContainText('Llevas 50 %')
@@ -84,6 +86,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
     await page.reload()
     await expect(surfaces).toContainText('Llevas 50 %')
+    await openTaskParts(task(page, 'Superficies'))
     await expect(doneMark(page, 'Superficies', 'Cocina')).toBeDisabled()
 
     await markPart(page, 'Superficies', 'Dormitorio').click()
@@ -94,6 +97,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await signInWithSurfaces(page)
     const surfaces = task(page, 'Superficies')
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(surfaces).toContainText('Llevas 50 %')
     await markPart(page, 'Superficies', 'Salón').click()
@@ -120,6 +124,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
   test('con «Marcar todo como hecho» marco de una vez las partes que faltan', async ({ page }) => {
     await signInWithSurfaces(page)
     const surfaces = task(page, 'Superficies')
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(surfaces).toContainText('Llevas 50 %')
 
@@ -136,6 +141,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
   }) => {
     await signInWithSurfaces(page)
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(markPart(page, 'Superficies', 'Salón')).toBeFocused()
     await markPart(page, 'Superficies', 'Dormitorio').click()
@@ -150,6 +156,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     page,
   }) => {
     await signInWithSurfaces(page)
+    await openTaskParts(task(page, 'Superficies'))
     await expect(markAll(page, 'Superficies')).toBeVisible()
     await markPart(page, 'Superficies', 'Cocina').click()
     await markPart(page, 'Superficies', 'Salón').click()
@@ -166,6 +173,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await addTaskWithParts(page, 'Cocina a fondo', 'Cada N días desde la última vez')
     const kitchen = task(page, 'Cocina a fondo')
 
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await markPart(page, 'Cocina a fondo', 'Horno').click()
     await expect(kitchen).toContainText('Llevas 60 %')
     await expect(kitchen).toContainText('Toca: hoy')
@@ -184,10 +192,12 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await signIn(page, uniqueEmail())
     await addTaskWithParts(page, 'Cocina a fondo', 'Puntual')
 
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await markPart(page, 'Cocina a fondo', 'Nevera').click()
     await expect(task(page, 'Cocina a fondo')).toContainText('Llevas 40 %')
     await page.reload()
     await expect(task(page, 'Cocina a fondo')).toContainText('Llevas 40 %')
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await markPart(page, 'Cocina a fondo', 'Horno').click()
 
     await expect(task(page, 'Cocina a fondo')).toHaveCount(0)
@@ -198,6 +208,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
   test('antes de que empiece su vuelta, las partes se ven pero no se pueden marcar', async ({ page }) => {
     await signInWithSurfaces(page)
+    await openTaskParts(task(page, 'Superficies'))
     await markAll(page, 'Superficies').click()
 
     // El finde siguiente aún no ha empezado.
@@ -214,6 +225,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
     // Sin conexión con Supabase al guardar.
     await page.route('**/rest/v1/task_part_completions*', (route) => route.abort('internetdisconnected'))
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
 
     await expect(surfaces.getByRole('alert')).toHaveText(
@@ -226,6 +238,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await page.unroute('**/rest/v1/task_part_completions*')
     await page.reload()
     await expect(surfaces).toContainText('Llevas 0 %')
+    await openTaskParts(task(page, 'Superficies'))
     await expect(markPart(page, 'Superficies', 'Cocina')).toBeVisible()
   })
 
@@ -242,6 +255,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
         body: JSON.stringify({ code: 'XX000', message: 'Error interno', details: null, hint: null }),
       }),
     )
+    await openTaskParts(task(page, 'Superficies'))
     await markAll(page, 'Superficies').click()
 
     await expect(surfaces.getByRole('alert')).toHaveText(
@@ -259,8 +273,10 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     await signInWithSurfaces(page)
     const other = await context.newPage()
     await other.goto('/')
+    await openTaskParts(task(other, 'Superficies'))
     await expect(markPart(other, 'Superficies', 'Cocina')).toBeVisible()
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
     await expect(task(page, 'Superficies')).toContainText('Llevas 50 %')
 
@@ -280,6 +296,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     const surfaces = task(page, 'Superficies')
     await expect(surfaces).toContainText('Toca: finde del 31 oct')
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Cocina').click()
 
     await expect(surfaces.getByRole('alert')).toHaveText(
@@ -302,6 +319,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
     const surfaces = task(page, 'Superficies')
     await expect(surfaces).toContainText('Llevas 0 %')
 
+    await openTaskParts(task(page, 'Superficies'))
     await markPart(page, 'Superficies', 'Dormitorio').click()
     await expect(surfaces).toContainText('Llevas 25 %')
     await markPart(page, 'Superficies', 'Cocina').click()
@@ -309,6 +327,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
 
     await page.reload()
     await expect(surfaces).toContainText('Llevas 75 %')
+    await openTaskParts(task(page, 'Superficies'))
     await expect(doneMark(page, 'Superficies', 'Cocina')).toBeDisabled()
     await expect(doneMark(page, 'Superficies', 'Dormitorio')).toBeDisabled()
     await expect(markPart(page, 'Superficies', 'Salón')).toBeEnabled()
@@ -321,7 +340,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
       await expect(page.getByRole('list', { name: 'Your tasks' })).toBeVisible()
       await setAllTasksCreatedOn(email, addDays(todayInMadrid(), -30))
@@ -332,6 +351,7 @@ test.describe('US-39 · Marcar una parte como hecha', () => {
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Surfaces', exact: true }) })
 
       await expect(surfaces).toContainText('0 % done')
+      await openTaskParts(surfaces)
       await surfaces.getByRole('button', { name: 'Mark Kitchen as done' }).click()
 
       await expect(surfaces).toContainText('50 % done')

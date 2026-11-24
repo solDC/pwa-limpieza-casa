@@ -126,7 +126,7 @@ test.describe('US-50 · Elegir desde qué día toca una tarea de cada N días', 
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
 
       await page.getByRole('button', { name: 'Add task' }).click()

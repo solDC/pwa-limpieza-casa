@@ -106,7 +106,7 @@ test.describe('Versión nueva de la app (#76)', () => {
     const reloaded = page.waitForEvent('load')
     await page.getByRole('button', { name: 'Actualizar' }).click()
     await reloaded
-    await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My House Cleaning' })).toBeVisible()
     // Funciona con la versión nueva, y no queda ninguna esperando que hiciera volver el aviso.
     await expect.poll(() => serviceWorkerState(page)).toEqual({
       controlled: true,
@@ -154,7 +154,7 @@ test.describe('Versión nueva de la app (#76)', () => {
     await returnToApp(page)
     await expect(notice(page)).toBeVisible()
     // Mientras sale, lo de detrás no se puede usar.
-    await expect(page.getByLabel('Email').click({ timeout: 1_000 })).rejects.toThrow()
+    await expect(page.getByLabel('Correo electrónico').click({ timeout: 1_000 })).rejects.toThrow()
 
     // Una marca en la página: si se recargara, desaparecería.
     await page.evaluate(() => ((window as unknown as { notReloaded: boolean }).notReloaded = true))
@@ -163,10 +163,10 @@ test.describe('Versión nueva de la app (#76)', () => {
     await page.getByRole('button', { name: 'Más tarde' }).click()
 
     await expect(notice(page)).toHaveCount(0)
-    await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My House Cleaning' })).toBeVisible()
     expect(await notReloaded()).toBe(true)
     // Cerrado el aviso, lo de detrás vuelve a funcionar.
-    await page.getByLabel('Email').click()
+    await page.getByLabel('Correo electrónico').click()
 
     await returnToApp(page)
     await expect(notice(page)).toBeVisible()
@@ -221,7 +221,7 @@ test.describe('Versión nueva de la app (#76)', () => {
       waiting: false,
       installing: false,
     })
-    await expect(page.getByRole('heading', { name: 'Limpieza de casa' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My House Cleaning' })).toBeVisible()
     await expect(notice(page)).toHaveCount(0)
   })
 })

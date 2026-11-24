@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { LanguageSwitch } from '../../components/LanguageSwitch'
+import { LineIcon } from '../../components/LineIcon'
 import { Screen } from '../../components/Screen'
 import { errorCode, type ErrorCode } from '../../domain/errors'
-import { householdDisplayName } from '../../domain/language'
 import { useLanguage } from '../../i18n/language-context'
-import { signOut, type Session } from '../../storage/auth'
+import { signOut } from '../../storage/auth'
 import { getMyHousehold, type Household } from '../../storage/households'
 import { HistoryScreen } from '../history/HistoryScreen'
 import { TaskList } from '../tasks/TaskList'
@@ -15,29 +15,38 @@ type HouseholdState =
   | { status: 'loaded'; household: Household | null }
   | { status: 'error'; error: ErrorCode }
 
-// Pantalla de Inicio: dice con qué email has entrado (US-01), muestra tu hogar (US-02) y
-// sus tareas (src/features/tasks/), y deja cerrar la sesión (US-03) y cambiar el idioma (US-52).
-// Desde «Tus tareas» se abre el histórico (US-31), en lugar del Inicio, hasta «Volver». El
-// Inicio no se desmonta, solo se oculta: así, al volver, sigue lo que se estaba escribiendo
-// en un formulario, la lista no se vuelve a cargar y la página vuelve a donde estaba.
-export function HomeScreen({ session }: { session: Session }) {
-  const { language, t } = useLanguage()
+export function HomeScreen() {
+  const { t } = useLanguage()
   const [state, setState] = useState<HouseholdState>({ status: 'loading' })
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState<ErrorCode | null>(null)
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  // Al volver del histórico, el foco vuelve a «Histórico» en lugar de perderse, y la página,
-  // a donde estaba (`scrollBeforeHistory`, `null` si no se viene del histórico).
-  const historyButtonRef = useRef<HTMLButtonElement>(null)
+  const dueTab = useRef<HTMLButtonElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
   const scrollBeforeHistory = useRef<number | null>(null)
-  useEffect(() => {
-    if (!showHistory && scrollBeforeHistory.current !== null) {
-      historyButtonRef.current?.focus({ preventScroll: true })
+
+  useLayoutEffect(() => {
+    if (showHistory) {
+      window.scrollTo(0, 0)
+    } else if (scrollBeforeHistory.current !== null) {
+      const control = previousFocus.current
+      if (control?.getClientRects().length && !control.matches(':disabled')) {
+        control.focus({ preventScroll: true })
+      } else {
+        dueTab.current?.focus({ preventScroll: true })
+      }
       window.scrollTo(0, scrollBeforeHistory.current)
       scrollBeforeHistory.current = null
     }
   }, [showHistory])
+
+  function changeView(history: boolean) {
+    if (showHistory === history) return
+    setShowSettings(false)
+    if (history) scrollBeforeHistory.current = window.scrollY
+    setShowHistory(history)
+  }
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -62,47 +71,45 @@ export function HomeScreen({ session }: { session: Session }) {
   }, [])
 
   return (
-    <Screen>
-      <header className="home-topbar">
-        <span className="home-brand">My House Cleaning</span>
-        <button type="button" className="home-settings-toggle" aria-label="Ajustes" aria-expanded={showSettings} onClick={() => setShowSettings((value) => !value)}>
-          ⚙
-        </button>
-      </header>
-      {showSettings && (
-        <section className="home-settings" aria-label="Ajustes">
+    <Screen variant="home">
+      <div className="home-navigation">
+        <header className="home-topbar">
+          <h1 className="home-brand">{t.appName}</h1>
+          <button
+            type="button"
+            className="icon-button home-settings-toggle"
+            aria-label={t.home.settings}
+            aria-expanded={showSettings}
+            aria-controls="home-settings"
+            onClick={() => setShowSettings((value) => !value)}
+          >
+            <LineIcon name="settings" />
+          </button>
+        </header>
+        <section id="home-settings" className="home-settings card" aria-label={t.home.settings} hidden={!showSettings}>
           <LanguageSwitch />
           <button type="button" className="home-signout" onClick={handleSignOut} disabled={signingOut}>
-            ↪ {signingOut ? t.home.signingOut : t.home.signOut}
+            <LineIcon name="logout" />
+            {signingOut ? t.home.signingOut : t.home.signOut}
           </button>
           {signOutError && <ErrorMessage>{t.errors[signOutError]}</ErrorMessage>}
         </section>
-      )}
-      <nav className="home-tabs" aria-label="Secciones">
-        <button type="button" className={!showHistory ? 'active' : ''} aria-current={!showHistory ? 'page' : undefined} onClick={() => setShowHistory(false)}>Qué toca</button>
-        <button type="button" className={showHistory ? 'active' : ''} aria-current={showHistory ? 'page' : undefined} onClick={() => { scrollBeforeHistory.current = window.scrollY; setShowHistory(true) }}>Histórico</button>
-      </nav>
-      {showHistory && <HistoryScreen onBack={() => setShowHistory(false)} />}
-      <div hidden={showHistory}>
-        <p>{t.home.signedInAs(session.email)}</p>
-
+        <nav className="home-tabs" aria-label={t.home.sections}>
+          <button ref={dueTab} type="button" aria-current={!showHistory ? 'page' : undefined} onClick={() => changeView(false)}>
+            {t.home.due}
+          </button>
+          <button type="button" aria-current={showHistory ? 'page' : undefined} onClick={() => changeView(true)}>
+            {t.history.title}
+          </button>
+        </nav>
+      </div>
+      {showHistory && <HistoryScreen />}
+      <div hidden={showHistory} onFocusCapture={(event) => {
+        if (event.target instanceof HTMLElement) previousFocus.current = event.target
+      }}>
         {state.status === 'loading' && <p className="muted">{t.home.loadingHousehold}</p>}
         {state.status === 'error' && <ErrorMessage>{t.errors[state.error]}</ErrorMessage>}
-        {state.status === 'loaded' && state.household && (
-          <section className="card">
-            <h2>{householdDisplayName(state.household.name, language)}</h2>
-          </section>
-        )}
-
-        <TaskList
-          householdId={state.status === 'loaded' ? state.household?.id : undefined}
-          historyButtonRef={historyButtonRef}
-          onOpenHistory={() => {
-            scrollBeforeHistory.current = window.scrollY
-            setShowHistory(true)
-          }}
-        />
-
+        <TaskList householdId={state.status === 'loaded' ? state.household?.id : undefined} active={!showHistory} />
       </div>
     </Screen>
   )

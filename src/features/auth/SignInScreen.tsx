@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { LanguageSwitch } from '../../components/LanguageSwitch'
+import { LineIcon } from '../../components/LineIcon'
+import logo from '../../../docs/design/logo.svg'
 import { Screen } from '../../components/Screen'
 import { errorCode, type ErrorCode } from '../../domain/errors'
 import { useLanguage } from '../../i18n/language-context'
@@ -81,9 +83,16 @@ export function SignInScreen() {
   }
 
   return (
-    <Screen>
+    <Screen variant="login">
+      <LanguageSwitch />
+      <header className="login-brand">
+        <img src={logo} alt="" width="76" height="76" />
+        <h1>{t.appName}</h1>
+        <p>{t.signIn.claim}</p>
+      </header>
       {step.name === 'sent' ? (
-        <section className="card" aria-live="polite">
+        <section className="card login-card" aria-live="polite">
+          <span className="login-mail"><LineIcon name="mail" /></span>
           <h2>{t.signIn.checkEmail}</h2>
           <p>
             {t.signIn.sentBefore}
@@ -121,8 +130,8 @@ export function SignInScreen() {
           </form>
 
           <p className="muted">{t.signIn.linkToo}</p>
-          <p className="muted">{t.signIn.notArrived}</p>
-          <div className="stack">
+          <div className="stack login-followup">
+            <p className="muted">{t.signIn.notArrived}</p>
             <button
               type="button"
               className="button-secondary"
@@ -137,13 +146,12 @@ export function SignInScreen() {
               onClick={() => setStep({ name: 'form', error: null })}
               disabled={step.busy !== null}
             >
-              <span aria-hidden="true">← </span>
               {t.signIn.back}
             </button>
           </div>
         </section>
       ) : (
-        <form className="card" onSubmit={handleSubmit}>
+        <form className="card login-card" onSubmit={handleSubmit}>
           <h2>{t.signIn.title}</h2>
           <p>{t.signIn.intro}</p>
 
@@ -153,6 +161,8 @@ export function SignInScreen() {
             type="email"
             required
             autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
             inputMode="email"
             placeholder={t.signIn.emailPlaceholder}
             value={email}
@@ -162,14 +172,15 @@ export function SignInScreen() {
 
           <button type="submit" disabled={step.name === 'sending'}>
             {step.name === 'sending' ? t.signIn.sending : t.signIn.send}
+            {step.name !== 'sending' && <LineIcon name="arrow" />}
           </button>
+          <p className="login-password-free"><LineIcon name="lock" /> {t.signIn.passwordFree}</p>
 
           {step.name === 'form' && step.error && (
             <ErrorMessage>{t.errors[step.error]}</ErrorMessage>
           )}
         </form>
       )}
-      <LanguageSwitch />
     </Screen>
   )
 }
