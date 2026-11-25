@@ -1,4 +1,5 @@
 import type { Key } from 'react'
+import { LineIcon } from '../../components/LineIcon'
 import { MAX_PARTS, weightsTotal, type PartsDraft, type PartsErrors } from '../../domain/new-task'
 import { useLanguage } from '../../i18n/language-context'
 import { FieldError } from './FieldError'
@@ -86,6 +87,15 @@ export function PartsFields({
           </div>
         )
       })}
+      <button
+        type="button"
+        className="button-link add-part"
+        onClick={onAdd}
+        disabled={draft.partNames.length >= MAX_PARTS}
+      >
+        <LineIcon name="plus" />
+        {t.newTask.addPart}
+      </button>
       {draft.partNames.length > 0 && (
         <p
           id={`${idPrefix}-weights-total`}
@@ -99,14 +109,6 @@ export function PartsFields({
           {errors?.weightsTotal ?? t.newTask.total(total)}
         </p>
       )}
-      <button
-        type="button"
-        className="button-secondary"
-        onClick={onAdd}
-        disabled={draft.partNames.length >= MAX_PARTS}
-      >
-        {t.newTask.addPart}
-      </button>
     </fieldset>
   )
 }

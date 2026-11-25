@@ -229,9 +229,15 @@ export function TaskItem({
           <p className="due" aria-live="polite">{describeDue(frequency, round, today, language)}</p>
         </div>
         {!hasParts && canMark && (
-          <button type="button" className="icon-button task-complete" aria-label={t.tasks.markDone}
-            onClick={handleComplete} disabled={saving} aria-busy={saving}>
-            <LineIcon name="circle" />
+          <button
+            type="button"
+            className="button-secondary"
+            aria-label={t.tasks.markDone}
+            onClick={handleComplete}
+            disabled={saving}
+            aria-busy={saving}
+          >
+            {t.tasks.markPart}
           </button>
         )}
       </div>

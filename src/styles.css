@@ -222,6 +222,14 @@ legend {
   accent-color: var(--color-accent);
 }
 
+.add-part {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline: 0.25rem;
+  text-decoration: none;
+}
+
 .part-row {
   display: flex;
   gap: 0.5rem;
@@ -612,11 +620,6 @@ body:has(.update-dialog[open]) {
 
 .task-menu button:hover, .task-menu button:focus-visible {
   background: var(--color-accent-soft);
-}
-
-.task-complete .line-icon {
-  width: 1.5rem;
-  height: 1.5rem;
 }
 
 .progress-toggle {
