@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { formatDayMonth } from '../../src/domain/dates'
 import { nextWeekends } from '../../src/domain/new-task'
-import { newTaskForm, signIn, task, taskNames, todayInMadrid, taskParts } from './helpers/app'
+import { openTaskParts, newTaskForm, signIn, task, taskNames, todayInMadrid, taskParts } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-33 · Añadir una tarea (#42)
@@ -79,8 +79,10 @@ test.describe('US-33 · Añadir una tarea', () => {
     await expect(newTaskForm(page)).toContainText('Si no cambias los pesos, todas cuentan lo mismo.')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 34 %', 'Nevera 33 %', 'Campana 33 %'])
     await page.reload()
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 34 %', 'Nevera 33 %', 'Campana 33 %'])
   })
 

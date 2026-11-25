@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek } from '../../src/domain/dates'
 import { describeHistoryDay, describeWeekendDays } from '../../src/domain/history'
-import { newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
+import { openTaskParts, newTaskForm, signIn, task, todayInMadrid } from './helpers/app'
 import {
   addPastPartCompletions,
   addPastRound,
@@ -56,7 +56,7 @@ async function signInWithTasksFrom(page: Page, days: number) {
 }
 
 test.describe('US-31 · Histórico de cada vuelta', () => {
-  test('«Histórico», en «Tus tareas», abre una pantalla aparte, y «Volver» vuelve a las tareas', async ({
+  test('las pestañas «Histórico» y «Qué toca» cambian la vista', async ({
     page,
   }) => {
     await signIn(page, uniqueEmail())
@@ -65,9 +65,9 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     // Con las tareas recién creadas, aún no hay nada.
     await expect(page.getByText('Aún no hay nada en el histórico.')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Volver' }).click()
+    await page.getByRole('button', { name: 'Qué toca' }).click()
     await expect(task(page, 'Superficies')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Histórico' })).toBeFocused()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeFocused()
   })
 
   test('al volver del histórico, sigue lo que estaba escribiendo en «Tus tareas»', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await newTaskForm(page).getByLabel('Nombre').fill('Limpiar el horno')
 
     await openHistory(page)
-    await page.getByRole('button', { name: 'Volver' }).click()
+    await page.getByRole('button', { name: 'Qué toca' }).click()
 
     await expect(newTaskForm(page).getByLabel('Nombre')).toHaveValue('Limpiar el horno')
   })
@@ -87,6 +87,7 @@ test.describe('US-31 · Histórico de cada vuelta', () => {
     await signInWithTasksFrom(page, 30)
     await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
     await expect(task(page, 'Baño')).toContainText('Toca:')
+    await openTaskParts(task(page, 'Superficies'))
     await task(page, 'Superficies').getByRole('button', { name: 'Marcar todo como hecho' }).click()
     await expect(task(page, 'Superficies').getByRole('button', { name: 'Marcar todo como hecho' })).toBeHidden()
     await task(page, 'Cepillar suelo').getByRole('button', { name: 'Marcar como hecha' }).click()

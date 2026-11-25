@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, formatShortDate } from '../../src/domain/dates'
-import { newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
+import { openTaskParts, openTaskActions, taskActions, newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
 import { completeOneOffTask, setTaskDueOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
@@ -76,6 +76,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     await signInAs(page)
     const card = task(page, 'Cepillar suelo')
 
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await expect(dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha')).toBeFocused()
     // Sin fecha aún, no hay nada que quitar.
@@ -84,21 +85,25 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Guardar' }).click()
     await expect(card).toContainText(dueText(5))
     // Al cerrarse, el foco vuelve al botón, que ahora es para cambiarla.
-    await expect(card.getByRole('button', { name: 'Cambiar fecha de Cepillar suelo' })).toBeFocused()
+    await expect(taskActions(card)).toBeFocused()
+    await openTaskActions(card)
     await expect(card.getByRole('button', { name: 'Cambiar fecha de Cepillar suelo' })).toHaveText('Cambiar fecha')
 
     await page.reload()
     await expect(card).toContainText(dueText(5))
 
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await expect(dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha')).toHaveValue(day(5))
     await dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha').fill(todayInMadrid())
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Guardar' }).click()
     await expect(card).toContainText('Toca: hoy')
 
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Quitar fecha' }).click()
     await expect(card).toContainText('Sin fecha')
+    await openTaskActions(card)
     await expect(card.getByRole('button', { name: 'Poner fecha a Cepillar suelo' })).toHaveText('Poner fecha')
 
     await page.reload()
@@ -108,13 +113,14 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
   test('con «Cancelar», la fecha se queda como estaba', async ({ page }) => {
     await signInAs(page)
     const card = task(page, 'Cepillar suelo')
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha').fill(day(5))
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Cancelar' }).click()
 
     await expect(dueOnForm(page, 'Cepillar suelo')).toHaveCount(0)
     await expect(card).toContainText('Sin fecha')
-    await expect(dueOnButton(page, 'Cepillar suelo')).toBeFocused()
+    await expect(taskActions(task(page, 'Cepillar suelo'))).toBeFocused()
   })
 
   test('si llega la fecha sin hacerse, aparece como retrasada', async ({ page }) => {
@@ -139,6 +145,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     await setTaskDueOn(email, 'Cepillar suelo', day(-3))
     await page.reload()
 
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha').fill(day(5))
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Guardar' }).click()
@@ -159,6 +166,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
 
   test('al cambiarla, no se puede elegir un día pasado', async ({ page }) => {
     await signInAs(page)
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     const form = dueOnForm(page, 'Cepillar suelo')
     await form.getByLabel('Fecha').fill(day(-1))
@@ -182,9 +190,11 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     }
     await form.getByRole('button', { name: 'Guardar tarea' }).click()
     const card = task(page, 'Cocina a fondo')
+    await openTaskParts(card)
     await card.getByRole('button', { name: 'Marcar Horno como hecha' }).click()
     await expect(card).toContainText('Llevas 50 %')
 
+    await openTaskActions(task(page, 'Cocina a fondo'))
     await dueOnButton(page, 'Cocina a fondo').click()
     await dueOnForm(page, 'Cocina a fondo').getByLabel('Fecha').fill(day(5))
     await dueOnForm(page, 'Cocina a fondo').getByRole('button', { name: 'Guardar' }).click()
@@ -202,6 +212,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
     const email = await signInAs(page)
     await completeOneOffTask(email, 'Cepillar suelo')
 
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     await dueOnForm(page, 'Cepillar suelo').getByLabel('Fecha').fill(day(5))
     await dueOnForm(page, 'Cepillar suelo').getByRole('button', { name: 'Guardar' }).click()
@@ -214,6 +225,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
   test('si falla el guardado, la app lo dice y la fecha no cambia', async ({ page }) => {
     await signInAs(page)
     await page.route('**/rest/v1/rpc/set_task_due_on*', (route) => route.abort('internetdisconnected'))
+    await openTaskActions(task(page, 'Cepillar suelo'))
     await dueOnButton(page, 'Cepillar suelo').click()
     const form = dueOnForm(page, 'Cepillar suelo')
     await form.getByLabel('Fecha').fill(day(5))
@@ -233,7 +245,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
       const card = page
         .getByRole('list', { name: 'Your tasks' })
@@ -241,6 +253,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Scrub the floor', exact: true }) })
       await expect(card).toContainText('No date')
 
+      await openTaskActions(card)
       await card.getByRole('button', { name: 'Set date for Scrub the floor' }).click()
       const form = page.getByRole('form', { name: 'Date of Scrub the floor' })
       await form.getByLabel('Date').fill(day(-1))
@@ -250,6 +263,7 @@ test.describe('US-38 · Poner fecha a una tarea puntual', () => {
       await form.getByLabel('Date').fill(day(5))
       await form.getByRole('button', { name: 'Save' }).click()
       await expect(card).toContainText(`Due: ${formatShortDate(day(5), 'en')}`)
+      await openTaskActions(card)
       await expect(card.getByRole('button', { name: 'Change date of Scrub the floor' })).toHaveText(
         'Change date',
       )

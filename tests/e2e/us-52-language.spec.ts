@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { dayOfWeek } from '../../src/domain/dates'
-import { signIn, task, taskParts, todayInMadrid } from './helpers/app'
+import { openTaskParts, openSettings, signIn, task, taskParts, todayInMadrid } from './helpers/app'
 import {
   accountLanguage,
   removeAccountLanguage,
@@ -25,11 +25,11 @@ function languageButton(page: Page, name: 'Español' | 'English') {
 async function signInInEnglish(page: Page, email: string) {
   await page.goto('/')
   await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Send me the code' }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
   await expect(page.getByRole('heading', { name: 'Check your email' })).toBeVisible()
   const signInEmail = await waitForSignInEmail(email)
   await page.goto(signInEmail.link)
-  await expect(page.getByText(`You are signed in as ${email}.`)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'What’s due' })).toBeVisible()
   return signInEmail
 }
 
@@ -39,9 +39,9 @@ test.describe('US-52 · La primera vez, la app sale en el idioma del dispositivo
 
     test('sale en castellano', async ({ page }) => {
       await page.goto('/')
-      await expect(page.getByRole('heading', { level: 1, name: 'Limpieza de casa' })).toBeVisible()
-      await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
-      await expect(page).toHaveTitle('Limpieza de casa')
+      await expect(page.getByRole('heading', { level: 1, name: 'My House Cleaning' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Bienvenida' })).toBeVisible()
+      await expect(page).toHaveTitle('My House Cleaning')
       await expect(page.locator('html')).toHaveAttribute('lang', 'es')
     })
   })
@@ -52,7 +52,7 @@ test.describe('US-52 · La primera vez, la app sale en el idioma del dispositivo
     test('sale en inglés', async ({ page }) => {
       await page.goto('/')
       await expect(page.getByRole('heading', { level: 1, name: 'My House Cleaning' })).toBeVisible()
-      await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
       await expect(page).toHaveTitle('My House Cleaning')
       await expect(page.locator('html')).toHaveAttribute('lang', 'en')
     })
@@ -63,7 +63,7 @@ test.describe('US-52 · La primera vez, la app sale en el idioma del dispositivo
 
     test('sale en inglés', async ({ page }) => {
       await page.goto('/')
-      await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
     })
   })
 })
@@ -71,17 +71,18 @@ test.describe('US-52 · La primera vez, la app sale en el idioma del dispositivo
 test.describe('US-52 · Puedo cambiar el idioma, y se mantiene', () => {
   test('en la pantalla de entrar, y sigue al volver a abrir la app', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Bienvenida' })).toBeVisible()
     await expect(languageButton(page, 'Español')).toHaveAttribute('aria-pressed', 'true')
 
+    await openSettings(page)
     await languageButton(page, 'English').click()
 
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
     await expect(languageButton(page, 'English')).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('group', { name: 'Language' })).toBeVisible()
 
     await page.reload()
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible()
     await expect(page).toHaveTitle('My House Cleaning')
   })
 
@@ -89,14 +90,19 @@ test.describe('US-52 · Puedo cambiar el idioma, y se mantiene', () => {
     await signIn(page, uniqueEmail())
     await expect(task(page, 'Superficies')).toBeVisible()
 
+    await openSettings(page)
     await languageButton(page, 'English').click()
 
+    await openSettings(page)
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Your tasks' })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Your tasks' })).toBeVisible()
     await page.reload()
+    await openSettings(page)
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
 
+    await openSettings(page)
     await languageButton(page, 'Español').click()
+    await openSettings(page)
     await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
     await expect(task(page, 'Superficies')).toBeVisible()
   })
@@ -113,6 +119,7 @@ test.describe('US-52 · Con la app abierta en dos pestañas', () => {
     await signIn(page, email)
     const other = await context.newPage()
     await other.goto('/')
+    await openSettings(other)
     await expect(other.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
     await expect.poll(() => accountLanguage(email)).toBe('es')
 
@@ -122,8 +129,10 @@ test.describe('US-52 · Con la app abierta en dos pestañas', () => {
       await route.continue()
     })
 
+    await openSettings(page)
     await languageButton(page, 'English').click()
 
+    await openSettings(other)
     await expect(other.getByRole('button', { name: 'Sign out' })).toBeVisible()
     await expect.poll(() => accountLanguage(email)).toBe('en')
     // Se da tiempo a que, si hubiera un bucle, se note.
@@ -147,10 +156,10 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
     const email = uniqueEmail()
     await page.goto('/')
     await expect(
-      page.getByText('Enter your email and we will send you a code to sign in. No passwords.'),
+      page.getByText('Enter your email to access your home.'),
     ).toBeVisible()
     await page.getByLabel('Email').fill(email)
-    await page.getByRole('button', { name: 'Send me the code' }).click()
+    await page.getByRole('button', { name: 'Continue' }).click()
 
     await expect(page.getByRole('heading', { name: 'Check your email' })).toBeVisible()
     await expect(page.getByText('with a code. Enter it here to sign in.')).toBeVisible()
@@ -162,20 +171,20 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
 
     const wrongCode = signInEmail.code === '000000' ? '111111' : '000000'
     await page.getByLabel('Code from the email').fill(wrongCode)
-    await page.getByRole('button', { name: 'Sign in with the code' }).click()
+    await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page.getByRole('alert')).toHaveText(
       'The code is not correct or has expired. Check it or ask for another email.',
     )
 
     await page.getByLabel('Code from the email').fill(signInEmail.code)
-    await page.getByRole('button', { name: 'Sign in with the code' }).click()
-    await expect(page.getByText(`You are signed in as ${email}.`)).toBeVisible()
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await expect(page.getByRole('button', { name: 'What’s due' })).toBeVisible()
   })
 
   test('la lista: el hogar, las tareas por defecto y sus partes, y marcar una', async ({ page }) => {
     await signInInEnglish(page, uniqueEmail())
 
-    await expect(page.getByRole('heading', { level: 2, name: 'My home' })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Your tasks' })).toBeVisible()
     await expect(
       page
         .getByRole('list', { name: 'Your tasks' })
@@ -190,6 +199,7 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
       { ignoreCase: false, useInnerText: true },
     )
     await expect(englishTask(page, 'Surfaces')).toContainText('Weekly, at the weekend')
+    await openTaskParts(englishTask(page, 'Surfaces'))
     await expect(taskParts(englishTask(page, 'Surfaces'))).toContainText(['Kitchen 50 %', 'Living room 25 %', 'Bedroom 25 %'])
     await expect(englishTask(page, 'Bathroom')).toContainText('Every 3 days since the last time')
     await expect(englishTask(page, 'Bathroom')).toContainText('Due: today')
@@ -199,6 +209,7 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
 
     await englishTask(page, 'Scrub the floor').getByRole('button', { name: 'Mark as done' }).click()
     await expect(englishTask(page, 'Scrub the floor')).toHaveCount(0)
+    await openSettings(page)
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
   })
 
@@ -228,13 +239,16 @@ test.describe('US-52 · En inglés, todos los textos salen en inglés', () => {
     await expect(form).toContainText('Total: 100 %')
     await form.getByRole('button', { name: 'Save task' }).click()
 
-    await expect(page.getByRole('status')).toHaveText('Task added: Deep-clean the kitchen.')
+    await expect(page.getByRole('status').filter({ hasText: 'Task added' })).toHaveText('Task added: Deep-clean the kitchen.')
     const added = englishTask(page, 'Deep-clean the kitchen')
     await expect(added).toContainText('Every 7 days since the last time')
+    await openTaskParts(added)
     await expect(taskParts(added)).toContainText(['Oven 60 %', 'Fridge 40 %'])
 
     // En castellano, la tarea que he escrito yo sigue igual; las de por defecto cambian.
+    await openSettings(page)
     await languageButton(page, 'Español').click()
+    await openTaskParts(task(page, 'Deep-clean the kitchen'))
     await expect(taskParts(task(page, 'Deep-clean the kitchen'))).toContainText(['Oven 60 %', 'Fridge 40 %'])
     await expect(task(page, 'Baño')).toBeVisible()
   })
@@ -272,14 +286,16 @@ test.describe('US-52 · El email para entrar, en el idioma de la cuenta', () => 
     expect(first.subject).toBe(`Tu acceso a Limpieza de casa: ${first.code}`)
     expect(await accountLanguage(email)).toBe('es')
 
+    await openSettings(page)
     await languageButton(page, 'English').click()
     // La app guarda el idioma en la cuenta.
     await expect.poll(() => accountLanguage(email)).toBe('en')
 
+    await openSettings(page)
     await page.getByRole('button', { name: 'Sign out' }).click()
     await waitBeforeNextEmail(page)
     await page.getByLabel('Email').fill(email)
-    await page.getByRole('button', { name: 'Send me the code' }).click()
+    await page.getByRole('button', { name: 'Continue' }).click()
     const second = await waitForSignInEmail(email, { after: first })
 
     expect(second.subject).toBe(`My House Cleaning code: ${second.code}`)
@@ -291,8 +307,9 @@ test.describe('US-52 · El email para entrar, en el idioma de la cuenta', () => 
   }) => {
     const email = uniqueEmail()
     const first = await signIn(page, email)
+    await openSettings(page)
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-    await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Bienvenida' })).toBeVisible()
     await removeAccountLanguage(email)
     expect(await accountLanguage(email)).toBeNull()
 

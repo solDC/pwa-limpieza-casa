@@ -14,7 +14,6 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         // El nombre de la app instalada es uno solo para todos los idiomas (US-52): en inglés.
-        // Dentro de la app se llama «Limpieza de casa» en castellano.
         name: 'My House Cleaning',
         // El que propone el iPhone al instalarla: completo, para no tener que escribirlo. (La
         // etiqueta apple-mobile-web-app-title no sirve: el iPhone usa este.)

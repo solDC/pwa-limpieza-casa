@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn, task } from './helpers/app'
+import { openTaskParts, signIn, task } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-27 · Mis tareas por defecto (#36)
@@ -43,6 +43,7 @@ test.describe('US-27 · Mis tareas por defecto', () => {
     await signIn(page, uniqueEmail())
 
     const surfaces = taskList(page).filter({ hasText: 'Superficies' })
+    await openTaskParts(surfaces)
     await expect(surfaces).toContainText('Cocina 50 %')
     await expect(surfaces).toContainText('Salón 25 %')
     await expect(surfaces).toContainText('Dormitorio 25 %')

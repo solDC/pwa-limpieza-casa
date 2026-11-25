@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { newTaskForm, signIn, task, taskParts } from './helpers/app'
+import { openTaskParts, newTaskForm, signIn, task, taskParts } from './helpers/app'
 import { uniqueEmail } from './helpers/mailbox'
 
 // US-34 · Elegir el peso de las partes (#43)
@@ -35,8 +35,10 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await expect(newTaskForm(page)).toContainText('Suman: 100 %')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
     await page.reload()
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
   })
 
@@ -54,6 +56,7 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await expect(weight(page, 2)).toHaveValue('50')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
 
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 50 %'])
   })
 
@@ -92,6 +95,7 @@ test.describe('US-34 · Elegir el peso de las partes', () => {
     await weight(page, 3).fill('20')
     await expect(newTaskForm(page)).toContainText('Suman: 100 %')
     await newTaskForm(page).getByRole('button', { name: 'Guardar tarea' }).click()
+    await openTaskParts(task(page, 'Cocina a fondo'))
     await expect(taskParts(task(page, 'Cocina a fondo'))).toContainText(['Horno 50 %', 'Nevera 30 %', 'Campana 20 %'])
   })
 

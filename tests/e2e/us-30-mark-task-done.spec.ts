@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth, formatShortDate } from '../../src/domain/dates'
-import { signIn, task, todayInMadrid } from './helpers/app'
+import { openTaskParts, signIn, task, todayInMadrid } from './helpers/app'
 import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail } from './helpers/mailbox'
 
@@ -35,6 +35,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     // viernes, «Retrasada… (tocaba el finde del…)» (US-29).
     await expect(task(page, 'Superficies')).toContainText(`finde del ${formatDayMonth(saturday, 'es')}`)
 
+    await openTaskParts(task(page, 'Superficies'))
     await markDone(page, 'Superficies').click()
 
     const next = `Toca: finde del ${formatDayMonth(addDays(saturday, 7), 'es')}`
@@ -227,6 +228,7 @@ test.describe('US-30 · Marcar una tarea como hecha', () => {
     await page.reload()
     await expect(task(page, 'Superficies')).toContainText('Toca: finde del 31 oct')
 
+    await openTaskParts(task(page, 'Superficies'))
     await markDone(page, 'Superficies').click()
 
     await expect(task(page, 'Superficies').getByRole('alert')).toHaveText(

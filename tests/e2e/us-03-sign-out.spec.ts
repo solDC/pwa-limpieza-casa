@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signIn } from './helpers/app'
+import { openSettings, signIn } from './helpers/app'
 import { uniqueEmail, waitBeforeNextEmail } from './helpers/mailbox'
 
 // US-03 · Cerrar sesión (#4)
@@ -7,10 +7,10 @@ import { uniqueEmail, waitBeforeNextEmail } from './helpers/mailbox'
 // Necesitan Supabase en local (npx supabase start): usan su buzón de pruebas.
 
 async function expectSignedOut(page: Page) {
-  await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
-  await expect(page.getByLabel('Email')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bienvenida' })).toBeVisible()
+  await expect(page.getByLabel('Correo electrónico')).toBeVisible()
   // Lo que pide la historia: que nadie vea el hogar.
-  await expect(page.getByRole('heading', { name: 'Mi casa' })).toHaveCount(0)
+  await expect(page.getByRole('list', { name: 'Tus tareas' })).toHaveCount(0)
 }
 
 test.describe('US-03 · Cerrar sesión', () => {
@@ -19,6 +19,7 @@ test.describe('US-03 · Cerrar sesión', () => {
   }) => {
     await signIn(page, uniqueEmail())
 
+    await openSettings(page)
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
 
     await expectSignedOut(page)
@@ -29,6 +30,7 @@ test.describe('US-03 · Cerrar sesión', () => {
     page,
   }) => {
     await signIn(page, uniqueEmail())
+    await openSettings(page)
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
     await expectSignedOut(page)
 
@@ -44,13 +46,14 @@ test.describe('US-03 · Cerrar sesión', () => {
   }) => {
     const email = uniqueEmail()
     const first = await signIn(page, email)
+    await openSettings(page)
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
     await expectSignedOut(page)
 
     await waitBeforeNextEmail(page)
     await signIn(page, email, first)
 
-    await expect(page.getByRole('heading', { name: 'Mi casa' })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Tus tareas' })).toBeVisible()
   })
 
   // Sin conexión, Supabase no puede anular la sesión en el servidor, pero la borra igualmente
@@ -62,6 +65,7 @@ test.describe('US-03 · Cerrar sesión', () => {
     await signIn(page, uniqueEmail())
     await page.route('**/auth/v1/logout*', (route) => route.abort('internetdisconnected'))
 
+    await openSettings(page)
     await page.getByRole('button', { name: 'Cerrar sesión' }).click()
 
     await expectSignedOut(page)

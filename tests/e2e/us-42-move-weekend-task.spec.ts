@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, dayOfWeek, formatDayMonth } from '../../src/domain/dates'
-import { signIn, task, todayInMadrid } from './helpers/app'
+import { openTaskParts, openTaskActions, taskActions, signIn, task, todayInMadrid } from './helpers/app'
 import { setAllTasksCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
@@ -40,6 +40,7 @@ async function goTo(page: Page, day: string) {
 
 /** Mueve la tarea al finde que empieza ese sábado, desde su tarjeta. */
 async function moveTo(page: Page, taskName: string, saturday: string) {
+  await openTaskActions(task(page, taskName))
   await moveButton(page, taskName).click()
   await moveForm(page, taskName).getByLabel('Mover al finde del').selectOption(saturday)
   await moveForm(page, taskName).getByRole('button', { name: 'Guardar' }).click()
@@ -60,8 +61,10 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
     const card = task(page, 'Superficies')
     // Recién creada, toca el finde actual (US-48).
     await expect(card).toContainText(`Toca: ${weekendOf(currentSaturday)}`)
+    await openTaskActions(task(page, 'Superficies'))
     await expect(moveButton(page, 'Superficies')).toHaveText('Mover a otro finde')
 
+    await openTaskActions(task(page, 'Superficies'))
     await moveButton(page, 'Superficies').click()
     const field = moveForm(page, 'Superficies').getByLabel('Mover al finde del')
     await expect(field).toBeFocused()
@@ -73,7 +76,7 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
     await moveForm(page, 'Superficies').getByRole('button', { name: 'Guardar' }).click()
 
     await expect(card).toContainText(`Toca: ${weekendOf(addDays(currentSaturday, 14))}`)
-    await expect(moveButton(page, 'Superficies')).toBeFocused()
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
     await page.reload()
     await expect(card).toContainText(`Toca: ${weekendOf(addDays(currentSaturday, 14))}`)
   })
@@ -96,6 +99,7 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
     await expect(card).toContainText('Toca: finde del')
 
     // A un finde que no está en su calendario de antes: una semana después del que muestra.
+    await openTaskActions(task(page, 'Aspirar cosas de Cati'))
     await moveButton(page, 'Aspirar cosas de Cati').click()
     const field = moveForm(page, 'Aspirar cosas de Cati').getByLabel('Mover al finde del')
     const shown = await card.locator('.due').textContent()
@@ -132,6 +136,7 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
     await signIn(page, uniqueEmail())
     // Un finde que no estaba en su calendario: el de su vuelta más una semana.
     const shown = await task(page, 'Aspirar cosas de Cati').locator('.due').textContent()
+    await openTaskActions(task(page, 'Aspirar cosas de Cati'))
     await moveButton(page, 'Aspirar cosas de Cati').click()
     const values = await moveForm(page, 'Aspirar cosas de Cati')
       .getByLabel('Mover al finde del')
@@ -154,6 +159,7 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
   test('si la vuelta tenía partes hechas, la vuelta movida empieza con todas por hacer', async ({ page }) => {
     await signInWithOldTasks(page)
     const card = task(page, 'Superficies')
+    await openTaskParts(card)
     await card.getByRole('button', { name: 'Marcar Cocina como hecha' }).click()
     await expect(card).toContainText('Llevas')
 
@@ -168,17 +174,19 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
 
   test('con «Cancelar», se queda como estaba', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Superficies'))
     await moveButton(page, 'Superficies').click()
     await moveForm(page, 'Superficies').getByLabel('Mover al finde del').selectOption(addDays(currentSaturday, 14))
     await moveForm(page, 'Superficies').getByRole('button', { name: 'Cancelar' }).click()
 
     await expect(moveForm(page, 'Superficies')).toHaveCount(0)
     await expect(task(page, 'Superficies')).toContainText(`Toca: ${weekendOf(currentSaturday)}`)
-    await expect(moveButton(page, 'Superficies')).toBeFocused()
+    await expect(taskActions(task(page, 'Superficies'))).toBeFocused()
   })
 
   test('solo las de fin de semana tienen el botón', async ({ page }) => {
     await signIn(page, uniqueEmail())
+    await openTaskActions(task(page, 'Aspirar cosas de Cati'))
     await expect(moveButton(page, 'Aspirar cosas de Cati')).toBeVisible()
     for (const name of ['Baño', 'Cristales y espejos', 'Cepillar suelo']) {
       await expect(task(page, name).getByRole('button', { name: /otro finde/ })).toHaveCount(0)
@@ -205,13 +213,14 @@ test.describe('US-42 · Mover una tarea de fin de semana a otro finde', () => {
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
       const card = page
         .getByRole('list', { name: 'Your tasks' })
         .getByRole('listitem')
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Surfaces', exact: true }) })
 
+      await openTaskActions(card)
       await card.getByRole('button', { name: 'Move Surfaces to another weekend' }).click()
       const form = page.getByRole('form', { name: 'Move Surfaces' })
       const saturday = addDays(currentSaturday, 14)

@@ -19,7 +19,7 @@ async function requestEmail(page: Page, email: string) {
 
 async function enterCode(page: Page, code: string) {
   await page.getByLabel('Código del email').fill(code)
-  await page.getByRole('button', { name: 'Entrar con el código' }).click()
+  await page.getByRole('button', { name: 'Entrar' }).click()
 }
 
 function wrongCodeFor(code: string): string {
@@ -63,10 +63,10 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     const { code } = await waitForSignInEmail(email)
 
     await page.getByLabel('Código del email').fill(code)
-    await page.getByRole('button', { name: 'Entrar con el código' }).click()
+    await page.getByRole('button', { name: 'Entrar' }).click()
 
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Mi casa' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Tus tareas' })).toBeVisible()
   })
 
   test('el enlace sigue funcionando igual: no hace falta escribir el código', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
 
     await page.goto(link)
 
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
   })
 
   test('si el código es incorrecto, la app lo dice y deja intentarlo de nuevo', async ({
@@ -92,7 +92,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await expect(page.getByLabel('Código del email')).toBeVisible()
 
     await enterCode(page, code)
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
   })
 
   test('si el código ya se ha usado o ha caducado, la app lo dice', async ({
@@ -105,7 +105,7 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
     await requestEmail(page, email)
     const first = await waitForSignInEmail(email)
     await enterCode(page, first.code)
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
 
     // Otro dispositivo, sin sesión, intenta entrar con el mismo código. No pide un email
     // de verdad: uno nuevo sustituiría al código y no se probaría que ya está usado.
@@ -136,15 +136,15 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
 
     const second = await waitForSignInEmail(email, { after: first })
     await enterCode(page, second.code)
-    await expect(page.getByText(`Has entrado como ${email}.`)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Qué toca' })).toBeVisible()
   })
 
   test('desde «Revisa tu correo» puedo cambiar de email', async ({ page }) => {
     await requestEmailWithoutSending(page)
 
-    await page.getByRole('button', { name: 'Volver', exact: true }).click()
+    await page.getByRole('button', { name: 'Cambiar correo', exact: true }).click()
 
-    await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(page.getByLabel('Correo electrónico')).toBeVisible()
   })
 
   test('si Supabase falla al comprobar el código, la app no dice que el código es incorrecto', async ({
@@ -194,16 +194,16 @@ test.describe('US-26 · Entrar con código desde la app instalada', () => {
 
     await expect(page.getByRole('button', { name: 'Comprobando…' })).toBeDisabled()
     await expect(page.getByLabel('Código del email')).toBeDisabled()
-    await expect(page.getByRole('button', { name: 'Volver', exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Cambiar correo', exact: true })).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Reenviar email' })).toBeDisabled()
 
     answerVerify()
     await expect(page.getByRole('alert')).toHaveText(wrongCodeError)
     await expect(page.getByRole('heading', { name: 'Revisa tu correo' })).toBeVisible()
     // Tras la respuesta, todo vuelve a estar disponible.
-    await expect(page.getByRole('button', { name: 'Entrar con el código' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Entrar' })).toBeEnabled()
     await expect(page.getByLabel('Código del email')).toBeEnabled()
-    await expect(page.getByRole('button', { name: 'Volver', exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Cambiar correo', exact: true })).toBeEnabled()
     await expect(page.getByRole('button', { name: 'Reenviar email' })).toBeEnabled()
   })
 })

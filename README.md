@@ -336,7 +336,7 @@ En Chrome o Edge, abre la app y pulsa el icono de instalar en la barra de direcc
 
 El service worker, que es lo que permite instalarla, solo funciona en `localhost` o con HTTPS. Desplegada en Vercel, que usa HTTPS, se puede instalar también en el móvil.
 
-La app instalada se llama «My House Cleaning» en todos los idiomas (solo puede tener un nombre); dentro, «Limpieza de casa» en castellano y «My House Cleaning» en inglés.
+La interfaz y la app instalada se llaman «My House Cleaning» en ambos idiomas.
 
 Cuando se publica una versión nueva, la app lo avisa con una ventana en el centro («Hay una versión nueva de la app.») al volver a ella o, como mucho, en una hora. **Actualizar** carga la nueva; **Más tarde** cierra la ventana, que vuelve a salir la próxima vez que se vuelve a la app. Si se cierra la app del todo, al abrirla ya está la nueva.
 

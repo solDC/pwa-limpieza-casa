@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { addDays, formatShortDate } from '../../src/domain/dates'
-import { newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
+import { openTaskParts, openTaskActions, taskActions, newTaskForm, signIn, task, taskNames, todayInMadrid } from './helpers/app'
 import { setTaskCreatedOn } from './helpers/database'
 import { uniqueEmail, waitForSignInEmail } from './helpers/mailbox'
 
@@ -30,6 +30,7 @@ function dateForm(page: Page, taskName: string) {
 
 /** Cambia cuándo toca la próxima vez esa tarea, desde su tarjeta. */
 async function changeNextDue(page: Page, taskName: string, newDay: string) {
+  await openTaskActions(task(page, taskName))
   await changeButton(page, taskName).click()
   await dateForm(page, taskName).getByLabel('Fecha').fill(newDay)
   await dateForm(page, taskName).getByRole('button', { name: 'Guardar' }).click()
@@ -46,8 +47,10 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
   test('puedo cambiar el día en que toca la próxima vez', async ({ page }) => {
     await signInAs(page)
     const card = task(page, 'Baño')
+    await openTaskActions(task(page, 'Baño'))
     await expect(changeButton(page, 'Baño')).toHaveText('Cambiar fecha')
 
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     const form = dateForm(page, 'Baño')
     // Empieza con el día en que toca ahora, y siempre hay uno: no se puede quitar.
@@ -59,11 +62,12 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
 
     await expect(card).toContainText(dueText(5))
     // Al cerrarse, el foco vuelve al botón.
-    await expect(changeButton(page, 'Baño')).toBeFocused()
+    await expect(taskActions(task(page, 'Baño'))).toBeFocused()
     await page.reload()
     await expect(card).toContainText(dueText(5))
 
     // Se puede volver a cambiar, también a hoy.
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     await expect(dateForm(page, 'Baño').getByLabel('Fecha')).toHaveValue(day(5))
     await dateForm(page, 'Baño').getByLabel('Fecha').fill(todayInMadrid())
@@ -91,6 +95,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
 
   test('solo se puede elegir hoy o un día futuro', async ({ page }) => {
     await signInAs(page)
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     const form = dateForm(page, 'Baño')
 
@@ -114,6 +119,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
     await task(page, 'Baño').getByRole('button', { name: 'Marcar como hecha' }).click()
     await expect(task(page, 'Baño')).toContainText(dueText(3))
 
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     const form = dateForm(page, 'Baño')
     await expect(form.getByLabel('Fecha')).toHaveValue(day(3))
@@ -142,13 +148,14 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
 
   test('con «Cancelar», el día se queda como estaba', async ({ page }) => {
     await signInAs(page)
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     await dateForm(page, 'Baño').getByLabel('Fecha').fill(day(5))
     await dateForm(page, 'Baño').getByRole('button', { name: 'Cancelar' }).click()
 
     await expect(dateForm(page, 'Baño')).toHaveCount(0)
     await expect(task(page, 'Baño')).toContainText('Toca: hoy')
-    await expect(changeButton(page, 'Baño')).toBeFocused()
+    await expect(taskActions(task(page, 'Baño'))).toBeFocused()
   })
 
   test('al cambiar el día, las partes ya hechas se conservan', async ({ page }) => {
@@ -164,6 +171,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
     }
     await form.getByRole('button', { name: 'Guardar tarea' }).click()
     const card = task(page, 'Cocina a fondo')
+    await openTaskParts(card)
     await card.getByRole('button', { name: 'Marcar Horno como hecha' }).click()
     await expect(card).toContainText('Llevas 50 %')
 
@@ -182,6 +190,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
   test('si falla el guardado, la app lo dice y el día no cambia', async ({ page }) => {
     await signInAs(page)
     await page.route('**/rest/v1/rpc/set_task_next_due_on*', (route) => route.abort('internetdisconnected'))
+    await openTaskActions(task(page, 'Baño'))
     await changeButton(page, 'Baño').click()
     const form = dateForm(page, 'Baño')
     await form.getByLabel('Fecha').fill(day(5))
@@ -201,7 +210,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
       const email = uniqueEmail()
       await page.goto('/')
       await page.getByLabel('Email').fill(email)
-      await page.getByRole('button', { name: 'Send me the code' }).click()
+      await page.getByRole('button', { name: 'Continue' }).click()
       await page.goto((await waitForSignInEmail(email)).link)
       const card = page
         .getByRole('list', { name: 'Your tasks' })
@@ -209,6 +218,7 @@ test.describe('US-41 · Cambiar cuándo toca la próxima vez', () => {
         .filter({ has: page.getByRole('heading', { level: 3, name: 'Bathroom', exact: true }) })
       await expect(card).toContainText('Due: today')
 
+      await openTaskActions(card)
       await card.getByRole('button', { name: 'Change date of Bathroom' }).click()
       const form = page.getByRole('form', { name: 'Date of Bathroom' })
       await form.getByLabel('Date').fill(day(-1))
